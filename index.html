@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///C:/Users/Ayaan/Desktop/Duty%20Lookup.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -7,91 +6,143 @@
 <link rel="manifest" href="https://eceexams.pages.dev/manifest.webmanifest">
 <link rel="icon" href="https://eceexams.pages.dev/icons/icon-192.png">
 <link rel="apple-touch-icon" href="https://eceexams.pages.dev/icons/icon-192.png">
-<meta name="theme-color" content="#06160f">
+<meta name="theme-color" content="#2453b8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
-:root{--bg:#f3f8f5;--card:#fff;--tx:#12261d;--mu:#5d7267;--bd:#cfe0d6;--in:#e8f1ec;--ti:#1d6fd1;--gr:#1a9c73;--am:#d4920a;
+:root{--serif:Georgia,"Times New Roman",serif;--bg:#f3f4f7;--card:#fff;--tx:#1c2233;--mu:#566074;--bd:#d8dce6;--in:#eef0f5;--ti:#1f2f5c;--gr:#1b6b4a;--am:#8a5a00;--soft:#e8ebf4;--pb:#1f2f5c;--gb:#7a2233;--wa:#137a3f;--nv:#1f2f5c;--gold:#c8a24a;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#06160f;--card:#0f1f19;--tx:#e6f2ec;--mu:#8ba496;--bd:#24382f;--in:#1a2b23;--ti:#2b8be6;--gr:#59d6ae;--am:#f5b93a}}
-:root[data-theme="dark"]{--bg:#06160f;--card:#0f1f19;--tx:#e6f2ec;--mu:#8ba496;--bd:#24382f;--in:#1a2b23;--ti:#2b8be6;--gr:#59d6ae;--am:#f5b93a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141f;--card:#181e2e;--tx:#e9ecf4;--mu:#a0a8bb;--bd:#2b3349;--in:#1e2538;--ti:#9db4f0;--gr:#56d3a0;--am:#f0b95a;--soft:#232c48;--pb:#3f5cae;--gb:#a23b50;--wa:#1b8a4b;--nv:#131a2e}}
+:root[data-theme="dark"]{--bg:#10141f;--card:#181e2e;--tx:#e9ecf4;--mu:#a0a8bb;--bd:#2b3349;--in:#1e2538;--ti:#9db4f0;--gr:#56d3a0;--am:#f0b95a;--soft:#232c48;--pb:#3f5cae;--gb:#a23b50;--wa:#1b8a4b;--nv:#131a2e}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
-main{max-width:980px;margin:0 auto;padding:18px 14px 40px}
-.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
-h1{margin:0;font-size:1.6rem;color:var(--ti)}
-.sub{margin:2px 0 0;color:var(--mu);font-size:.92rem}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+.bar{background:var(--nv);color:#fff;border-bottom:3px solid var(--gold)}
+.wrap{max-width:960px;margin:0 auto;padding:22px 16px}
+main{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+.top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.ttl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1,.name,.md h2,th{font-family:var(--serif)}
+h1{margin:0;font-size:1.8rem;font-weight:700}
+.st{font-size:.78rem;font-weight:600;background:rgba(255,255,255,.14);color:#d7f5e6;border-radius:999px;padding:3px 10px}
+.st:empty{display:none}
+.sub{margin:4px 0 0;color:#c9d0e4;font-size:.95rem}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
-button,.b{font:inherit;font-weight:600;font-size:.9rem;padding:9px 14px;border-radius:10px;cursor:pointer;border:2px solid transparent;text-decoration:none;display:inline-block}
-.b1{background:transparent;color:var(--am);border-color:var(--am)}
-.b2{background:linear-gradient(90deg,#f97316,#f59e0b);color:#fff}
-.b3{background:linear-gradient(90deg,#a855f7,#ec4899);color:#fff}
-.filters{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
-.filters input,.filters select{padding:11px 12px;border-radius:10px;background:var(--in);color:var(--tx);font:inherit;min-width:0}
-#q{flex:1 1 220px;border:2px solid #8bb6e8}
-#d{border:2px solid var(--gr)}#t{border:2px solid var(--am)}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
+button,.b{font:inherit;font-weight:600;font-size:.92rem;padding:10px 16px;min-height:42px;border-radius:6px;cursor:pointer;border:1px solid transparent;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;text-align:center}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.b1{background:var(--card);color:var(--tx);border-color:var(--bd)}
+.b2{background:var(--pb);color:#fff}
+.b3{background:var(--gb);color:#fff}
+.bar .b1{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.bar .b2{background:#fff;color:#1f2f5c}
+.bar .b3{background:var(--gold);color:#1c1c1c}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:14px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f span{font-size:.82rem;font-weight:600;color:var(--mu)}
+.filters input,.filters select,.tools select{width:100%;min-height:44px;padding:10px 12px;border-radius:6px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.cnt{color:var(--mu);font-size:.9rem;font-weight:600}
+.tl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tools select{width:auto;min-height:38px;padding:6px 10px;font-size:.88rem}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:var(--card);color:var(--mu);min-height:38px;padding:6px 12px;font-size:.85rem}
+.seg .on{background:var(--pb);color:#fff}
+.sb{min-height:38px;padding:6px 12px;font-size:.85rem}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:16px}
 .empty{text-align:center;padding:48px 16px;color:var(--mu)}
 .empty h3{margin:8px 0 4px;color:var(--mu)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.name{font-weight:700;font-size:1.02rem}
-.duty{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--bd);padding:8px 0;font-size:.9rem}
-.duty small{color:var(--mu);display:block}
-.tag{font-size:.75rem;background:var(--in);border-radius:999px;padding:2px 9px;height:fit-content;white-space:nowrap}
-.link{background:none;border:0;color:var(--ti);padding:0;font-size:.82rem;cursor:pointer}
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.name{font-weight:700;font-size:1.1rem;padding-bottom:10px}
+.duty{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--bd);padding:12px 0 2px;font-size:.92rem}
+.when{display:block;font-weight:650}
+.duty small{color:var(--mu);display:block;font-size:.85rem;margin-top:2px}
+.tag{font-size:.75rem;font-weight:600;background:var(--soft);color:var(--ti);border-radius:4px;padding:3px 9px;height:fit-content;white-space:nowrap}
+.link{background:none;border:0;color:var(--ti);padding:0;min-height:0;font-size:.85rem;font-weight:600;cursor:pointer}
+.ac{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.fs{border:1px solid var(--bd);background:var(--card);border-radius:6px;padding:7px 11px;min-height:36px;font-size:.82rem}
+.fs:hover{background:var(--soft)}
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th{text-align:left;background:var(--soft);padding:10px 12px;border-bottom:2px solid var(--bd);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.ov{position:fixed;inset:0;background:rgba(8,12,22,.6);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
 .ov.on{display:flex}
-.md{background:var(--card);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:520px;max-height:85%;overflow:auto;padding:18px}
-.md h2{margin:0 0 12px;font-size:1.15rem}
-.md select,.md input,.md textarea{width:100%;padding:10px;margin:4px 0 10px;border-radius:9px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
-.md label{font-size:.85rem;color:var(--mu)}
-.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--bd)}
-.act{display:flex;gap:6px}
-.wa{background:#1fa855;color:#fff;padding:7px 11px}.call{background:var(--ti);color:#fff;padding:7px 11px}
-.x{background:var(--in);color:var(--tx)}
+.md{background:var(--card);border:1px solid var(--bd);border-radius:10px;width:100%;max-width:520px;max-height:85%;overflow:auto;padding:20px}
+.md h2{margin:0 0 12px;font-size:1.25rem}
+.md select,.md input,.md textarea{width:100%;padding:10px;margin:4px 0 12px;border-radius:6px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
+.md label{font-size:.85rem;font-weight:600;color:var(--mu)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--bd)}
+.act{display:flex;gap:8px;flex-wrap:wrap}
+.wa{background:var(--wa);color:#fff;padding:8px 12px;min-height:38px}
+.call{background:var(--pb);color:#fff;padding:8px 12px;min-height:38px}
+.x{background:var(--in);color:var(--tx);border-color:var(--bd)}
+.act .x{padding:8px 12px;min-height:38px}
+#cl{width:100%}
 textarea.csv{height:100px;font-size:.8rem}
 .sm{display:none}
-body{-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 input,select,textarea{font-size:16px}
+.fl{display:flex;justify-content:center;gap:22px;margin-top:28px}
+.foot{text-align:center;color:var(--mu);font-size:.78rem;margin-top:14px}
 @media (max-width:640px){
+ .wrap{padding:16px 12px}
  main{padding:14px 12px 110px}
- h1{font-size:1.35rem}
+ h1{font-size:1.45rem}
  .top{display:block}
- .btns{position:fixed;left:0;right:0;bottom:0;z-index:8;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--bd)}
- .btns button{padding:8px 4px;font-size:.78rem;line-height:1.25;border-radius:12px;min-height:54px}
+ .top .btns{position:fixed;left:0;right:0;bottom:0;z-index:8;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:var(--nv);border-top:2px solid var(--gold)}
+ .top .btns button{padding:8px 4px;font-size:.78rem;line-height:1.25;border-radius:8px;min-height:54px}
  .lg{display:none}.sm{display:inline}
- .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
- #q{grid-column:1/-1}
+ .filters{grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+ .f:first-child{grid-column:1/-1}
  .grid{grid-template-columns:1fr}
+ .fs{min-height:44px}
  .link{padding:8px 0;font-size:.9rem}
  .ov{align-items:flex-end;padding:0}
- .md{max-width:none;border-radius:18px 18px 0 0;max-height:90%;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
- .act a,.wa,.call{padding:10px 14px}
+ .md{max-width:none;border-radius:16px 16px 0 0;max-height:90%;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+ .wa,.call{padding:10px 14px;min-height:44px}
  .row{align-items:flex-start}
- .foot{margin-top:18px}
 }
-.foot{text-align:center;color:var(--gr);font-size:.72rem;font-weight:700;margin-top:26px}
+@media print{
+ .bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst{display:none!important}
+ .bar{background:#fff;color:#000;border-bottom:2px solid #000}.sub{color:#333}.st{display:none}
+ body{background:#fff}.box{break-inside:avoid}
+}
 </style>
 </head>
 <body>
-<main>
-  <div class="top">
-    <div><h1>Duty Lookup</h1><p class="sub">Search, compare &amp; find swap partners <span id="st" style="color:var(--gr);font-weight:700">● Live</span></p></div>
+<header class="bar"><div class="wrap top">
+    <div>
+      <div class="ttl"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
+      <p class="sub">Examination duty roster and swap coordination</p>
+    </div>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">See Posted Swaps</span><span class="sm">📋<br>Posted</span></button>
       <button class="b2" id="bPost"><span class="lg">Post Swap Request</span><span class="sm">📣<br>Post Swap</span></button>
       <button class="b3" id="bWiz"><span class="lg">Swap Wizard</span><span class="sm">✨<br>Wizard</span></button>
+      <button class="b1" id="bInst" hidden>Install app</button>
+    </div>
+</div></header>
+<main>
+  <div class="filters">
+    <label class="f"><span>Name</span><input id="q" type="search" placeholder="Search by name..." aria-label="Search by name"></label>
+    <label class="f"><span>Date</span><select id="d"><option value="">All Dates</option></select></label>
+    <label class="f"><span>Time slot</span><select id="t"><option value="">All Time Slots</option></select></label>
+    <label class="f"><span>Role</span><select id="r"><option value="">All Roles</option></select></label>
+  </div>
+  <div class="tools">
+    <span class="cnt" id="cnt"></span>
+    <div class="tl">
+      <select id="s" aria-label="Sort by"><option value="n">Sort: Name</option><option value="d">Sort: Date</option></select>
+      <div class="seg"><button id="vC" class="on">Cards</button><button id="vT">Table</button></div>
+      <button class="link" id="clr">Clear filters</button>
+      <button class="x sb" id="exp">Export CSV</button>
+      <button class="x sb" id="prt">Print</button>
     </div>
   </div>
-  <div class="filters">
-    <input id="q" type="search" placeholder="Search by name..." aria-label="Search by name">
-    <select id="d"><option value="">All Dates</option><option value="10/5/2026">10/5/2026</option><option value="10/6/2026">10/6/2026</option><option value="10/7/2026">10/7/2026</option><option value="10/8/2026">10/8/2026</option><option value="10/9/2026">10/9/2026</option></select>
-    <select id="t"><option value="">All Time Slots</option><option>10:00–13:00</option><option>13:00–16:00</option><option>14:00–17:00</option><option>9:00–12:00</option><option>9:30–11:30</option></select>
-  </div>
-  <div id="list"><div class="grid"><div class="box"><div class="name">MUHAMMAD ALI RAZA</div><div class="duty"><div>10/5/2026 · 9:00–12:00<small>Midterm Examination · Room 101</small><button class="link" data-i="0">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Ms. MADEEHA UZMA</div><div class="duty"><div>10/6/2026 · 10:00–13:00<small>Final Examination · Lab 2</small><button class="link" data-i="1">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Mr. MUHAMMAD TILAL</div><div class="duty"><div>10/7/2026 · 14:00–17:00<small>Quiz · Room 204</small><button class="link" data-i="2">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Mr. SAMI ULLAH</div><div class="duty"><div>10/8/2026 · 9:30–11:30<small>Midterm Examination · Hall A</small><button class="link" data-i="3">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Ms. SABA MUMTAZ</div><div class="duty"><div>10/9/2026 · 13:00–16:00<small>Final Examination · Hall B</small><button class="link" data-i="4">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div></div></div>
-  <div style="text-align:center;margin-top:22px"><button class="link" id="adminBtn">🔒 Admin</button></div>
+  <div id="list"></div>
+  <div class="fl"><button class="link" id="bTheme">Theme: Auto</button><button class="link" id="adminBtn">🔒 Admin</button></div>
   <section id="adminPanel" hidden="" style="margin-top:14px;color:var(--mu);font-size:.88rem"><div style="display:flex;justify-content:space-between;align-items:center"><b>Admin: upload duty data</b><button class="link" id="lock">Lock</button></div>
     <p>CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
     <input type="file" id="file" accept=".csv,text/csv">
@@ -103,8 +154,8 @@ input,select,textarea{font-size:16px}
 </main>
 <div class="ov" id="ov"><div class="md" id="md"></div></div>
 
-<script src="file:///C:/Users/Ayaan/Desktop/Duty%20Lookup_files/firebase-app-compat.js.download"></script>
-<script src="file:///C:/Users/Ayaan/Desktop/Duty%20Lookup_files/firebase-database-compat.js.download"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -126,27 +177,42 @@ function parse(t){const L=t.trim().split(/\r?\n/).map(l=>l.split(',').map(c=>c.t
 function staff(){return [...new Map(data.map(r=>[key(r),r])).values()].sort((a,b)=>a.name.localeCompare(b.name))}
 function free(duty){const busy=new Set(data.filter(x=>x.date===duty.date&&x.start<duty.end&&duty.start<x.end).map(key));
   return staff().filter(p=>!busy.has(key(p)))}
-function acts(p,msg){const n=ph(p.phone);return n?`<span class="act"><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a></span>`:'<small>No phone</small>'}
+function acts(p,msg){const n=ph(p.phone),cp=`<button class="b x cp" data-m="${esc(msg)}">Copy message</button>`;return n?`<span class="act"><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>${cp}</span>`:`<span class="act"><small>No phone</small>${cp}</span>`}
 const swapMsg=(to,me,r)=>`Hi ${to}, this is ${me}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
 
 function fillFilters(){
-  const ds=[...new Set(data.map(r=>r.date))].sort(), ts=[...new Set(data.map(slot))].sort();
-  const cd=$('d').value,ct=$('t').value;
+  const ds=[...new Set(data.map(r=>r.date))].sort(), ts=[...new Set(data.map(slot))].sort(), ro=[...new Set(data.map(r=>r.role).filter(Boolean))].sort();
+  const cd=$('d').value,ct=$('t').value,cr=$('r').value;
   $('d').innerHTML='<option value="">All Dates</option>'+ds.map(d=>`<option value="${esc(d)}">${esc(fmt(d))}</option>`).join('');
   $('t').innerHTML='<option value="">All Time Slots</option>'+ts.map(t=>`<option>${esc(t)}</option>`).join('');
-  $('d').value=cd;$('t').value=ct;
+  $('r').innerHTML='<option value="">All Roles</option>'+ro.map(x=>`<option>${esc(x)}</option>`).join('');
+  $('d').value=cd;$('t').value=ct;$('r').value=cr;
 }
+let view='c',cur=[];
+const when=r=>r.date+r.start;
 function render(){
-  const L=$('list');
+  const L=$('list');cur=[];$('cnt').textContent='';
   if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
-  const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value;
-  const rows=data.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t));
+  const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
+  const rows=data.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
+  rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));
+  cur=rows;
   const by=new Map();rows.forEach(r=>{const k=key(r);if(!by.has(k))by.set(k,[]);by.get(k).push(r)});
-  if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3></div>';return}
-  L.innerHTML='<div class="grid">'+[...by.values()].map(rs=>`<div class="box"><div class="name">${esc(rs[0].name)}</div>`+
-    rs.sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).map(r=>`<div class="duty"><div>${esc(fmt(r.date))} · ${esc(slot(r))}<small>${esc(r.exam)} · ${esc(r.venue)}</small><button class="link" data-i="${data.indexOf(r)}">Find swap partner →</button></div><span class="tag">${esc(r.role)}</span></div>`).join('')+'</div>').join('')+'</div>';
-  L.querySelectorAll('.link').forEach(b=>b.onclick=()=>partners(+b.dataset.i));
+  $('cnt').textContent=`${rows.length} of ${data.length} duties, ${by.size} staff`;
+  if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter.</div></div>';return}
+  const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">Find swap partner</button><button class="link fs" data-c="${i}">Add to calendar</button></div>`;
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Actions</th></tr></thead><tbody>'+rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(fmt(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role)}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')+'</tbody></table></div>';
+  else L.innerHTML='<div class="grid">'+[...by.values()].map(rs=>`<div class="box"><div class="name">${esc(rs[0].name)}</div>`+
+    rs.map(r=>`<div class="duty"><div><b class="when">${esc(fmt(r.date))} · ${esc(slot(r))}</b><small>${esc(r.exam)} · ${esc(r.venue)}</small>${ac(data.indexOf(r))}</div><span class="tag">${esc(r.role)}</span></div>`).join('')+'</div>').join('')+'</div>';
+  L.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>partners(+b.dataset.i));
+  L.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>ics(+b.dataset.c));
 }
+function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
+const p2=n=>String(n).padStart(2,'0');
+function ics(i){const r=data[i],x=/^\d{4}-\d{2}-\d{2}$/.test(r.date)?new Date(r.date+'T00:00:00'):new Date(r.date);
+  if(isNaN(x))return alert('Date format not recognised.');
+  const d=x.getFullYear()+p2(x.getMonth()+1)+p2(x.getDate()),hm=v=>{const [h,m]=String(v||'0:0').split(':');return p2(h)+p2(m||0)+'00'},e=v=>String(v||'').replace(/[,;]/g,'\\$&');
+  dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Duty Lookup//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
 function open(html){$('md').innerHTML=html+'<div style="margin-top:12px"><button class="x" id="cl">Close</button></div>';$('ov').classList.add('on');$('cl').onclick=close}
 function close(){$('ov').classList.remove('on')}
 $('ov').onclick=e=>{if(e.target.id==='ov')close()};
@@ -187,7 +253,17 @@ $('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].nam
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)};
 $('sample').onclick=()=>{const d=parse(SAMPLE);setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
 $('clear').onclick=()=>{if(!confirm('Clear the roster and all posted swaps for everyone?'))return;swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'};
-['q','d','t'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
+['q','d','t','r','s'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
+$('vC').onclick=()=>{view='c';$('vC').classList.add('on');$('vT').classList.remove('on');render()};
+$('vT').onclick=()=>{view='t';$('vT').classList.add('on');$('vC').classList.remove('on');render()};
+$('clr').onclick=()=>{$('q').value=$('d').value=$('t').value=$('r').value='';render()};
+$('prt').onclick=()=>window.print();
+$('exp').onclick=()=>{if(!cur.length)return;const H=['name','date','start','end','exam','venue','role'],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  dl('duty-roster.csv',[H.join(',')].concat(cur.map(r=>H.map(k=>q(r[k])).join(','))).join('\r\n'),'text/csv')};
+document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navigator.clipboard)navigator.clipboard.writeText(b.dataset.m).then(()=>{b.textContent='Copied'})});
+let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
+function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
+$('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
 $('bBoard').onclick=board;$('bPost').onclick=postForm;$('bWiz').onclick=wizard;
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
