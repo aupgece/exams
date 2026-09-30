@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)file:///C:/Users/Ayaan/Desktop/Duty%20Lookup.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Duty Lookup</title>
+<link rel="manifest" href="https://eceexams.pages.dev/manifest.webmanifest">
+<link rel="icon" href="https://eceexams.pages.dev/icons/icon-192.png">
+<link rel="apple-touch-icon" href="https://eceexams.pages.dev/icons/icon-192.png">
+<meta name="theme-color" content="#06160f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f3f8f5;--card:#fff;--tx:#12261d;--mu:#5d7267;--bd:#cfe0d6;--in:#e8f1ec;--ti:#1d6fd1;--gr:#1a9c73;--am:#d4920a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#06160f;--card:#0f1f19;--tx:#e6f2ec;--mu:#8ba496;--bd:#24382f;--in:#1a2b23;--ti:#2b8be6;--gr:#59d6ae;--am:#f5b93a}}
+:root[data-theme="dark"]{--bg:#06160f;--card:#0f1f19;--tx:#e6f2ec;--mu:#8ba496;--bd:#24382f;--in:#1a2b23;--ti:#2b8be6;--gr:#59d6ae;--am:#f5b93a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+main{max-width:980px;margin:0 auto;padding:18px 14px 40px}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+h1{margin:0;font-size:1.6rem;color:var(--ti)}
+.sub{margin:2px 0 0;color:var(--mu);font-size:.92rem}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button,.b{font:inherit;font-weight:600;font-size:.9rem;padding:9px 14px;border-radius:10px;cursor:pointer;border:2px solid transparent;text-decoration:none;display:inline-block}
+.b1{background:transparent;color:var(--am);border-color:var(--am)}
+.b2{background:linear-gradient(90deg,#f97316,#f59e0b);color:#fff}
+.b3{background:linear-gradient(90deg,#a855f7,#ec4899);color:#fff}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.filters input,.filters select{padding:11px 12px;border-radius:10px;background:var(--in);color:var(--tx);font:inherit;min-width:0}
+#q{flex:1 1 220px;border:2px solid #8bb6e8}
+#d{border:2px solid var(--gr)}#t{border:2px solid var(--am)}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
+.empty{text-align:center;padding:48px 16px;color:var(--mu)}
+.empty h3{margin:8px 0 4px;color:var(--mu)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.name{font-weight:700;font-size:1.02rem}
+.duty{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--bd);padding:8px 0;font-size:.9rem}
+.duty small{color:var(--mu);display:block}
+.tag{font-size:.75rem;background:var(--in);border-radius:999px;padding:2px 9px;height:fit-content;white-space:nowrap}
+.link{background:none;border:0;color:var(--ti);padding:0;font-size:.82rem;cursor:pointer}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
+.ov.on{display:flex}
+.md{background:var(--card);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:520px;max-height:85%;overflow:auto;padding:18px}
+.md h2{margin:0 0 12px;font-size:1.15rem}
+.md select,.md input,.md textarea{width:100%;padding:10px;margin:4px 0 10px;border-radius:9px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
+.md label{font-size:.85rem;color:var(--mu)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--bd)}
+.act{display:flex;gap:6px}
+.wa{background:#1fa855;color:#fff;padding:7px 11px}.call{background:var(--ti);color:#fff;padding:7px 11px}
+.x{background:var(--in);color:var(--tx)}
+textarea.csv{height:100px;font-size:.8rem}
+.sm{display:none}
+body{-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+input,select,textarea{font-size:16px}
+@media (max-width:640px){
+ main{padding:14px 12px 110px}
+ h1{font-size:1.35rem}
+ .top{display:block}
+ .btns{position:fixed;left:0;right:0;bottom:0;z-index:8;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--bd)}
+ .btns button{padding:8px 4px;font-size:.78rem;line-height:1.25;border-radius:12px;min-height:54px}
+ .lg{display:none}.sm{display:inline}
+ .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+ #q{grid-column:1/-1}
+ .grid{grid-template-columns:1fr}
+ .link{padding:8px 0;font-size:.9rem}
+ .ov{align-items:flex-end;padding:0}
+ .md{max-width:none;border-radius:18px 18px 0 0;max-height:90%;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+ .act a,.wa,.call{padding:10px 14px}
+ .row{align-items:flex-start}
+ .foot{margin-top:18px}
+}
+.foot{text-align:center;color:var(--gr);font-size:.72rem;font-weight:700;margin-top:26px}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div><h1>Duty Lookup</h1><p class="sub">Search, compare &amp; find swap partners <span id="st" style="color:var(--gr);font-weight:700">● Live</span></p></div>
+    <div class="btns">
+      <button class="b1" id="bBoard"><span class="lg">See Posted Swaps</span><span class="sm">📋<br>Posted</span></button>
+      <button class="b2" id="bPost"><span class="lg">Post Swap Request</span><span class="sm">📣<br>Post Swap</span></button>
+      <button class="b3" id="bWiz"><span class="lg">Swap Wizard</span><span class="sm">✨<br>Wizard</span></button>
+    </div>
+  </div>
+  <div class="filters">
+    <input id="q" type="search" placeholder="Search by name..." aria-label="Search by name">
+    <select id="d"><option value="">All Dates</option><option value="10/5/2026">10/5/2026</option><option value="10/6/2026">10/6/2026</option><option value="10/7/2026">10/7/2026</option><option value="10/8/2026">10/8/2026</option><option value="10/9/2026">10/9/2026</option></select>
+    <select id="t"><option value="">All Time Slots</option><option>10:00–13:00</option><option>13:00–16:00</option><option>14:00–17:00</option><option>9:00–12:00</option><option>9:30–11:30</option></select>
+  </div>
+  <div id="list"><div class="grid"><div class="box"><div class="name">MUHAMMAD ALI RAZA</div><div class="duty"><div>10/5/2026 · 9:00–12:00<small>Midterm Examination · Room 101</small><button class="link" data-i="0">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Ms. MADEEHA UZMA</div><div class="duty"><div>10/6/2026 · 10:00–13:00<small>Final Examination · Lab 2</small><button class="link" data-i="1">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Mr. MUHAMMAD TILAL</div><div class="duty"><div>10/7/2026 · 14:00–17:00<small>Quiz · Room 204</small><button class="link" data-i="2">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Mr. SAMI ULLAH</div><div class="duty"><div>10/8/2026 · 9:30–11:30<small>Midterm Examination · Hall A</small><button class="link" data-i="3">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div><div class="box"><div class="name">Ms. SABA MUMTAZ</div><div class="duty"><div>10/9/2026 · 13:00–16:00<small>Final Examination · Hall B</small><button class="link" data-i="4">Find swap partner →</button></div><span class="tag">Invigilator</span></div></div></div></div>
+  <div style="text-align:center;margin-top:22px"><button class="link" id="adminBtn">🔒 Admin</button></div>
+  <section id="adminPanel" hidden="" style="margin-top:14px;color:var(--mu);font-size:.88rem"><div style="display:flex;justify-content:space-between;align-items:center"><b>Admin: upload duty data</b><button class="link" id="lock">Lock</button></div>
+    <p>CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
+    <input type="file" id="file" accept=".csv,text/csv">
+    <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
+    <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
+    <p id="msg"></p>
+  </section>
+  <div class="foot">Developed &amp; idealized by M. Nauman Aman</div>
+</main>
+<div class="ov" id="ov"><div class="md" id="md"></div></div>
+
+<script src="file:///C:/Users/Ayaan/Desktop/Duty%20Lookup_files/firebase-app-compat.js.download"></script>
+<script src="file:///C:/Users/Ayaan/Desktop/Duty%20Lookup_files/firebase-database-compat.js.download"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SAMPLE=`id,name,phone,date,start,end,exam,venue,role
+S1,Ahmed Ali,923001110001,2026-10-12,09:00,12:00,Anatomy Paper 1,Hall A,Chief Invigilator
+S1,Ahmed Ali,923001110001,2026-10-15,13:00,16:00,Physiology Paper 2,Hall B,Invigilator
+S2,Sara Khan,923001110002,2026-10-12,09:00,12:00,Anatomy Paper 1,Hall A,Invigilator
+S2,Sara Khan,923001110002,2026-10-19,09:00,11:30,Pharmacology,Room 204,Reliever
+S3,Omar Nasser,923001110003,2026-10-14,14:00,17:00,Pathology Paper 1,Hall C,Invigilator
+S4,Hina Malik,923001110004,2026-10-16,09:00,12:00,Biochemistry,Hall A,Invigilator`;
+const ld=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let data=ld('duty2'),swaps=ld('swaps2');
+const key=r=>r.id||r.name, slot=r=>r.start+'–'+r.end;
+const fmt=d=>{const x=new Date(d+'T00:00:00');return isNaN(x)?d:x.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})};
+const ph=p=>(p||'').replace(/\D/g,'');
+function parse(t){const L=t.trim().split(/\r?\n/).map(l=>l.split(',').map(c=>c.trim()));const h=L.shift().map(x=>x.toLowerCase());
+  return L.filter(r=>r.length>2).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]||''])))}
+function staff(){return [...new Map(data.map(r=>[key(r),r])).values()].sort((a,b)=>a.name.localeCompare(b.name))}
+function free(duty){const busy=new Set(data.filter(x=>x.date===duty.date&&x.start<duty.end&&duty.start<x.end).map(key));
+  return staff().filter(p=>!busy.has(key(p)))}
+function acts(p,msg){const n=ph(p.phone);return n?`<span class="act"><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a></span>`:'<small>No phone</small>'}
+const swapMsg=(to,me,r)=>`Hi ${to}, this is ${me}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
+
+function fillFilters(){
+  const ds=[...new Set(data.map(r=>r.date))].sort(), ts=[...new Set(data.map(slot))].sort();
+  const cd=$('d').value,ct=$('t').value;
+  $('d').innerHTML='<option value="">All Dates</option>'+ds.map(d=>`<option value="${esc(d)}">${esc(fmt(d))}</option>`).join('');
+  $('t').innerHTML='<option value="">All Time Slots</option>'+ts.map(t=>`<option>${esc(t)}</option>`).join('');
+  $('d').value=cd;$('t').value=ct;
+}
+function render(){
+  const L=$('list');
+  if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
+  const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value;
+  const rows=data.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t));
+  const by=new Map();rows.forEach(r=>{const k=key(r);if(!by.has(k))by.set(k,[]);by.get(k).push(r)});
+  if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3></div>';return}
+  L.innerHTML='<div class="grid">'+[...by.values()].map(rs=>`<div class="box"><div class="name">${esc(rs[0].name)}</div>`+
+    rs.sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).map(r=>`<div class="duty"><div>${esc(fmt(r.date))} · ${esc(slot(r))}<small>${esc(r.exam)} · ${esc(r.venue)}</small><button class="link" data-i="${data.indexOf(r)}">Find swap partner →</button></div><span class="tag">${esc(r.role)}</span></div>`).join('')+'</div>').join('')+'</div>';
+  L.querySelectorAll('.link').forEach(b=>b.onclick=()=>partners(+b.dataset.i));
+}
+function open(html){$('md').innerHTML=html+'<div style="margin-top:12px"><button class="x" id="cl">Close</button></div>';$('ov').classList.add('on');$('cl').onclick=close}
+function close(){$('ov').classList.remove('on')}
+$('ov').onclick=e=>{if(e.target.id==='ov')close()};
+const dutyOpts=k=>data.map((r,i)=>[r,i]).filter(([r])=>key(r)===k).map(([r,i])=>`<option value="${i}">${esc(fmt(r.date))} ${esc(slot(r))} — ${esc(r.exam)}</option>`).join('');
+const staffOpts=()=>staff().map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('');
+function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has not been uploaded yet.</p>');return true}}
+
+function partners(i){const r=data[i];
+  open(`<h2>Swap partners</h2><p style="color:var(--mu);font-size:.9rem">${esc(r.name)} · ${esc(fmt(r.date))} ${esc(slot(r))} · ${esc(r.exam)}<br>Staff free at this time:</p>`+
+    (free(r).filter(p=>key(p)!==key(r)).map(p=>`<div class="row"><b>${esc(p.name)}</b>${acts(p,swapMsg(p.name,r.name,r))}</div>`).join('')||'<p>No one is free at this time.</p>'))}
+
+function wizard(){if(needData())return;
+  open(`<h2>✨ Swap Wizard</h2><label>1. Who are you?</label><select id="w1"><option value="">Select your name</option>${staffOpts()}</select>
+  <div id="w2"></div><div id="w3"></div>`);
+  $('w1').onchange=()=>{const k=$('w1').value;$('w3').innerHTML='';
+    $('w2').innerHTML=k?`<label>2. Which duty do you want to swap?</label><select id="wd"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
+    if(k)$('wd').onchange=()=>{const v=$('wd').value;if(v==='')return;const r=data[+v];
+      $('w3').innerHTML='<label>3. Contact someone who is free</label>'+(free(r).filter(p=>key(p)!==k).map(p=>`<div class="row"><b>${esc(p.name)}</b>${acts(p,swapMsg(p.name,r.name,r))}</div>`).join('')||'<p>No one is free at this time.</p>')+
+        `<button class="b2" style="margin-top:10px" id="wp">Also post to Swap Board</button>`;
+      $('wp').onclick=()=>post(+v,'')}}}
+
+function post(i,note){const r=data[i];
+  const s={id:Date.now(),k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,note:note||''};
+  swaps.unshift(s);sv('swaps2',swaps);board();cloud('swaps/'+s.id,s)}
+function postForm(){if(needData())return;
+  open(`<h2>📣 Post Swap Request</h2><label>Your name</label><select id="p1"><option value="">Select your name</option>${staffOpts()}</select>
+  <div id="p2"></div><label>Note (optional)</label><textarea id="pn" rows="2" placeholder="e.g. Can swap for any morning slot"></textarea><button class="b2" id="ps">Post request</button>`);
+  $('p1').onchange=()=>{const k=$('p1').value;$('p2').innerHTML=k?`<label>Duty to swap</label><select id="pd">${dutyOpts(k)}</select>`:''};
+  $('ps').onclick=()=>{const v=$('pd')&&$('pd').value;if(!v)return;post(+v,$('pn').value)}}
+function board(){
+  open('<h2>📋 Posted Swaps</h2>'+(swaps.length?swaps.map(s=>{const msg=`Hi ${s.name}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
+    return `<div class="row"><div><b>${esc(s.name)}</b><br><small>${esc(fmt(s.date))} · ${esc(s.start)}–${esc(s.end)} · ${esc(s.exam)} · ${esc(s.venue)}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
+    <div>${acts(s,msg)}<button class="link" data-r="${s.id}">Remove</button></div></div>`}).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts are shared with all staff.':'Posts are saved on this device only.')+'</p>');
+  $('md').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);board();cloud('swaps/'+b.dataset.r,null)})}
+
+function setData(d){data=d;sv('duty2',d);fillFilters();render()}
+$('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)};
+$('sample').onclick=()=>{const d=parse(SAMPLE);setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
+$('clear').onclick=()=>{if(!confirm('Clear the roster and all posted swaps for everyone?'))return;swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'};
+['q','d','t'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
+$('bBoard').onclick=board;$('bPost').onclick=postForm;$('bWiz').onclick=wizard;
+
+const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+$('adminBtn').onclick=()=>{
+  open('<h2>🔒 Admin access</h2><label>Password</label><input id="pw" type="password" autocomplete="off"><p id="pe" style="color:#e5484d;margin:0 0 8px"></p><button class="b2" id="pg">Unlock</button>');
+  const go=async()=>{let ok=false;try{ok=(await sha($('pw').value))===PH}catch(e){}
+    if(ok){close();$('adminPanel').hidden=false;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
+    else $('pe').textContent='Incorrect password.'};
+  $('pg').onclick=go;$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('pw').focus()};
+$('lock').onclick=()=>{$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
+const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
+const FBROOT='duty_lookup/';let fbDb=null,fbOK=false;
+function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=>alert('Cloud save failed: '+e.message))}
+try{if(window.firebase){
+  firebase.initializeApp(FBCFG);fbDb=firebase.database();
+  fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
+  fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('duty2',data);fillFilters();render()},e=>console.warn(e));
+  fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);
+    if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps'))board()},e=>console.warn(e));
+}}catch(e){console.warn('Firebase unavailable, using local mode',e)}
+let dip;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('bInst').hidden=false});
+$('bInst').onclick=async()=>{if(!dip)return;dip.prompt();await dip.userChoice;dip=null;$('bInst').hidden=true};
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+fillFilters();render();
+</script>
+
+
+</body></html>
