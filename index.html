@@ -124,6 +124,17 @@ textarea.csv{height:100px;font-size:.8rem}
 .sm{display:none}
 input,select,textarea{font-size:16px}
 .fl{display:flex;justify-content:center;gap:22px;margin-top:28px}
+.rp{flex-basis:100%;background:var(--soft);border-radius:10px;padding:8px 12px;font-size:.85rem;color:var(--tx)}
+.rp b{display:block;color:var(--ti);margin-bottom:2px}
+.rp div{padding:2px 0}.rp div span{color:var(--mu);font-size:.8rem}
+.rp.none{color:var(--mu)}
+.rb{padding:6px 0;border-top:1px solid var(--bd)}
+.rb:first-of-type{border-top:0}
+.rb span{color:var(--mu);font-size:.78rem}
+.rb div{margin-top:2px;white-space:pre-wrap;word-break:break-word}
+.rf{flex-basis:100%;display:grid;gap:8px}
+.rf select,.rf textarea{margin:0!important}
+
 #adminPanel{margin-top:14px;color:var(--mu);font-size:.88rem}
 
 @media (max-width:640px){
@@ -302,11 +313,28 @@ function postForm(){if(needData())return;
   <div id="p2"></div><label>Note (optional)</label><textarea id="pn" rows="2" placeholder="e.g. Can swap for any morning slot"></textarea><button class="b2" id="ps">Post request</button>`);
   $('p1').onchange=()=>{const k=$('p1').value;$('p2').innerHTML=k?`<label>Duty to swap</label><select id="pd">${dutyOpts(k)}</select>`:''};
   $('ps').onclick=()=>{const v=$('pd')&&$('pd').value;if(!v)return;post(+v,$('pn').value)}}
+const rt=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+let me='';
+const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
+function swapRow(s){
+  const n=ph(s.phone),reps=Object.entries(s.replies||{}).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>a.at-b.at);
+  const wm=`Hi ${s.name}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
+  const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
+  return `<div class="row"><div><b>${esc(s.name)}</b><br><small>${esc(fmt(s.date))} · ${esc(s.start)}–${esc(s.end)} · ${esc(s.exam)} · ${esc(s.venue)}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
+  <div class="act"><button class="b wa" data-rp="${s.id}">Reply</button>${n?`<a class="b x" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
+  <div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'No replies yet'}</div>
+  <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`}
 function board(){
-  open('<h2>📋 Posted Swaps</h2>'+(swaps.length?swaps.map(s=>{const msg=`Hi ${s.name}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
-    return `<div class="row"><div><b>${esc(s.name)}</b><br><small>${esc(fmt(s.date))} · ${esc(s.start)}–${esc(s.end)} · ${esc(s.exam)} · ${esc(s.venue)}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
-    <div>${acts(s,msg)}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div></div>`}).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
-  $('md').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);board();cloud('swaps/'+b.dataset.r,null)})}
+  open('<h2>📋 Posted Swaps</h2>'+(swaps.length?swaps.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
+  const M=$('md');
+  M.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{const f=$('rf'+b.dataset.rp);f.hidden=!f.hidden;if(!f.hidden)f.querySelector('textarea').focus()});
+  M.querySelectorAll('[data-ps]').forEach(b=>b.onclick=()=>{const f=b.closest('.rf'),sel=f.querySelector('select'),ta=f.querySelector('textarea'),t=ta.value.trim();
+    if(!sel.value){sel.focus();return}if(!t){ta.focus();return}
+    const s=swaps.find(x=>x.id==b.dataset.ps),p=staff().find(x=>key(x)===sel.value);if(!s||!p)return;me=sel.value;
+    const id='r'+Date.now()+Math.floor(Math.random()*1000),rep={name:p.name,msg:t.slice(0,500),at:Date.now(),via:'App'};
+    (s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep);board()});
+  M.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const[sid,rid]=b.dataset.dr.split('|'),s=swaps.find(x=>x.id==sid);if(!s||!s.replies)return;delete s.replies[rid];sv('swaps2',swaps);board();cloud('swaps/'+sid+'/replies/'+rid,null)});
+  M.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);board();cloud('swaps/'+b.dataset.r,null)})}
 
 function setData(d){data=d;sv('duty2',d);fillFilters();render()}
 $('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
@@ -343,7 +371,7 @@ try{if(window.firebase){
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);
-    if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps'))board()},e=>console.warn(e));
+    if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps')&&![...$('md').querySelectorAll('textarea')].some(t=>t.value))board()},e=>console.warn(e));
 }}catch(e){console.warn('Firebase unavailable, using local mode',e)}
 let dip;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('bInst').hidden=false});
 $('bInst').onclick=async()=>{if(!dip)return;dip.prompt();await dip.userChoice;dip=null;$('bInst').hidden=true};
