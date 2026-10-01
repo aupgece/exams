@@ -169,8 +169,7 @@ input,select,textarea{font-size:16px}
     <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
-      <button class="b2" id="bPost"><span class="lg">📣 Post Swap Request<br><small>Ask others to cover your duty</small></span><span class="sm">📣<br>Post Swap</span></button>
-      <button class="b3" id="bWiz"><span class="lg">✨ Swap Wizard<br><small>Find who is free, step by step</small></span><span class="sm">✨<br>Wizard</span></button>
+      <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Find who is free, or post to everyone</small></span><span class="sm">🔄<br>Swap Duty</span></button>
       <button class="b1" id="bInst" hidden>Install app</button>
     </div>
 </div></header>
@@ -246,7 +245,7 @@ function fillFilters(){
 }
 let view='c',cur=[],groups=[];
 const when=r=>r.date+r.start;
-const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">Find swap partner</button><button class="link fs" data-c="${i}">Add to calendar</button></div>`;
+const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">Swap this duty</button><button class="link fs" data-c="${i}">Add to calendar</button></div>`;
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
   return `<div class="tk"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
@@ -272,7 +271,7 @@ function render(){
     `<div class="tkw">${ticket(rs[0])}</div></div>`).join('')+'</div>';
 }
 const listEl=$('list');
-listEl.addEventListener('click',e=>{const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)partners(+b.dataset.i);else ics(+b.dataset.c)});
+listEl.addEventListener('click',e=>{const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)swapFlow(+b.dataset.i);else ics(+b.dataset.c)});
 listEl.addEventListener('change',e=>{const s=e.target.closest('select[data-g]');if(!s)return;const rs=groups[+s.dataset.g];if(!rs)return;
   const tr=s.closest('tr');
   if(tr){const r=rs[+s.value];tr.querySelector('.c-ex').innerHTML=esc(r.exam)+'<br><span class="n">'+esc(r.venue)+'</span>';
@@ -291,28 +290,23 @@ const dutyOpts=k=>data.map((r,i)=>[r,i]).filter(([r])=>key(r)===k).map(([r,i])=>
 const staffOpts=()=>staff().map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('');
 function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has not been uploaded yet.</p>');return true}}
 
-function partners(i){const r=data[i];
-  open(`<h2>Swap partners</h2><p style="color:var(--mu);font-size:.9rem">${esc(r.name)} · ${esc(fmt(r.date))} ${esc(slot(r))} · ${esc(r.exam)}<br>Staff free at this time:</p>`+
-    (free(r).filter(p=>key(p)!==key(r)).map(p=>`<div class="row"><b>${esc(p.name)}</b>${acts(p,swapMsg(p.name,r.name,r))}</div>`).join('')||'<p>No one is free at this time.</p>'))}
-
-function wizard(){if(needData())return;
-  open(`<h2>✨ Swap Wizard</h2><label>1. Who are you?</label><select id="w1"><option value="">Select your name</option>${staffOpts()}</select>
-  <div id="w2"></div><div id="w3"></div>`);
-  $('w1').onchange=()=>{const k=$('w1').value;$('w3').innerHTML='';
-    $('w2').innerHTML=k?`<label>2. Which duty do you want to swap?</label><select id="wd"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
-    if(k)$('wd').onchange=()=>{const v=$('wd').value;if(v==='')return;const r=data[+v];
-      $('w3').innerHTML='<label>3. Contact someone who is free</label>'+(free(r).filter(p=>key(p)!==k).map(p=>`<div class="row"><b>${esc(p.name)}</b>${acts(p,swapMsg(p.name,r.name,r))}</div>`).join('')||'<p>No one is free at this time.</p>')+
-        `<button class="b2" style="margin-top:10px" id="wp">Also post to Swap Board</button>`;
-      $('wp').onclick=()=>post(+v,'')}}}
-
 function post(i,note){const r=data[i];
   const s={id:Date.now(),k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,note:note||''};
   swaps.unshift(s);sv('swaps2',swaps);board();cloud('swaps/'+s.id,s)}
-function postForm(){if(needData())return;
-  open(`<h2>📣 Post Swap Request</h2><label>Your name</label><select id="p1"><option value="">Select your name</option>${staffOpts()}</select>
-  <div id="p2"></div><label>Note (optional)</label><textarea id="pn" rows="2" placeholder="e.g. Can swap for any morning slot"></textarea><button class="b2" id="ps">Post request</button>`);
-  $('p1').onchange=()=>{const k=$('p1').value;$('p2').innerHTML=k?`<label>Duty to swap</label><select id="pd">${dutyOpts(k)}</select>`:''};
-  $('ps').onclick=()=>{const v=$('pd')&&$('pd').value;if(!v)return;post(+v,$('pn').value)}}
+function swapFlow(pre){if(needData())return;
+  const r0=pre!==undefined?data[pre]:null;
+  open(`<h2>🔄 Swap my duty</h2><label>1. Who are you?</label><select id="w1"><option value="">Select your name</option>${staffOpts()}</select><div id="w2"></div><div id="w3"></div>`);
+  const show=()=>{const v=$('wd').value;if(v==='')return;const r=data[+v],k=key(r);
+    const list=free(r).filter(p=>key(p)!==k);
+    $('w3').innerHTML='<label>3. Ask someone who is free</label>'+(list.map(p=>`<div class="row"><b>${esc(p.name)}</b>${acts(p,swapMsg(p.name,r.name,r))}</div>`).join('')||'<p>No one is free at this time.</p>')+
+      `<div style="border-top:1px solid var(--bd);margin-top:12px;padding-top:12px"><label>Or ask everyone: post to the Swap Board</label><textarea id="pn" rows="2" placeholder="Note (optional), e.g. can swap for any morning slot"></textarea><button class="b b2" id="wp" style="width:100%">Post to board for everyone</button></div>`;
+    $('wp').onclick=()=>{if(swaps.some(s=>s.k===k&&s.date===r.date&&s.start===r.start&&s.end===r.end)){board();return}post(+v,$('pn').value)}};
+  const pick=()=>{const k=$('w1').value;$('w3').innerHTML='';
+    $('w2').innerHTML=k?`<label>2. Which duty do you want to swap?</label><select id="wd"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
+    if(k)$('wd').onchange=show};
+  $('w1').onchange=pick;
+  if(r0){$('w1').value=key(r0);pick();$('wd').value=String(pre);show()}}
+
 const rt=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 let me='';
 const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
@@ -352,7 +346,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navi
 let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
 function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
 $('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
-$('bBoard').onclick=board;$('bPost').onclick=postForm;$('bWiz').onclick=wizard;
+$('bBoard').onclick=board;$('bSwap').onclick=()=>swapFlow();
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
