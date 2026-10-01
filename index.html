@@ -2,7 +2,7 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>EE Exams (Duty Lookup)</title>
+<title>ECE Exam</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png?v=2">
 <link rel="apple-touch-icon" href="icon-192.png?v=2">
@@ -90,6 +90,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .tm{font-weight:800;font-size:1rem}
 .ex{font-size:.92rem;margin-top:2px}
 .vn{color:var(--mu);font-size:.85rem;margin-bottom:6px}
+@keyframes blk{50%{opacity:.3}}
+#pendBar{position:sticky;top:0;z-index:8;background:var(--gold);color:#3b2a00;font-weight:800;text-align:center;padding:10px 12px;cursor:pointer;animation:blk 1s steps(2,start) infinite}
+#bBoard.blink{outline:3px solid var(--gold);animation:blk 1s steps(2,start) infinite}
+@media (prefers-reduced-motion:reduce){#pendBar,#bBoard.blink{animation:none}}
+.tag.tfl{background:var(--wa);color:#fff}
+.pf{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.pf>div{min-width:0}.pf .full{grid-column:1/-1}
 .tag{display:inline-block;font-size:.75rem;font-weight:700;background:var(--soft);color:var(--ti);border-radius:999px;padding:3px 10px;white-space:nowrap}
 .link{background:none;border:0;color:var(--ti);padding:0;min-height:0;font-size:.85rem;font-weight:600;cursor:pointer}
 .dg{color:var(--dg)}
@@ -164,12 +170,13 @@ input,select,textarea{font-size:16px}
 </style>
 </head>
 <body>
+<div id="pendBar" hidden>🔔 <span id="pendTx"></span></div>
 <header class="bar"><div class="wrap">
     <div class="ttl"><img class="logo" src="icon-192.png?v=2" alt="ECE Exam" width="48" height="48" onerror="this.hidden=true"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
     <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
-      <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Find who is free, or post to everyone</small></span><span class="sm">🔄<br>Swap Duty</span></button>
+      <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Post a swap request</small></span><span class="sm">🔄<br>Swap Duty</span></button>
       <button class="b1" id="bStandby"><span class="lg">🆘 Request Standby Invigilator<br><small>Ask Mr. Sharoze (DEC Member)</small></span><span class="sm">🆘<br>Standby</span></button>
       <button class="b1" id="bInst" hidden>Install app</button>
     </div>
@@ -199,6 +206,8 @@ input,select,textarea{font-size:16px}
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
+    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
+    <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
   </section>
 </main>
 <div class="ov" id="ov"><div class="md" id="md"></div></div>
@@ -273,7 +282,7 @@ function render(){
     `<div class="tkw">${ticket(rs[0])}</div></div>`).join('')+'</div>';
 }
 const listEl=$('list');
-listEl.addEventListener('click',e=>{const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)swapFlow(+b.dataset.i);else ics(+b.dataset.c)});
+listEl.addEventListener('click',e=>{const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
 listEl.addEventListener('change',e=>{const s=e.target.closest('select[data-g]');if(!s)return;const rs=groups[+s.dataset.g];if(!rs)return;
   const tr=s.closest('tr');
   if(tr){const r=rs[+s.value];tr.querySelector('.c-ex').innerHTML=esc(r.exam)+'<br><span class="n">'+esc(r.venue)+'</span>';
@@ -293,7 +302,7 @@ const staffOpts=()=>staff().map(p=>`<option value="${esc(key(p))}">${esc(p.name)
 function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has not been uploaded yet.</p>');return true}}
 
 function post(i,note,quiet){const r=data[i];
-  const s={id:Date.now(),k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,note:note||''};
+  const s={id:Date.now(),k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,note:note||'',approved:false};
   swaps.unshift(s);sv('swaps2',swaps);if(!quiet)board();cloud('swaps/'+s.id,s)}
 const SHAROZE_PHONE='';
 const standbyMsg=(me,r)=>`Hi Sharoze, this is ${nt(me)}. I need a standby invigilator for my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue}). Could you please arrange one? Thank you!`;
@@ -304,35 +313,66 @@ function standbyFlow(){if(needData())return;
     if(k)$('sy2s').onchange=()=>{const v=$('sy2s').value;if(v===''){$('sy3').innerHTML='';return}
       const r=data[+v],sp=SHAROZE_PHONE||(staff().find(p=>/sharoze/i.test(p.name))||{}).phone||'';
       $('sy3').innerHTML='<label>3. Send request</label>'+`<div class="row"><b>Sharoze</b> <small>DEC Member</small>${acts({phone:sp},standbyMsg(r.name,r))}</div>`}}}
-function swapFlow(pre){if(needData())return;
-  const r0=pre!==undefined?data[pre]:null;
-  open(`<h2>🔄 Swap my duty</h2><label>1. Who are you?</label><select id="w1"><option value="">Select your name</option>${staffOpts()}</select><div id="w2"></div><div id="w3"></div>`);
-  const show=()=>{const v=$('wd').value;if(v==='')return;const r=data[+v],k=key(r);
-    const list=free(r).filter(p=>key(p)!==k);
-    $('w3').innerHTML='<label>3. Ask someone who is free</label>'+(list.map(p=>`<div class="row"><b>${esc(p.name)}</b>${acts(p,swapMsg(p.name,r.name,r))}</div>`).join('')||'<p>No one is free at this time.</p>')+
-      `<div style="border-top:1px solid var(--bd);margin-top:12px;padding-top:12px"><label>Or ask everyone: post to the Swap Board</label><textarea id="pn" rows="2" placeholder="Note (optional), e.g. can swap for any morning slot"></textarea><button class="b b2" id="wp" style="width:100%">Post to board for everyone</button></div>`;
-    $('w3').querySelectorAll('a.wa').forEach(a=>a.addEventListener('click',()=>{if(!swaps.some(s=>s.k===k&&s.date===r.date&&s.start===r.start&&s.end===r.end))post(+v,$('pn').value,true)}));
-    $('wp').onclick=()=>{if(swaps.some(s=>s.k===k&&s.date===r.date&&s.start===r.start&&s.end===r.end)){board();return}post(+v,$('pn').value)}};
-  const pick=()=>{const k=$('w1').value;$('w3').innerHTML='';
-    $('w2').innerHTML=k?`<label>2. Which duty do you want to swap?</label><select id="wd"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
-    if(k)$('wd').onchange=show};
-  $('w1').onchange=pick;
-  if(r0){$('w1').value=key(r0);pick();$('wd').value=String(pre);show()}}
-
+const NTFY_TOPIC='ece-swap-bpzp5ysiw';
+function notifyAdmin(o){if(!NTFY_TOPIC)return;
+  try{fetch('https://ntfy.sh/'+NTFY_TOPIC,{method:'POST',body:'New swap request awaiting approval: '+o.name+', '+fmt(o.date)+(o.start?' '+[o.start,o.end].filter(Boolean).join('-'):''),headers:{Title:'Swap request pending',Priority:'high',Tags:'bell',Click:location.origin+location.pathname}}).catch(()=>{})}catch(e){}}
+// Admin WhatsApp number (digits only, with country code, e.g. 923001234567). Leave blank to pick the contact in WhatsApp.
+const ADMIN_PHONE='';
+let adminPh=ADMIN_PHONE;try{adminPh=localStorage.getItem('adminPh')||ADMIN_PHONE}catch(e){}
+const adminMsg=o=>`*🔔 Swap Approval Request*\n\n*Requested by:* ${nt(o.name)}${o.role?' ('+o.role+')':''}\n*Date:* ${fmt(o.date)}\n*Time:* ${[o.start,o.end].filter(Boolean).join('–')||'-'}\n${o.exam?'*Exam:* '+o.exam+'\n':''}${o.venue?'*Venue:* '+o.venue+'\n':''}*Mobile:* ${o.phone}${o.note?'\n*Reason:* '+o.note:''}\n\n*Status:* ⏳ Pending your approval\nPlease open the app and tap ✓ Approve:\n${location.origin+location.pathname}`;
+const adminLink=o=>'https://wa.me/'+ph(adminPh)+'?text='+encodeURIComponent(adminMsg(o));
+function sentScreen(o,dup){
+  open(`<h2>✅ Request ${dup?'already posted':'sent'}</h2><p>Your swap request is saved and will appear in Posted Swaps once the admin approves it.</p><p style="color:var(--mu);font-size:.9rem">Tap below to send the approval request straight to the admin's WhatsApp. The message is ready — just tap <b>Send</b>.</p><a class="b wa" id="nwa" target="_blank" rel="noopener" href="${esc(adminLink(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}
+function postForm(pre){
+  const r0=pre!==undefined?data[pre]:null,v=x=>esc(x||''),sel=r0?key(r0):me;
+  const ns=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===sel?' selected':''}>${esc(p.name)}</option>`).join('');
+  open(`<h2>📣 Post a Swap Request</h2><p style="color:var(--mu)">Pick your name and duty — the details fill in automatically. Colleagues can then contact you via WhatsApp/Call.</p><div class="pf"><div class="full"><label>Your name *</label><select id="pfn"><option value="">Select your name</option>${ns}<option value="__o">Other (type name)</option></select><input id="pf1" placeholder="Type your full name" hidden></div><div class="full" id="pfdw" hidden><label>Your duty *</label><select id="pfd"></select></div><div id="pfinfo" class="full rp" hidden></div><div><label>Mobile *</label><input id="pf2" type="tel" placeholder="+92 3XX XXXXXXX"></div><div><label>Duty date *</label><input id="pf3" placeholder="e.g. 02-Jun-2026"></div><div><label>Time slot *</label><input id="pf4" placeholder="9:00-12:00"></div><div><label>Room (optional)</label><input id="pf5" placeholder="R-101"></div><div class="full"><label>Notes (optional)</label><textarea id="pf6" rows="3" maxlength="500" placeholder="Why you need a swap, what you can offer in return..."></textarea></div></div><button class="b b2" id="pfp" style="width:100%">Post Request</button><button class="x" id="pfc" style="width:100%;margin-top:8px">Cancel</button>`);
+  $('cl').remove();$('pfc').onclick=close;
+  let cd=null;
+  const fillDuty=r=>{cd=r||null;if(!r){$('pfinfo').hidden=true;return}
+    $('pf2').value=r.phone||$('pf2').value;$('pf3').value=r.date;$('pf4').value=slot(r);$('pf5').value=r.venue||'';
+    $('pfinfo').hidden=false;$('pfinfo').innerHTML=`<b>${esc(r.name)}</b>${esc([fmt(r.date),slot(r)].join(', '))}<br>${esc([r.exam,r.venue,r.role].filter(Boolean).join(' · '))}`};
+  const pickName=()=>{const k=$('pfn').value,o=k==='__o';$('pf1').hidden=!o;$('pfdw').hidden=true;cd=null;$('pfinfo').hidden=true;
+    if(o){['pf2','pf3','pf4','pf5'].forEach(i=>$(i).value='');$('pf1').focus();return}
+    if(!k)return;me=k;
+    const rs=data.filter(r=>key(r)===k);if(!rs.length)return;
+    $('pf2').value=rs[0].phone||'';
+    $('pfd').innerHTML=(rs.length>1?'<option value="">Select duty</option>':'')+rs.map(r=>`<option value="${data.indexOf(r)}">${esc(fmt(r.date))} ${esc(slot(r))} — ${esc(r.exam)}</option>`).join('');
+    $('pfdw').hidden=false;
+    const want=r0&&key(r0)===k?data.indexOf(r0):(rs.length===1?data.indexOf(rs[0]):-1);
+    if(want>=0){$('pfd').value=want;fillDuty(data[want])}else{['pf3','pf4','pf5'].forEach(i=>$(i).value='')}};
+  $('pfn').onchange=pickName;$('pfd').onchange=()=>{const x=$('pfd').value;fillDuty(x===''?null:data[+x])};
+  if(sel&&$('pfn').value===sel)pickName();
+  $('pfp').onclick=()=>{
+    const g=i=>$('pf'+i).value.trim(),k=$('pfn').value,p=k&&k!=='__o'?staff().find(x=>key(x)===k):null,name=p?p.name:g(1),phone=g(2),date=g(3),sl=g(4);
+    if(!k){$('pfn').focus();return}
+    for(const[i,val]of[[1,name],[2,ph(phone).length>=10?phone:''],[3,date],[4,sl]])if(!val){$('pf'+i).focus();return}
+    const[st,en]=sl.split(/\s*(?:-|–|—|\bto\b)\s*/),same=cd&&date===cd.date&&sl===slot(cd);
+    const o={id:Date.now(),k:p?key(p):'',name,phone,date,start:(st||'').trim(),end:(en||'').trim(),exam:same?cd.exam:'',venue:g(5),role:same?(cd.role||''):'',note:g(6),approved:false};
+    const dup=swaps.some(x=>x.name===o.name&&x.date===o.date&&x.start===o.start&&x.end===o.end);
+    if(!dup){swaps.unshift(o);sv('swaps2',swaps);cloud('swaps/'+o.id,o);notifyAdmin(o)}
+    sentScreen(o,dup)}}
 const rt=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 let me='';
 const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
 function swapRow(s){
+  const pend=s.approved===false;
   const n=ph(s.phone),reps=Object.entries(s.replies||{}).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>a.at-b.at);
-  const wm=`Hi ${nt(s.name)}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
+  const wm=`Hi ${nt(s.name)}, I saw your swap request for ${[fmt(s.date),[s.start,s.end].filter(Boolean).join('–')].filter(Boolean).join(', ')}${s.exam?' ('+s.exam+')':''}. I can help — let me know!`;
   const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
-  return `<div class="row"><div><b>${esc(s.name)}</b><br><small>${esc(fmt(s.date))} · ${esc(s.start)}–${esc(s.end)} · ${esc(s.exam)} · ${esc(s.venue)}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
-  <div class="act"><button class="b wa" data-rp="${s.id}">Reply</button>${n?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
+  const h=`<div class="row"><div><b>${esc(s.name)}</b> <span class="tag${s.status==='filled'?' tfl':''}">${pend?'⏳ Pending approval':s.status==='filled'?'✓ Filled':'Open'}</span><br>${s.status==='filled'?`<small>Taken by ${esc(s.takenBy)} · ${esc(rt(s.takenAt))}</small><br>`:''}<small>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
+  <div class="act">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${pend||s.status==='filled'?'':`<button class="b b2" data-tk="${s.id}">✓ I'll Take It</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
   <div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'No replies yet'}</div>
-  <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`}
+  <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`;
+  return pend?h.split('\n  <div class="rp')[0]+'</div>':h}
+function updPend(){const n=swaps.filter(s=>s.approved===false).length;
+  $('pendBar').hidden=n<1;$('bBoard').classList.toggle('blink',isAdmin&&n>0);
+  if(n)$('pendTx').textContent=n+' swap request'+(n>1?'s':'')+' awaiting admin approval'+(isAdmin?' — tap to review':' — admin, tap to log in')}
 function board(){
-  open('<h2>📋 Posted Swaps</h2>'+(swaps.length?swaps.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
-  const M=$('md');
+  updPend();
+  const vis=(isAdmin?swaps:swaps.filter(s=>s.approved!==false)).slice().sort((a,b)=>(b.approved===false)-(a.approved===false));
+  open('<h2>📋 Posted Swaps</h2><button class="b b2" id="bpost" style="width:100%;margin-bottom:8px">➕ Post a swap request</button>'+(vis.length?vis.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
+  const M=$('md');$('bpost').onclick=()=>postForm();
   M.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{const f=$('rf'+b.dataset.rp);f.hidden=!f.hidden;if(!f.hidden)f.querySelector('textarea').focus()});
   M.querySelectorAll('.rf select').forEach(x=>x.onchange=()=>{me=x.value});
   M.querySelectorAll('[data-wa]').forEach(a=>a.addEventListener('click',e=>{
@@ -342,6 +382,14 @@ function board(){
     const id='wa_'+key(p).replace(/[^\w]/g,'_');
     if(!(s.replies&&s.replies[id])){const rep={name:p.name,at:Date.now(),via:'WhatsApp'};(s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep)}
     setTimeout(board,400)}));
+  M.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.ap);if(!s)return;s.approved=true;sv('swaps2',swaps);cloud('swaps/'+s.id+'/approved',true);board()});
+  M.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{
+    const s=swaps.find(x=>x.id==b.dataset.tk),p=staff().find(x=>key(x)===me);if(!s)return;
+    if(!p){const f=$('rf'+s.id);f.hidden=false;f.querySelector('select').focus();alert("Select your name first, then tap I'll Take It again.");return}
+    if(key(p)===s.k){alert('You cannot take your own swap.');return}
+    if(!confirm('Take over this duty from '+nt(s.name)+'?'))return;
+    s.status='filled';s.takenBy=p.name;s.takenAt=Date.now();sv('swaps2',swaps);
+    cloud('swaps/'+s.id+'/status','filled');cloud('swaps/'+s.id+'/takenBy',p.name);cloud('swaps/'+s.id+'/takenAt',s.takenAt);board()});
   M.querySelectorAll('[data-ps]').forEach(b=>b.onclick=()=>{const f=b.closest('.rf'),sel=f.querySelector('select'),ta=f.querySelector('textarea'),t=ta.value.trim();
     if(!sel.value){sel.focus();return}if(!t){ta.focus();return}
     const s=swaps.find(x=>x.id==b.dataset.ps),p=staff().find(x=>key(x)===sel.value);if(!s||!p)return;me=sel.value;
@@ -366,17 +414,18 @@ document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navi
 let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
 function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
 $('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
-$('bBoard').onclick=board;$('bSwap').onclick=()=>swapFlow();$('bStandby').onclick=standbyFlow;
+$('pendBar').onclick=()=>isAdmin?board():$('adminBtn').click();$('bBoard').onclick=board;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 $('adminBtn').onclick=()=>{
   open('<h2>🔒 Admin access</h2><label>Password</label><input id="pw" type="password" autocomplete="off"><p id="pe" style="color:var(--dg);margin:0 0 8px"></p><button class="b2" id="pg">Unlock</button>');
   const go=async()=>{let ok=false;try{ok=(await sha($('pw').value))===PH}catch(e){}
-    if(ok){isAdmin=true;close();$('adminPanel').hidden=false;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
+    if(ok){isAdmin=true;updPend();close();$('adminPanel').hidden=false;$('admPh').value=adminPh;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
     else $('pe').textContent='Incorrect password.'};
   $('pg').onclick=go;$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('pw').focus()};
-$('lock').onclick=()=>{isAdmin=false;$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
+$('admSave').onclick=()=>{const n=ph($('admPh').value);if(n.length<10){$('admMsg').textContent='Enter number with country code, e.g. 923001234567';return}adminPh=n;try{localStorage.setItem('adminPh',n)}catch(e){}cloud('adminPhone',n);$('admMsg').textContent='Saved.'};
+$('lock').onclick=()=>{isAdmin=false;updPend();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
 const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
 const FBROOT='duty_lookup/';let fbDb=null,fbOK=false;
 function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=>alert('Cloud save failed: '+e.message))}
@@ -384,7 +433,8 @@ try{if(window.firebase){
   firebase.initializeApp(FBCFG);fbDb=firebase.database();
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('duty2',data);fillFilters();render()},e=>console.warn(e));
-  fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);
+  fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
+  fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);updPend();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps')&&![...$('md').querySelectorAll('textarea')].some(t=>t.value))board()},e=>console.warn(e));
 }}catch(e){console.warn('Firebase unavailable, using local mode',e)}
 let dip;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('bInst').hidden=false});
