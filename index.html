@@ -6,72 +6,111 @@
 <link rel="manifest" href="https://eceexams.pages.dev/manifest.webmanifest">
 <link rel="icon" href="https://eceexams.pages.dev/icons/icon-192.png">
 <link rel="apple-touch-icon" href="https://eceexams.pages.dev/icons/icon-192.png">
-<meta name="theme-color" content="#2453b8">
+<meta name="theme-color" content="#0b2e2a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
-:root{--serif:Georgia,"Times New Roman",serif;--bg:#f3f4f7;--card:#fff;--tx:#1c2233;--mu:#566074;--bd:#d8dce6;--in:#eef0f5;--ti:#1f2f5c;--gr:#1b6b4a;--am:#8a5a00;--soft:#e8ebf4;--pb:#1f2f5c;--gb:#7a2233;--wa:#137a3f;--nv:#1f2f5c;--gold:#c8a24a;
+:root{--bg:#eef3f2;--card:#fff;--tx:#10231f;--mu:#586b66;--bd:#d3e0dd;--in:#f1f6f5;--ti:#0e5f56;--soft:#dff0ec;--pb:#0e6b61;--gb:#b45309;--wa:#15803d;--nv:#0b2e2a;--gold:#f0b429;--dg:#b42318;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141f;--card:#181e2e;--tx:#e9ecf4;--mu:#a0a8bb;--bd:#2b3349;--in:#1e2538;--ti:#9db4f0;--gr:#56d3a0;--am:#f0b95a;--soft:#232c48;--pb:#3f5cae;--gb:#a23b50;--wa:#1b8a4b;--nv:#131a2e}}
-:root[data-theme="dark"]{--bg:#10141f;--card:#181e2e;--tx:#e9ecf4;--mu:#a0a8bb;--bd:#2b3349;--in:#1e2538;--ti:#9db4f0;--gr:#56d3a0;--am:#f0b95a;--soft:#232c48;--pb:#3f5cae;--gb:#a23b50;--wa:#1b8a4b;--nv:#131a2e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1513;--card:#112220;--tx:#e6f2ef;--mu:#9bb3ad;--bd:#23403b;--in:#16302c;--ti:#7fd8c8;--soft:#173a35;--pb:#1a9082;--gb:#c2650c;--wa:#1a8a47;--nv:#071d1a;--dg:#f26d5f}}
+:root[data-theme="dark"]{--bg:#0a1513;--card:#112220;--tx:#e6f2ef;--mu:#9bb3ad;--bd:#23403b;--in:#16302c;--ti:#7fd8c8;--soft:#173a35;--pb:#1a9082;--gb:#c2650c;--wa:#1a8a47;--nv:#071d1a;--dg:#f26d5f}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
-.bar{background:var(--nv);color:#fff;border-bottom:3px solid var(--gold)}
-.wrap{max-width:960px;margin:0 auto;padding:22px 16px}
-main{max-width:960px;margin:0 auto;padding:20px 16px 48px}
-.top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+
+/* header */
+.bar{background:var(--nv);color:#fff;padding-bottom:26px}
+.wrap{max-width:1040px;margin:0 auto;padding:26px 18px 0}
+main{max-width:1040px;margin:-14px auto 0;padding:0 18px 48px}
 .ttl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-h1,.name,.md h2,th{font-family:var(--serif)}
-h1{margin:0;font-size:1.8rem;font-weight:700}
-.st{font-size:.78rem;font-weight:600;background:rgba(255,255,255,.14);color:#d7f5e6;border-radius:999px;padding:3px 10px}
+h1{margin:0;font-size:2rem;font-weight:800;letter-spacing:-.02em}
+.st{font-size:.78rem;font-weight:700;background:rgba(255,255,255,.14);color:#b8f5dc;border-radius:999px;padding:3px 10px}
 .st:empty{display:none}
-.sub{margin:4px 0 0;color:#c9d0e4;font-size:.95rem}
+.sub{margin:4px 0 0;color:#b7cfca;font-size:.98rem}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
-button,.b{font:inherit;font-weight:600;font-size:.92rem;padding:10px 16px;min-height:42px;border-radius:6px;cursor:pointer;border:1px solid transparent;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;text-align:center}
+.bar .btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:20px}
+button,.b{font:inherit;font-weight:600;font-size:.92rem;padding:10px 16px;min-height:42px;border-radius:8px;cursor:pointer;border:1px solid transparent;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;text-align:center}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .b1{background:var(--card);color:var(--tx);border-color:var(--bd)}
 .b2{background:var(--pb);color:#fff}
 .b3{background:var(--gb);color:#fff}
-.bar .b1{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
-.bar .b2{background:#fff;color:#1f2f5c}
-.bar .b3{background:var(--gold);color:#1c1c1c}
-.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:14px}
+.bar .btns button{flex-direction:column;align-items:flex-start;text-align:left;padding:12px 14px;min-height:64px;border-radius:12px;gap:2px}
+.bar .btns small{font-weight:400;font-size:.8rem;opacity:.85}
+.bar .b1{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.22)}
+.bar .b2{background:var(--gold);color:#1d1a0e}
+.bar .b3{background:#fff;color:#0b2e2a}
+
+/* filters + tools */
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 6px 20px rgba(11,46,42,.12)}
 .f{display:flex;flex-direction:column;gap:5px;min-width:0}
 .f span{font-size:.82rem;font-weight:600;color:var(--mu)}
-.filters input,.filters select,.tools select{width:100%;min-height:44px;padding:10px 12px;border-radius:6px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
+.filters input,.filters select,.tools select{width:100%;min-height:44px;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
 .tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .cnt{color:var(--mu);font-size:.9rem;font-weight:600}
 .tl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .tools select{width:auto;min-height:38px;padding:6px 10px;font-size:.88rem}
-.seg{display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
 .seg button{border:0;border-radius:0;background:var(--card);color:var(--mu);min-height:38px;padding:6px 12px;font-size:.85rem}
 .seg .on{background:var(--pb);color:#fff}
 .sb{min-height:38px;padding:6px 12px;font-size:.85rem}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:16px}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
 .empty{text-align:center;padding:48px 16px;color:var(--mu)}
 .empty h3{margin:8px 0 4px;color:var(--mu)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
-.name{font-weight:700;font-size:1.1rem;padding-bottom:10px}
-.duty{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--bd);padding:12px 0 2px;font-size:.92rem}
-.when{display:block;font-weight:650}
-.duty small{color:var(--mu);display:block;font-size:.85rem;margin-top:2px}
-.tag{font-size:.75rem;font-weight:600;background:var(--soft);color:var(--ti);border-radius:4px;padding:3px 9px;height:fit-content;white-space:nowrap}
+
+/* faculty cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.fm{display:flex;align-items:center;gap:12px;padding-bottom:12px}
+.av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--ti);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem}
+.name{font-weight:800;font-size:1.08rem;line-height:1.2}
+.n{color:var(--mu);font-size:.82rem;font-weight:600}
+.fm .who{flex:1;min-width:0}
+.big{flex:none;text-align:center;background:var(--nv);color:#fff;border-radius:12px;padding:6px 14px;line-height:1}
+.big b{display:block;font-size:2.2rem;font-weight:800;color:var(--gold)}
+.big span{font-size:.72rem;font-weight:600;opacity:.85}
+.bigi{display:inline-flex;align-items:baseline;gap:6px;margin-top:2px}
+.bigi b{font-size:1.9rem;font-weight:800;color:var(--ti);line-height:1}
+.bigi span{font-size:.8rem;font-weight:600;color:var(--mu)}
+.fd{font-weight:600;font-size:.9rem;line-height:1.25;color:var(--mu)}
+.dn{display:block;font-size:1.35rem;font-weight:800;color:var(--ti);line-height:1.15}
+.fd small{display:block;font-size:.8rem;font-weight:600;color:var(--ti)}
+.pick{display:block;margin-bottom:10px}
+.pick span{display:block;font-size:.8rem;font-weight:600;color:var(--mu);margin-bottom:3px}
+.pick select,.tw select{width:100%;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit;font-size:.9rem}
+.tkw{display:flex;flex-direction:column;gap:10px}
+
+/* duty ticket */
+.tk{display:grid;grid-template-columns:68px 1fr;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--card)}
+.dt{background:var(--nv);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;text-align:center;line-height:1.1}
+.dt b{font-size:1.7rem;font-weight:800}
+.dt span{font-size:.85rem;font-weight:700;color:var(--gold)}
+.dt small{font-size:.72rem;opacity:.8;margin-top:2px}
+.tb{padding:11px 12px}
+.tm{font-weight:800;font-size:1rem}
+.ex{font-size:.92rem;margin-top:2px}
+.vn{color:var(--mu);font-size:.85rem;margin-bottom:6px}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;background:var(--soft);color:var(--ti);border-radius:999px;padding:3px 10px;white-space:nowrap}
 .link{background:none;border:0;color:var(--ti);padding:0;min-height:0;font-size:.85rem;font-weight:600;cursor:pointer}
+.dg{color:var(--dg)}
 .ac{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.fs{border:1px solid var(--bd);background:var(--card);border-radius:6px;padding:7px 11px;min-height:36px;font-size:.82rem}
+.fs{border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:7px 11px;min-height:36px;font-size:.82rem}
 .fs:hover{background:var(--soft)}
-.tw{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:8px}
+
+/* table */
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:14px}
 table{width:100%;border-collapse:collapse;font-size:.9rem}
 th{text-align:left;background:var(--soft);padding:10px 12px;border-bottom:2px solid var(--bd);white-space:nowrap}
 td{padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top}
+td .ac{margin-top:0}
 tr:last-child td{border-bottom:0}
-.ov{position:fixed;inset:0;background:rgba(8,12,22,.6);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
+td select{min-width:210px}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(5,14,12,.62);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
 .ov.on{display:flex}
-.md{background:var(--card);border:1px solid var(--bd);border-radius:10px;width:100%;max-width:520px;max-height:85%;overflow:auto;padding:20px}
-.md h2{margin:0 0 12px;font-size:1.25rem}
-.md select,.md input,.md textarea{width:100%;padding:10px;margin:4px 0 12px;border-radius:6px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
+.md{background:var(--card);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:540px;max-height:85%;overflow:auto;padding:20px}
+.md h2{margin:0 0 12px;font-size:1.25rem;font-weight:800}
+.md select,.md input,.md textarea{width:100%;padding:10px;margin:4px 0 12px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
 .md label{font-size:.85rem;font-weight:600;color:var(--mu)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--bd)}
 .act{display:flex;gap:8px;flex-wrap:wrap}
@@ -84,15 +123,16 @@ textarea.csv{height:100px;font-size:.8rem}
 .sm{display:none}
 input,select,textarea{font-size:16px}
 .fl{display:flex;justify-content:center;gap:22px;margin-top:28px}
-.foot{text-align:center;color:var(--mu);font-size:.78rem;margin-top:14px}
+#adminPanel{margin-top:14px;color:var(--mu);font-size:.88rem}
+
 @media (max-width:640px){
- .wrap{padding:16px 12px}
- main{padding:14px 12px 110px}
- h1{font-size:1.45rem}
- .top{display:block}
- .top .btns{position:fixed;left:0;right:0;bottom:0;z-index:8;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;
+ .wrap{padding:18px 14px 0}
+ main{padding:0 12px 110px}
+ h1{font-size:1.55rem}
+ .bar{padding-bottom:22px}
+ .bar .btns{position:fixed;left:0;right:0;bottom:0;z-index:8;display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-top:0;
   padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:var(--nv);border-top:2px solid var(--gold)}
- .top .btns button{padding:8px 4px;font-size:.78rem;line-height:1.25;border-radius:8px;min-height:54px}
+ .bar .btns button{padding:8px 4px;font-size:.78rem;line-height:1.25;border-radius:10px;min-height:54px;align-items:center;text-align:center}
  .lg{display:none}.sm{display:inline}
  .filters{grid-template-columns:1fr 1fr;gap:10px;padding:12px}
  .f:first-child{grid-column:1/-1}
@@ -100,27 +140,25 @@ input,select,textarea{font-size:16px}
  .fs{min-height:44px}
  .link{padding:8px 0;font-size:.9rem}
  .ov{align-items:flex-end;padding:0}
- .md{max-width:none;border-radius:16px 16px 0 0;max-height:90%;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+ .md{max-width:none;border-radius:18px 18px 0 0;max-height:90%;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px))}
  .wa,.call{padding:10px 14px;min-height:44px}
  .row{align-items:flex-start}
 }
 @media print{
- .bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst{display:none!important}
+ .bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst,.pick,td select{display:none!important}
  .bar{background:#fff;color:#000;border-bottom:2px solid #000}.sub{color:#333}.st{display:none}
  body{background:#fff}.box{break-inside:avoid}
 }
 </style>
 </head>
 <body>
-<header class="bar"><div class="wrap top">
-    <div>
-      <div class="ttl"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
-      <p class="sub">Examination duty roster and swap coordination</p>
-    </div>
+<header class="bar"><div class="wrap">
+    <div class="ttl"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
+    <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
-      <button class="b1" id="bBoard"><span class="lg">See Posted Swaps</span><span class="sm">📋<br>Posted</span></button>
-      <button class="b2" id="bPost"><span class="lg">Post Swap Request</span><span class="sm">📣<br>Post Swap</span></button>
-      <button class="b3" id="bWiz"><span class="lg">Swap Wizard</span><span class="sm">✨<br>Wizard</span></button>
+      <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
+      <button class="b2" id="bPost"><span class="lg">📣 Post Swap Request<br><small>Ask others to cover your duty</small></span><span class="sm">📣<br>Post Swap</span></button>
+      <button class="b3" id="bWiz"><span class="lg">✨ Swap Wizard<br><small>Find who is free, step by step</small></span><span class="sm">✨<br>Wizard</span></button>
       <button class="b1" id="bInst" hidden>Install app</button>
     </div>
 </div></header>
@@ -143,14 +181,13 @@ input,select,textarea{font-size:16px}
   </div>
   <div id="list"></div>
   <div class="fl"><button class="link" id="bTheme">Theme: Auto</button><button class="link" id="adminBtn">🔒 Admin</button></div>
-  <section id="adminPanel" hidden="" style="margin-top:14px;color:var(--mu);font-size:.88rem"><div style="display:flex;justify-content:space-between;align-items:center"><b>Admin: upload duty data</b><button class="link" id="lock">Lock</button></div>
+  <section id="adminPanel" hidden=""><div style="display:flex;justify-content:space-between;align-items:center"><b>Admin: upload duty data</b><button class="link" id="lock">Lock</button></div>
     <p>CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
     <input type="file" id="file" accept=".csv,text/csv">
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
   </section>
-  <div class="foot">Developed &amp; idealized by M. Nauman Aman</div>
 </main>
 <div class="ov" id="ov"><div class="md" id="md"></div></div>
 
@@ -168,9 +205,16 @@ S3,Omar Nasser,923001110003,2026-10-14,14:00,17:00,Pathology Paper 1,Hall C,Invi
 S4,Hina Malik,923001110004,2026-10-16,09:00,12:00,Biochemistry,Hall A,Invigilator`;
 const ld=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-let data=ld('duty2'),swaps=ld('swaps2');
+let data=ld('duty2'),swaps=ld('swaps2'),isAdmin=false;
 const key=r=>r.id||r.name, slot=r=>r.start+'–'+r.end;
-const fmt=d=>{const x=new Date(d+'T00:00:00');return isNaN(x)?d:x.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})};
+const pd=d=>{d=String(d||'').trim();let m;
+  if(m=d.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))return new Date(+m[1],m[2]-1,+m[3]);
+  if(m=d.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})$/)){const y=m[3].length===2?2000+ +m[3]:+m[3];return new Date(y,m[2]-1,+m[1])}
+  const x=new Date(d);return isNaN(x)?null:x};
+const fmt=d=>{const x=pd(d);return x?x.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}):d};
+const longD=d=>{const x=pd(d);return x?{w:x.toLocaleDateString(undefined,{weekday:'long'}),f:x.toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})}:{w:'',f:d}};
+const dparts=d=>{const x=pd(d);return x?{d:x.getDate(),m:x.toLocaleDateString(undefined,{month:'short'}),w:x.toLocaleDateString(undefined,{weekday:'short'})}:null};
+const initials=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
 const ph=p=>(p||'').replace(/\D/g,'');
 function parse(t){const L=t.trim().split(/\r?\n/).map(l=>l.split(',').map(c=>c.trim()));const h=L.shift().map(x=>x.toLowerCase());
   return L.filter(r=>r.length>2).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]||''])))}
@@ -188,29 +232,44 @@ function fillFilters(){
   $('r').innerHTML='<option value="">All Roles</option>'+ro.map(x=>`<option>${esc(x)}</option>`).join('');
   $('d').value=cd;$('t').value=ct;$('r').value=cr;
 }
-let view='c',cur=[];
+let view='c',cur=[],groups=[];
 const when=r=>r.date+r.start;
+const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">Find swap partner</button><button class="link fs" data-c="${i}">Add to calendar</button></div>`;
+const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
+function ticket(r){const p=dparts(r.date);
+  return `<div class="tk"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
+  <div class="tb"><div class="fd"><b class="dn">${esc(longD(r.date).w)}</b>${esc(longD(r.date).f)}</div><div class="tm">${esc(slot(r))}</div><div class="ex">${esc(r.exam)}</div><div class="vn">${esc(r.venue)}</div>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}${ac(data.indexOf(r))}</div></div>`}
 function render(){
-  const L=$('list');cur=[];$('cnt').textContent='';
+  const L=$('list');cur=[];groups=[];$('cnt').textContent='';
   if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
   const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
   const rows=data.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
   rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));
   cur=rows;
   const by=new Map();rows.forEach(r=>{const k=key(r);if(!by.has(k))by.set(k,[]);by.get(k).push(r)});
-  $('cnt').textContent=`${rows.length} of ${data.length} duties, ${by.size} staff`;
+  groups=[...by.values()];
+  $('cnt').textContent=`${by.size} staff, ${rows.length} of ${data.length} duties`;
   if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter.</div></div>';return}
-  const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">Find swap partner</button><button class="link fs" data-c="${i}">Add to calendar</button></div>`;
-  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Actions</th></tr></thead><tbody>'+rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(fmt(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role)}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')+'</tbody></table></div>';
-  else L.innerHTML='<div class="grid">'+[...by.values()].map(rs=>`<div class="box"><div class="name">${esc(rs[0].name)}</div>`+
-    rs.map(r=>`<div class="duty"><div><b class="when">${esc(fmt(r.date))} · ${esc(slot(r))}</b><small>${esc(r.exam)} · ${esc(r.venue)}</small>${ac(data.indexOf(r))}</div><span class="tag">${esc(r.role)}</span></div>`).join('')+'</div>').join('')+'</div>';
-  L.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>partners(+b.dataset.i));
-  L.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>ics(+b.dataset.c));
+  const cnt=n=>n>1?`${n} duties`:'1 duty';
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Duty</th><th>Exam and venue</th><th>Role</th><th>Actions</th></tr></thead><tbody>'+groups.map((rs,gi)=>{const r=rs[0];
+    return `<tr data-g="${gi}"><td><b>${esc(r.name)}</b><br><span class="bigi"><b>${rs.length}</b><span>${rs.length>1?'duties':'duty'}</span></span></td>
+    <td>${rs.length>1?`<select data-g="${gi}" aria-label="Choose duty for ${esc(r.name)}">${rs.map(opt).join('')}</select>`:`<div class="fd"><b class="dn">${esc(longD(r.date).w)}</b>${esc(longD(r.date).f)}<small>${esc(slot(r))}</small></div>`}</td>
+    <td class="c-ex">${esc(r.exam)}<br><span class="n">${esc(r.venue)}</span></td><td class="c-ro">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td class="c-ac">${ac(data.indexOf(r))}</td></tr>`}).join('')+'</tbody></table></div>';
+  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box" data-g="${gi}"><div class="fm"><div class="av">${esc(initials(rs[0].name))}</div><div class="who"><div class="name">${esc(rs[0].name)}</div></div><div class="big" title="${cnt(rs.length)}"><b>${rs.length}</b><span>${rs.length>1?'duties':'duty'}</span></div></div>`+
+    (rs.length>1?`<label class="pick"><span>Choose a duty</span><select data-g="${gi}">${rs.map(opt).join('')}<option value="all">Show all ${rs.length} duties</option></select></label>`:'')+
+    `<div class="tkw">${ticket(rs[0])}</div></div>`).join('')+'</div>';
 }
+const listEl=$('list');
+listEl.addEventListener('click',e=>{const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)partners(+b.dataset.i);else ics(+b.dataset.c)});
+listEl.addEventListener('change',e=>{const s=e.target.closest('select[data-g]');if(!s)return;const rs=groups[+s.dataset.g];if(!rs)return;
+  const tr=s.closest('tr');
+  if(tr){const r=rs[+s.value];tr.querySelector('.c-ex').innerHTML=esc(r.exam)+'<br><span class="n">'+esc(r.venue)+'</span>';
+    tr.querySelector('.c-ro').innerHTML=r.role?`<span class="tag">${esc(r.role)}</span>`:'';tr.querySelector('.c-ac').innerHTML=ac(data.indexOf(r))}
+  else{const w=s.closest('.box').querySelector('.tkw');w.innerHTML=s.value==='all'?rs.map(ticket).join(''):ticket(rs[+s.value])}});
 function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
 const p2=n=>String(n).padStart(2,'0');
-function ics(i){const r=data[i],x=/^\d{4}-\d{2}-\d{2}$/.test(r.date)?new Date(r.date+'T00:00:00'):new Date(r.date);
-  if(isNaN(x))return alert('Date format not recognised.');
+function ics(i){const r=data[i],x=pd(r.date);
+  if(!x)return alert('Date format not recognised.');
   const d=x.getFullYear()+p2(x.getMonth()+1)+p2(x.getDate()),hm=v=>{const [h,m]=String(v||'0:0').split(':');return p2(h)+p2(m||0)+'00'},e=v=>String(v||'').replace(/[,;]/g,'\\$&');
   dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Duty Lookup//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
 function open(html){$('md').innerHTML=html+'<div style="margin-top:12px"><button class="x" id="cl">Close</button></div>';$('ov').classList.add('on');$('cl').onclick=close}
@@ -245,8 +304,8 @@ function postForm(){if(needData())return;
 function board(){
   open('<h2>📋 Posted Swaps</h2>'+(swaps.length?swaps.map(s=>{const msg=`Hi ${s.name}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
     return `<div class="row"><div><b>${esc(s.name)}</b><br><small>${esc(fmt(s.date))} · ${esc(s.start)}–${esc(s.end)} · ${esc(s.exam)} · ${esc(s.venue)}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
-    <div>${acts(s,msg)}<button class="link" data-r="${s.id}">Remove</button></div></div>`}).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts are shared with all staff.':'Posts are saved on this device only.')+'</p>');
-  $('md').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);board();cloud('swaps/'+b.dataset.r,null)})}
+    <div>${acts(s,msg)}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div></div>`}).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
+  $('md').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);board();cloud('swaps/'+b.dataset.r,null)})}
 
 function setData(d){data=d;sv('duty2',d);fillFilters();render()}
 $('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
@@ -269,12 +328,12 @@ $('bBoard').onclick=board;$('bPost').onclick=postForm;$('bWiz').onclick=wizard;
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 $('adminBtn').onclick=()=>{
-  open('<h2>🔒 Admin access</h2><label>Password</label><input id="pw" type="password" autocomplete="off"><p id="pe" style="color:#e5484d;margin:0 0 8px"></p><button class="b2" id="pg">Unlock</button>');
+  open('<h2>🔒 Admin access</h2><label>Password</label><input id="pw" type="password" autocomplete="off"><p id="pe" style="color:var(--dg);margin:0 0 8px"></p><button class="b2" id="pg">Unlock</button>');
   const go=async()=>{let ok=false;try{ok=(await sha($('pw').value))===PH}catch(e){}
-    if(ok){close();$('adminPanel').hidden=false;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
+    if(ok){isAdmin=true;close();$('adminPanel').hidden=false;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
     else $('pe').textContent='Incorrect password.'};
   $('pg').onclick=go;$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('pw').focus()};
-$('lock').onclick=()=>{$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
+$('lock').onclick=()=>{isAdmin=false;$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
 const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
 const FBROOT='duty_lookup/';let fbDb=null,fbOK=false;
 function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=>alert('Cloud save failed: '+e.message))}
