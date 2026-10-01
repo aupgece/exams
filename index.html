@@ -290,9 +290,9 @@ const dutyOpts=k=>data.map((r,i)=>[r,i]).filter(([r])=>key(r)===k).map(([r,i])=>
 const staffOpts=()=>staff().map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('');
 function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has not been uploaded yet.</p>');return true}}
 
-function post(i,note){const r=data[i];
+function post(i,note,quiet){const r=data[i];
   const s={id:Date.now(),k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,note:note||''};
-  swaps.unshift(s);sv('swaps2',swaps);board();cloud('swaps/'+s.id,s)}
+  swaps.unshift(s);sv('swaps2',swaps);if(!quiet)board();cloud('swaps/'+s.id,s)}
 function swapFlow(pre){if(needData())return;
   const r0=pre!==undefined?data[pre]:null;
   open(`<h2>🔄 Swap my duty</h2><label>1. Who are you?</label><select id="w1"><option value="">Select your name</option>${staffOpts()}</select><div id="w2"></div><div id="w3"></div>`);
@@ -300,6 +300,7 @@ function swapFlow(pre){if(needData())return;
     const list=free(r).filter(p=>key(p)!==k);
     $('w3').innerHTML='<label>3. Ask someone who is free</label>'+(list.map(p=>`<div class="row"><b>${esc(p.name)}</b>${acts(p,swapMsg(p.name,r.name,r))}</div>`).join('')||'<p>No one is free at this time.</p>')+
       `<div style="border-top:1px solid var(--bd);margin-top:12px;padding-top:12px"><label>Or ask everyone: post to the Swap Board</label><textarea id="pn" rows="2" placeholder="Note (optional), e.g. can swap for any morning slot"></textarea><button class="b b2" id="wp" style="width:100%">Post to board for everyone</button></div>`;
+    $('w3').querySelectorAll('a.wa').forEach(a=>a.addEventListener('click',()=>{if(!swaps.some(s=>s.k===k&&s.date===r.date&&s.start===r.start&&s.end===r.end))post(+v,$('pn').value,true)}));
     $('wp').onclick=()=>{if(swaps.some(s=>s.k===k&&s.date===r.date&&s.start===r.start&&s.end===r.end)){board();return}post(+v,$('pn').value)}};
   const pick=()=>{const k=$('w1').value;$('w3').innerHTML='';
     $('w2').innerHTML=k?`<label>2. Which duty do you want to swap?</label><select id="wd"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
@@ -315,13 +316,21 @@ function swapRow(s){
   const wm=`Hi ${s.name}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
   const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
   return `<div class="row"><div><b>${esc(s.name)}</b><br><small>${esc(fmt(s.date))} · ${esc(s.start)}–${esc(s.end)} · ${esc(s.exam)} · ${esc(s.venue)}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
-  <div class="act"><button class="b wa" data-rp="${s.id}">Reply</button>${n?`<a class="b x" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
+  <div class="act"><button class="b wa" data-rp="${s.id}">Reply</button>${n?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
   <div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'No replies yet'}</div>
   <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`}
 function board(){
   open('<h2>📋 Posted Swaps</h2>'+(swaps.length?swaps.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
   const M=$('md');
   M.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{const f=$('rf'+b.dataset.rp);f.hidden=!f.hidden;if(!f.hidden)f.querySelector('textarea').focus()});
+  M.querySelectorAll('.rf select').forEach(x=>x.onchange=()=>{me=x.value});
+  M.querySelectorAll('[data-wa]').forEach(a=>a.addEventListener('click',e=>{
+    const s=swaps.find(x=>x.id==a.dataset.wa),p=staff().find(x=>key(x)===me);
+    if(!s)return;
+    if(!p){e.preventDefault();const f=$('rf'+s.id);f.hidden=false;f.querySelector('select').focus();alert('Select your name first, then tap WhatsApp again.');return}
+    const id='wa_'+key(p).replace(/[^\w]/g,'_');
+    if(!(s.replies&&s.replies[id])){const rep={name:p.name,at:Date.now(),via:'WhatsApp'};(s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep)}
+    setTimeout(board,400)}));
   M.querySelectorAll('[data-ps]').forEach(b=>b.onclick=()=>{const f=b.closest('.rf'),sel=f.querySelector('select'),ta=f.querySelector('textarea'),t=ta.value.trim();
     if(!sel.value){sel.focus();return}if(!t){ta.focus();return}
     const s=swaps.find(x=>x.id==b.dataset.ps),p=staff().find(x=>key(x)===sel.value);if(!s||!p)return;me=sel.value;
