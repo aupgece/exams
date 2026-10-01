@@ -91,9 +91,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .ex{font-size:.92rem;margin-top:2px}
 .vn{color:var(--mu);font-size:.85rem;margin-bottom:6px}
 @keyframes blk{50%{opacity:.3}}
-#pendBar{position:sticky;top:0;z-index:8;background:var(--gold);color:#3b2a00;font-weight:800;text-align:center;padding:10px 12px;cursor:pointer;animation:blk 1s steps(2,start) infinite}
-#bBoard.blink{outline:3px solid var(--gold);animation:blk 1s steps(2,start) infinite}
-@media (prefers-reduced-motion:reduce){#pendBar,#bBoard.blink{animation:none}}
+@keyframes sp{0%,100%{box-shadow:inset 0 0 0 0 transparent}50%{box-shadow:inset 0 0 0 60px rgba(240,180,41,.38)}}@keyframes sd{0%{box-shadow:0 0 0 0 rgba(240,180,41,.9)}100%{box-shadow:0 0 0 10px rgba(240,180,41,0)}}@keyframes sh{0%,86%,100%{transform:translateX(0)}90%{transform:translateX(-3px)}94%{transform:translateX(3px)}98%{transform:translateX(-2px)}}
+#pendBar{position:sticky;top:0;z-index:8;background:var(--soft);color:var(--tx);border-bottom:2px solid var(--gold);border-left:6px solid var(--gold);font-weight:800;font-size:.95rem;text-align:left;padding:11px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;animation:sp 1.6s ease-in-out infinite,sh 4s ease-in-out infinite}#pendBar[hidden]{display:none}
+#pendBar::before{content:'';width:12px;height:12px;border-radius:50%;background:var(--gold);flex:none;animation:sd 1.1s ease-out infinite}
+#pendBar b{margin-left:auto;background:var(--gold);color:#3b2a00;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap}
+#bBoard.blink{outline:3px solid var(--gold);outline-offset:-3px;animation:sp 1.6s ease-in-out infinite}
 .tag.tfl{background:var(--wa);color:#fff}
 .pf{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.pf>div{min-width:0}.pf .full{grid-column:1/-1}
 .tag{display:inline-block;font-size:.75rem;font-weight:700;background:var(--soft);color:var(--ti);border-radius:999px;padding:3px 10px;white-space:nowrap}
@@ -167,10 +169,10 @@ input,select,textarea{font-size:16px}
  .bar{background:#fff;color:#000;border-bottom:2px solid #000}.sub{color:#333}.st{display:none}
  body{background:#fff}.box{break-inside:avoid}
 }
-</style>
+@media (prefers-reduced-motion:reduce){#pendBar,#pendBar::before,#bBoard.blink{animation:none}}</style>
 </head>
 <body>
-<div id="pendBar" hidden>🔔 <span id="pendTx"></span></div>
+<div id="pendBar" hidden><span id="pendTx"></span><b id="pendGo"></b></div>
 <header class="bar"><div class="wrap">
     <div class="ttl"><img class="logo" src="icon-192.png?v=2" alt="ECE Exam" width="48" height="48" onerror="this.hidden=true"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
     <p class="sub">Examination duty roster and swap coordination</p>
@@ -319,10 +321,10 @@ function notifyAdmin(o){if(!NTFY_TOPIC)return;
 // Admin WhatsApp number (digits only, with country code, e.g. 923001234567). Leave blank to pick the contact in WhatsApp.
 const ADMIN_PHONE='';
 let adminPh=ADMIN_PHONE;try{adminPh=localStorage.getItem('adminPh')||ADMIN_PHONE}catch(e){}
-const adminMsg=o=>`*🔔 Swap Approval Request*\n\n*Requested by:* ${nt(o.name)}${o.role?' ('+o.role+')':''}\n*Date:* ${fmt(o.date)}\n*Time:* ${[o.start,o.end].filter(Boolean).join('–')||'-'}\n${o.exam?'*Exam:* '+o.exam+'\n':''}${o.venue?'*Venue:* '+o.venue+'\n':''}*Mobile:* ${o.phone}${o.note?'\n*Reason:* '+o.note:''}\n\n*Status:* ⏳ Pending your approval\nPlease open the app and tap ✓ Approve:\n${location.origin+location.pathname}`;
+const adminMsg=o=>`Hello Admin,\n*${nt(o.name)}*${o.role?' ('+o.role+')':''} has requested a duty swap, pending your approval.\n\n${fmt(o.date)}${o.start?' · '+[o.start,o.end].filter(Boolean).join('–'):''}${o.exam?' · '+o.exam:''}${o.venue?' · '+o.venue:''}\nMobile: ${o.phone}${o.note?'\nNote: '+o.note:''}\n\nApprove in app: ${location.origin+location.pathname}\nThank you.`;
 const adminLink=o=>'https://wa.me/'+ph(adminPh)+'?text='+encodeURIComponent(adminMsg(o));
 function sentScreen(o,dup){
-  open(`<h2>✅ Request ${dup?'already posted':'sent'}</h2><p>Your swap request is saved and will appear in Posted Swaps once the admin approves it.</p><p style="color:var(--mu);font-size:.9rem">Tap below to send the approval request straight to the admin's WhatsApp. The message is ready — just tap <b>Send</b>.</p><a class="b wa" id="nwa" target="_blank" rel="noopener" href="${esc(adminLink(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}
+  open(`<h2>✅ Request ${dup?'already posted':'saved'}</h2><p style="color:var(--mu);font-size:.92rem">It will be listed once the admin approves. Tap below to message the admin, then press <b>Send</b>.</p><div style="background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:.85rem;white-space:pre-wrap;line-height:1.45">${esc(adminMsg(o).replace(/\*/g,''))}</div><a class="b wa" id="nwa" target="_blank" rel="noopener" href="${esc(adminLink(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}
 function postForm(pre){
   const r0=pre!==undefined?data[pre]:null,v=x=>esc(x||''),sel=r0?key(r0):me;
   const ns=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===sel?' selected':''}>${esc(p.name)}</option>`).join('');
@@ -367,7 +369,8 @@ function swapRow(s){
   return pend?h.split('\n  <div class="rp')[0]+'</div>':h}
 function updPend(){const n=swaps.filter(s=>s.approved===false).length;
   $('pendBar').hidden=n<1;$('bBoard').classList.toggle('blink',isAdmin&&n>0);
-  if(n)$('pendTx').textContent=n+' swap request'+(n>1?'s':'')+' awaiting admin approval'+(isAdmin?' — tap to review':' — admin, tap to log in')}
+  if(n&&isAdmin&&navigator.vibrate&&!updPend.v){updPend.v=1;try{navigator.vibrate([120,60,120])}catch(e){}}
+  if(n){$('pendTx').textContent=n+' swap request'+(n>1?'s':'')+' pending approval';$('pendGo').textContent=isAdmin?'Review ›':'Admin login ›'}}
 function board(){
   updPend();
   const vis=(isAdmin?swaps:swaps.filter(s=>s.approved!==false)).slice().sort((a,b)=>(b.approved===false)-(a.approved===false));
