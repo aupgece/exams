@@ -170,6 +170,7 @@ input,select,textarea{font-size:16px}
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
       <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Find who is free, or post to everyone</small></span><span class="sm">🔄<br>Swap Duty</span></button>
+      <button class="b1" id="bStandby"><span class="lg">🆘 Request Standby Invigilator<br><small>Ask Mr. Sharoze (DEC Member)</small></span><span class="sm">🆘<br>Standby</span></button>
       <button class="b1" id="bInst" hidden>Install app</button>
     </div>
 </div></header>
@@ -233,7 +234,8 @@ function staff(){return [...new Map(data.map(r=>[key(r),r])).values()].sort((a,b
 function free(duty){const busy=new Set(data.filter(x=>x.date===duty.date&&x.start<duty.end&&duty.start<x.end).map(key));
   return staff().filter(p=>!busy.has(key(p)))}
 function acts(p,msg){const n=ph(p.phone),cp=`<button class="b x cp" data-m="${esc(msg)}">Copy message</button>`;return n?`<span class="act"><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>${cp}</span>`:`<span class="act"><small>No phone</small>${cp}</span>`}
-const swapMsg=(to,me,r)=>`Hi ${to}, this is ${me}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
+const nt=n=>String(n||'').replace(/^\s*(mr|mrs|ms)\.?\s+/i,'').trim();
+const swapMsg=(to,me,r)=>`Hi ${nt(to)}, this is ${nt(me)}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
 
 function fillFilters(){
   const ds=[...new Set(data.map(r=>r.date))].sort(), ts=[...new Set(data.map(slot))].sort(), ro=[...new Set(data.map(r=>r.role).filter(Boolean))].sort();
@@ -293,6 +295,15 @@ function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has 
 function post(i,note,quiet){const r=data[i];
   const s={id:Date.now(),k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,note:note||''};
   swaps.unshift(s);sv('swaps2',swaps);if(!quiet)board();cloud('swaps/'+s.id,s)}
+const SHAROZE_PHONE='';
+const standbyMsg=(me,r)=>`Hi Sharoze, this is ${nt(me)}. I need a standby invigilator for my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue}). Could you please arrange one? Thank you!`;
+function standbyFlow(){if(needData())return;
+  open(`<h2>🆘 Request standby invigilator</h2><p style="color:var(--mu)">Your request goes to Mr. Sharoze (DEC Member).</p><label>1. Who are you?</label><select id="sy1"><option value="">Select your name</option>${staffOpts()}</select><div id="sy2"></div><div id="sy3"></div>`);
+  $('sy1').onchange=()=>{const k=$('sy1').value;$('sy3').innerHTML='';
+    $('sy2').innerHTML=k?`<label>2. Which duty needs a standby?</label><select id="sy2s"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
+    if(k)$('sy2s').onchange=()=>{const v=$('sy2s').value;if(v===''){$('sy3').innerHTML='';return}
+      const r=data[+v],sp=SHAROZE_PHONE||(staff().find(p=>/sharoze/i.test(p.name))||{}).phone||'';
+      $('sy3').innerHTML='<label>3. Send request</label>'+`<div class="row"><b>Sharoze</b> <small>DEC Member</small>${acts({phone:sp},standbyMsg(r.name,r))}</div>`}}}
 function swapFlow(pre){if(needData())return;
   const r0=pre!==undefined?data[pre]:null;
   open(`<h2>🔄 Swap my duty</h2><label>1. Who are you?</label><select id="w1"><option value="">Select your name</option>${staffOpts()}</select><div id="w2"></div><div id="w3"></div>`);
@@ -313,7 +324,7 @@ let me='';
 const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
 function swapRow(s){
   const n=ph(s.phone),reps=Object.entries(s.replies||{}).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>a.at-b.at);
-  const wm=`Hi ${s.name}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
+  const wm=`Hi ${nt(s.name)}, I saw your swap request for ${fmt(s.date)}, ${s.start}–${s.end} (${s.exam}). I can help — let me know!`;
   const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
   return `<div class="row"><div><b>${esc(s.name)}</b><br><small>${esc(fmt(s.date))} · ${esc(s.start)}–${esc(s.end)} · ${esc(s.exam)} · ${esc(s.venue)}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
   <div class="act"><button class="b wa" data-rp="${s.id}">Reply</button>${n?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
@@ -355,7 +366,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navi
 let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
 function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
 $('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
-$('bBoard').onclick=board;$('bSwap').onclick=()=>swapFlow();
+$('bBoard').onclick=board;$('bSwap').onclick=()=>swapFlow();$('bStandby').onclick=standbyFlow;
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
