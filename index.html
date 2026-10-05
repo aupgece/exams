@@ -177,7 +177,30 @@ input,select,textarea{font-size:16px}
  .wa,.call{padding:10px 14px;min-height:44px}
  .row{align-items:flex-start}
 }
+@page{size:A4;margin:14mm}
+#prSheet{display:none}
 @media print{
+ body.pr1>*:not(#prSheet){display:none!important}
+ body.pr1{background:#fff!important}
+ body.pr1 #prSheet{display:block!important;color:#000;background:#fff;font:12px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ #prSheet .ph{display:flex;align-items:center;gap:12px;border-bottom:3px solid #0b2e2a;padding-bottom:10px;margin-bottom:12px}
+ #prSheet .ph img{width:44px;height:44px;border-radius:9px}
+ #prSheet .ph h2{margin:0;font-size:20px;color:#0b2e2a}
+ #prSheet .ph .s{color:#444;font-size:12px}
+ #prSheet .ph .d{margin-left:auto;text-align:right;font-size:11px;color:#444}
+ #prSheet .mt{display:flex;flex-wrap:wrap;gap:4px 28px;background:#eef3f2;border:1px solid #cfdad7;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12px}
+ #prSheet .mt b{color:#0b2e2a}
+ #prSheet table{display:table!important;width:100%;border-collapse:collapse;font-size:11.5px}
+ #prSheet thead{display:table-header-group!important}
+ #prSheet tbody{display:table-row-group!important}
+ #prSheet tr{display:table-row!important;break-inside:avoid;page-break-inside:avoid;background:none;border:0;margin:0;padding:0}
+ #prSheet th,#prSheet td{display:table-cell!important;border:1px solid #9aa9a6;padding:6px 8px;text-align:left;vertical-align:top;color:#000;background:none}
+ #prSheet td:empty{display:table-cell!important}
+ #prSheet th{background:#0b2e2a!important;color:#fff!important;font-weight:700}
+ #prSheet .z tbody tr:nth-child(even) td{background:#f1f6f5!important}
+ #prSheet tr.g1 td{border-top:2px solid #0b2e2a}
+ #prSheet .c{text-align:center}
+ #prSheet .ft{margin-top:14px;font-size:10.5px;color:#555;border-top:1px solid #ccc;padding-top:6px;display:flex;justify-content:space-between}
  .bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst,.pick,td select{display:none!important}
  .bar{background:#fff;color:#000;border-bottom:2px solid #000}.sub{color:#333}.st{display:none}
  body{background:#fff}.box{break-inside:avoid}
@@ -187,7 +210,7 @@ input,select,textarea{font-size:16px}
 <body>
 <div id="pendBar" hidden><span id="pendTx"></span><b id="pendGo"></b></div>
 <header class="bar"><div class="wrap">
-    <div class="ttl"><img class="logo" src="icon-192.png?v=3" alt="EE Exams" width="48" height="48" onerror="this.hidden=true"><h1>EE Exams Duty Roster</h1><span id="st" class="st"></span></div>
+    <div class="ttl"><img class="logo" src="icon-192.png?v=3" alt="EE Exams" width="48" height="48" onerror="this.hidden=true"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
     <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
@@ -290,12 +313,31 @@ function render(){
   $('cnt').textContent=`${by.size} staff, ${rows.length} of ${data.length} duties`;
   if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter.</div></div>';return}
   const cnt=n=>n>1?`${n} duties`:'1 duty';
-  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(r.name)}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
-  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="av">${esc(initials(rs[0].name))}</div><div class="who"><div class="name">${esc(rs[0].name)}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span></div>`+
-    `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div></div>`).join('')+'</div>';
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(r.name)}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
+  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="av">${esc(initials(rs[0].name))}</div><div class="who"><div class="name">${esc(rs[0].name)}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span>${rs.length>1?`<button class="link fs" data-pr="${esc(key(rs[0]))}">🖨 Print</button>`:''}</div>`+
+    `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div>${isAdmin?`<button class="link fs" data-ad="${esc(key(rs[0]))}" style="margin-top:10px;width:100%">➕ Add duty</button>`:''}</div>`).join('')+'</div>';
 }
 const listEl=$('list');
-listEl.addEventListener('click',e=>{const m=e.target.closest('[data-more]');if(m){const w=m.previousElementSibling;w.hidden=!w.hidden;m.textContent=w.hidden?`Show ${m.dataset.more} more ${m.dataset.more>1?'duties':'duty'} ▾`:'Show less ▴';return}const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
+const fmtY=d=>{const x=pd(d);return x?x.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'}):d};
+function printSheet(title,meta,tbl,note){
+  let sh=$('prSheet');if(!sh){sh=document.createElement('div');sh.id='prSheet';document.body.appendChild(sh)}
+  const now=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  sh.innerHTML=`<div class="ph"><img src="icon-192.png?v=3" alt="" onerror="this.hidden=true"><div><h2>${esc(title)}</h2><div class="s">EE Exams · Examination duty roster</div></div><div class="d">Printed on<br><b>${esc(now)}</b></div></div><div class="mt">${meta.map(([k,v])=>`<span>${esc(k)}: <b>${esc(v)}</b></span>`).join('')}</div>${tbl}<div class="ft"><span>${esc(note||'')}</span><span>EE Exams</span></div>`;
+  document.body.classList.add('pr1');setTimeout(()=>window.print(),50)}
+function printFM(k){
+  const rs=data.filter(r=>key(r)===k).sort((a,b)=>when(a).localeCompare(when(b)));if(!rs.length)return;
+  printSheet('Duty Roster',[['Faculty member',rs[0].name],['Total duties',rs.length]],
+   `<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th></tr></thead><tbody>${rs.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td></tr>`).join('')}</tbody></table>`,
+   '')}
+function printAll(){
+  if(!groups.length)return;
+  const f=[];if($('q').value.trim())f.push('Name: '+$('q').value.trim());if($('d').value)f.push('Date: '+fmtY($('d').value));if($('t').value)f.push('Time: '+$('t').value);if($('r').value)f.push('Role: '+$('r').value);
+  const n=groups.reduce((a,g)=>a+g.length,0);
+  printSheet('Duty Roster',[['Faculty members',groups.length],['Duties',n],['Filter',f.length?f.join(' · '):'All duties']],
+   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(r.name)}</b>${rs.length>1?`<br><small>${rs.length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td></tr>`).join('')).join('')}</tbody></table>`,
+   groups.length+' faculty members, '+n+' duties')}
+window.addEventListener('afterprint',()=>document.body.classList.remove('pr1'));
+listEl.addEventListener('click',e=>{const ab=e.target.closest('[data-ad]');if(ab){if(isAdmin)dutyForm(-1,null,ab.dataset.ad);return}const pb=e.target.closest('[data-pr]');if(pb){printFM(pb.dataset.pr);return}const m=e.target.closest('[data-more]');if(m){const w=m.previousElementSibling;w.hidden=!w.hidden;m.textContent=w.hidden?`Show ${m.dataset.more} more ${m.dataset.more>1?'duties':'duty'} ▾`:'Show less ▴';return}const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
 listEl.addEventListener('change',e=>{const s=e.target.closest('select[data-g]');if(!s)return;const rs=groups[+s.dataset.g];if(!rs)return;
   const tr=s.closest('tr');
   if(tr){const r=rs[+s.value];tr.querySelector('.c-ex').innerHTML=esc(r.exam)+'<br><span class="n">'+esc(r.venue)+'</span>';
@@ -306,7 +348,7 @@ const p2=n=>String(n).padStart(2,'0');
 function ics(i){const r=data[i],x=pd(r.date);
   if(!x)return alert('Date format not recognised.');
   const d=x.getFullYear()+p2(x.getMonth()+1)+p2(x.getDate()),hm=v=>{const [h,m]=String(v||'0:0').split(':');return p2(h)+p2(m||0)+'00'},e=v=>String(v||'').replace(/[,;]/g,'\\$&');
-  dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//EE Exams Duty Roster//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
+  dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Duty Lookup//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
 function open(html){$('md').innerHTML=html+'<div style="margin-top:12px"><button class="x" id="cl">Close</button></div>';$('ov').classList.add('on');$('cl').onclick=close}
 function close(){$('ov').classList.remove('on')}
 $('ov').onclick=e=>{if(e.target.id==='ov')close()};
@@ -460,11 +502,11 @@ function staffForm(k,ret){
     if(!name){$('sfM').textContent='Name is required.';return}
     if(phone&&ph(phone).length<10){$('sfM').textContent='Mobile needs country code, e.g. 923001234567.';return}
     data.forEach(r=>{if(key(r)===k){r.id=k;r.name=name;r.phone=phone}});saveRoster();rosterAdmin(...ret)}}
-function dutyForm(i,ret){
-  const r=i>=0?data[i]:{name:'',phone:'',date:'',start:'',end:'',exam:'',venue:'',role:''},k0=i>=0?key(r):'',v=x=>esc(x||'');
+function dutyForm(i,ret,pre){
+  const pp=pre?staff().find(x=>key(x)===pre):null,r=i>=0?data[i]:{name:pp?pp.name:'',phone:pp?pp.phone||'':'',date:'',start:'',end:'',exam:'',venue:'',role:''},k0=i>=0?key(r):(pp?pre:''),v=x=>esc(x||'');
   const so=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===k0?' selected':''}>${esc(p.name)}</option>`).join('');
-  open(`<h2>${i>=0?'✏️ Edit duty':'➕ Add duty'}</h2><div class="pf"><div class="full"><label>Invigilator</label><select id="rfS"><option value="__n"${i>=0?'':' selected'}>➕ New invigilator</option>${so}</select></div><div><label>Name *</label><input id="rfN" value="${v(r.name)}"></div><div><label>Mobile</label><input id="rfP" type="tel" value="${v(r.phone)}" placeholder="923001234567"></div><div><label>Date *</label><input id="rfD" value="${v(r.date)}" placeholder="2026-10-12"></div><div><label>Role</label><input id="rfR" value="${v(r.role)}" placeholder="Invigilator"></div><div><label>Start *</label><input id="rfT1" value="${v(r.start)}" placeholder="09:00"></div><div><label>End *</label><input id="rfT2" value="${v(r.end)}" placeholder="12:00"></div><div><label>Exam</label><input id="rfE" value="${v(r.exam)}"></div><div><label>Venue</label><input id="rfV" value="${v(r.venue)}"></div></div><p style="font-size:.78rem;color:var(--mu)">Changing name/mobile of an existing invigilator updates all their duties.</p><p id="rfM" style="color:var(--dg);margin:4px 0"></p><button class="b b2" id="rfSv" style="width:100%">Save</button><button class="x" id="rfC" style="width:100%;margin-top:8px">Cancel</button>`);
-  $('rfC').onclick=()=>rosterAdmin(...ret);
+  open(`<h2>${i>=0?'✏️ Edit duty':'➕ Add duty'}</h2><div class="pf"><div class="full"><label>Invigilator</label><select id="rfS"><option value="__n"${i>=0||pp?'':' selected'}>➕ New invigilator</option>${so}</select></div><div><label>Name *</label><input id="rfN" value="${v(r.name)}"></div><div><label>Mobile</label><input id="rfP" type="tel" value="${v(r.phone)}" placeholder="923001234567"></div><div><label>Date *</label><input id="rfD" value="${v(r.date)}" placeholder="2026-10-12"></div><div><label>Role</label><input id="rfR" value="${v(r.role)}" placeholder="Invigilator"></div><div><label>Start *</label><input id="rfT1" value="${v(r.start)}" placeholder="09:00"></div><div><label>End *</label><input id="rfT2" value="${v(r.end)}" placeholder="12:00"></div><div><label>Exam</label><input id="rfE" value="${v(r.exam)}"></div><div><label>Venue</label><input id="rfV" value="${v(r.venue)}"></div></div><p style="font-size:.78rem;color:var(--mu)">Changing name/mobile of an existing invigilator updates all their duties.</p><p id="rfM" style="color:var(--dg);margin:4px 0"></p><button class="b b2" id="rfSv" style="width:100%">Save</button><button class="x" id="rfC" style="width:100%;margin-top:8px">Cancel</button>`);
+  $('rfC').onclick=()=>ret?rosterAdmin(...ret):close();
   $('rfS').onchange=()=>{const k=$('rfS').value;if(k==='__n'){$('rfN').value='';$('rfP').value='';$('rfN').focus()}else{const p=staff().find(x=>key(x)===k);$('rfN').value=p.name;$('rfP').value=p.phone||''}};
   $('rfSv').onclick=()=>{const g=id=>$(id).value.trim(),err=m=>{$('rfM').textContent=m},name=g('rfN'),phone=g('rfP'),sel=$('rfS').value,t1=normT(g('rfT1')),t2=normT(g('rfT2')),dt=normD(g('rfD'),r.date);
     if(!name)return err('Name is required.');
@@ -474,7 +516,7 @@ function dutyForm(i,ret){
     let k=sel;if(sel==='__n')k='N'+Date.now().toString(36);else data.forEach(x=>{if(key(x)===sel){x.id=sel;x.name=name;x.phone=phone}});
     const row={id:k,name,phone,date:dt,start:t1,end:t2,exam:g('rfE'),venue:g('rfV'),role:g('rfR')};
     if(i>=0)data[i]=row;else data.push(row);
-    saveRoster();rosterAdmin(...ret)}}
+    saveRoster();ret?rosterAdmin(...ret):close()}}
 function setData(d){data=d;sv('duty2',d);fillFilters();render()}
 $('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)};
@@ -484,7 +526,7 @@ $('clear').onclick=()=>{if(!confirm('Clear the roster and all posted swaps for e
 $('vC').onclick=()=>{view='c';$('vC').classList.add('on');$('vT').classList.remove('on');render()};
 $('vT').onclick=()=>{view='t';$('vT').classList.add('on');$('vC').classList.remove('on');render()};
 $('clr').onclick=()=>{$('q').value=$('d').value=$('t').value=$('r').value='';render()};
-$('prt').onclick=()=>window.print();
+$('prt').onclick=printAll;
 $('exp').onclick=()=>{if(!cur.length)return;const H=['name','date','start','end','exam','venue','role'],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   dl('duty-roster.csv',[H.join(',')].concat(cur.map(r=>H.map(k=>q(r[k])).join(','))).join('\r\n'),'text/csv')};
 document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navigator.clipboard)navigator.clipboard.writeText(b.dataset.m).then(()=>{b.textContent='Copied'})});
@@ -498,11 +540,11 @@ async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncod
 $('adminBtn').onclick=()=>{
   open('<h2>🔒 Admin access</h2><label>Password</label><input id="pw" type="password" autocomplete="off"><p id="pe" style="color:var(--dg);margin:0 0 8px"></p><button class="b2" id="pg">Unlock</button>');
   const go=async()=>{let ok=false;try{ok=(await sha($('pw').value))===PH}catch(e){}
-    if(ok){isAdmin=true;updPend();close();$('adminPanel').hidden=false;$('admPh').value=adminPh;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
+    if(ok){isAdmin=true;updPend();render();close();$('adminPanel').hidden=false;$('admPh').value=adminPh;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
     else $('pe').textContent='Incorrect password.'};
   $('pg').onclick=go;$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('pw').focus()};
 $('admSave').onclick=()=>{const n=ph($('admPh').value);if(n.length<10){$('admMsg').textContent='Enter number with country code, e.g. 923001234567';return}adminPh=n;try{localStorage.setItem('adminPh',n)}catch(e){}cloud('adminPhone',n);$('admMsg').textContent='Saved.'};
-$('lock').onclick=()=>{isAdmin=false;updPend();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
+$('lock').onclick=()=>{isAdmin=false;updPend();render();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
 const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
 const FBROOT='duty_lookup/';let fbDb=null,fbOK=false;
 function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=>alert('Cloud save failed: '+e.message))}
