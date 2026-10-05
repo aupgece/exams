@@ -273,7 +273,7 @@ function fillFilters(){
 }
 let view='c',cur=[],groups=[];
 const when=r=>r.date+r.start;
-const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</button><button class="link fs" data-c="${i}">📅 Calendar</button></div>`;
+const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</button></div>`;
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
   return `<div class="dy"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
