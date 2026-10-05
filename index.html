@@ -60,8 +60,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .empty h3{margin:8px 0 4px;color:var(--mu)}
 
 /* faculty cards */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
-.fm{display:flex;align-items:center;gap:12px;padding-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;align-items:start}
+.pc{padding:14px}
+.fm{display:flex;align-items:center;gap:12px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--bd)}
 .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--ti);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem}
 .name{font-weight:800;font-size:1.08rem;line-height:1.2}
 .n{color:var(--mu);font-size:.82rem;font-weight:600}
@@ -78,18 +79,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .pick{display:block;margin-bottom:10px}
 .pick span{display:block;font-size:.8rem;font-weight:600;color:var(--mu);margin-bottom:3px}
 .pick select,.tw select{width:100%;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit;font-size:.9rem}
-.tkw{display:flex;flex-direction:column;gap:10px}
+.tkw,.more{display:flex;flex-direction:column;gap:10px}
+.mb{align-self:center;padding:8px 12px;font-weight:700}
 
-/* duty ticket */
-.tk{display:grid;grid-template-columns:68px 1fr;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--card)}
+/* duty row */
+.dy{display:grid;grid-template-columns:62px 1fr;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--card)}
+.dh{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .dt{background:var(--nv);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;text-align:center;line-height:1.1}
-.dt b{font-size:1.7rem;font-weight:800}
+.dt b{font-size:1.5rem;font-weight:800}
 .dt span{font-size:.85rem;font-weight:700;color:var(--gold)}
 .dt small{font-size:.72rem;opacity:.8;margin-top:2px}
-.tb{padding:11px 12px}
-.tm{font-weight:800;font-size:1rem}
-.ex{font-size:.92rem;margin-top:2px}
-.vn{color:var(--mu);font-size:.85rem;margin-bottom:6px}
+.db{padding:10px 12px;min-width:0}
+.tm{font-weight:800;font-size:1.02rem;color:var(--ti)}
+.ex{font-size:.95rem;font-weight:600;margin-top:4px}
+.vn{color:var(--mu);font-size:.85rem}
 @keyframes blk{50%{opacity:.3}}
 @keyframes sp{0%,100%{box-shadow:inset 0 0 0 0 transparent}50%{box-shadow:inset 0 0 0 60px rgba(240,180,41,.38)}}@keyframes sd{0%{box-shadow:0 0 0 0 rgba(240,180,41,.9)}100%{box-shadow:0 0 0 10px rgba(240,180,41,0)}}@keyframes sh{0%,86%,100%{transform:translateX(0)}90%{transform:translateX(-3px)}94%{transform:translateX(3px)}98%{transform:translateX(-2px)}}
 #pendBar{position:sticky;top:0;z-index:8;background:var(--soft);color:var(--tx);border-bottom:2px solid var(--gold);border-left:6px solid var(--gold);font-weight:800;font-size:.95rem;text-align:left;padding:11px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;animation:sp 1.6s ease-in-out infinite,sh 4s ease-in-out infinite}#pendBar[hidden]{display:none}
@@ -101,7 +104,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .tag{display:inline-block;font-size:.75rem;font-weight:700;background:var(--soft);color:var(--ti);border-radius:999px;padding:3px 10px;white-space:nowrap}
 .link{background:none;border:0;color:var(--ti);padding:0;min-height:0;font-size:.85rem;font-weight:600;cursor:pointer}
 .dg{color:var(--dg)}
-.ac{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ac{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .fs{border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:7px 11px;min-height:36px;font-size:.82rem}
 .fs:hover{background:var(--soft)}
 
@@ -112,6 +115,8 @@ th{text-align:left;background:var(--soft);padding:10px 12px;border-bottom:2px so
 td{padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top}
 td .ac{margin-top:0}
 tr:last-child td{border-bottom:0}
+.g1 td{border-top:2px solid var(--bd)}.g1:first-child td{border-top:0}
+td.nm{min-width:150px}
 td select{min-width:210px}
 
 /* modal */
@@ -146,6 +151,14 @@ input,select,textarea{font-size:16px}
 #adminPanel{margin-top:14px;color:var(--mu);font-size:.88rem}
 
 @media (max-width:640px){
+ .tw{border:0;background:none;overflow:visible}
+ table,tbody,tr,td{display:block}thead{display:none}
+ tr{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;padding:8px 12px}
+ .g1 td,.g1:first-child td{border-top:0}
+ td{border:0;padding:3px 0}td:empty{display:none}
+ td[data-l]::before{content:attr(data-l);display:inline-block;min-width:64px;font-size:.75rem;font-weight:700;color:var(--mu)}
+ td.nm::before{display:none}td.nm{font-size:1.05rem;min-width:0}
+ td .ac{margin-top:6px}
  .wrap{padding:18px 14px 0}
  main{padding:0 12px 110px}
  h1{font-size:1.55rem}
@@ -208,7 +221,7 @@ input,select,textarea{font-size:16px}
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
-    <div class="btns" style="margin-top:4px"><button class="b2" id="bSbAdm">🆘 Standby requests</button></div>
+    <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bSbAdm">🆘 Standby requests</button></div>
     <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
     <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
   </section>
@@ -260,11 +273,11 @@ function fillFilters(){
 }
 let view='c',cur=[],groups=[];
 const when=r=>r.date+r.start;
-const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">Swap this duty</button><button class="link fs" data-c="${i}">Add to calendar</button></div>`;
+const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</button><button class="link fs" data-c="${i}">📅 Calendar</button></div>`;
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
-  return `<div class="tk"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
-  <div class="tb"><div class="fd"><b class="dn">${esc(longD(r.date).w)}</b>${esc(longD(r.date).f)}</div><div class="tm">${esc(slot(r))}</div><div class="ex">${esc(r.exam)}</div><div class="vn">${esc(r.venue)}</div>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}${ac(data.indexOf(r))}</div></div>`}
+  return `<div class="dy"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
+  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${ac(data.indexOf(r))}</div></div>`}
 function render(){
   const L=$('list');cur=[];groups=[];$('cnt').textContent='';
   if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
@@ -277,16 +290,12 @@ function render(){
   $('cnt').textContent=`${by.size} staff, ${rows.length} of ${data.length} duties`;
   if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter.</div></div>';return}
   const cnt=n=>n>1?`${n} duties`:'1 duty';
-  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Duty</th><th>Exam and venue</th><th>Role</th><th>Actions</th></tr></thead><tbody>'+groups.map((rs,gi)=>{const r=rs[0];
-    return `<tr data-g="${gi}"><td><b>${esc(r.name)}</b><br><span class="bigi"><b>${rs.length}</b><span>${rs.length>1?'duties':'duty'}</span></span></td>
-    <td>${rs.length>1?`<select data-g="${gi}" aria-label="Choose duty for ${esc(r.name)}">${rs.map(opt).join('')}</select>`:`<div class="fd"><b class="dn">${esc(longD(r.date).w)}</b>${esc(longD(r.date).f)}<small>${esc(slot(r))}</small></div>`}</td>
-    <td class="c-ex">${esc(r.exam)}<br><span class="n">${esc(r.venue)}</span></td><td class="c-ro">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td class="c-ac">${ac(data.indexOf(r))}</td></tr>`}).join('')+'</tbody></table></div>';
-  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box" data-g="${gi}"><div class="fm"><div class="av">${esc(initials(rs[0].name))}</div><div class="who"><div class="name">${esc(rs[0].name)}</div></div><div class="big" title="${cnt(rs.length)}"><b>${rs.length}</b><span>${rs.length>1?'duties':'duty'}</span></div></div>`+
-    (rs.length>1?`<label class="pick"><span>Choose a duty</span><select data-g="${gi}">${rs.map(opt).join('')}<option value="all">Show all ${rs.length} duties</option></select></label>`:'')+
-    `<div class="tkw">${ticket(rs[0])}</div></div>`).join('')+'</div>';
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(r.name)}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
+  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="av">${esc(initials(rs[0].name))}</div><div class="who"><div class="name">${esc(rs[0].name)}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span></div>`+
+    `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div></div>`).join('')+'</div>';
 }
 const listEl=$('list');
-listEl.addEventListener('click',e=>{const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
+listEl.addEventListener('click',e=>{const m=e.target.closest('[data-more]');if(m){const w=m.previousElementSibling;w.hidden=!w.hidden;m.textContent=w.hidden?`Show ${m.dataset.more} more ${m.dataset.more>1?'duties':'duty'} ▾`:'Show less ▴';return}const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
 listEl.addEventListener('change',e=>{const s=e.target.closest('select[data-g]');if(!s)return;const rs=groups[+s.dataset.g];if(!rs)return;
   const tr=s.closest('tr');
   if(tr){const r=rs[+s.value];tr.querySelector('.c-ex').innerHTML=esc(r.exam)+'<br><span class="n">'+esc(r.venue)+'</span>';
@@ -331,11 +340,12 @@ function standbyBoard(){
   updPend();
   const L=standbys.slice().sort((a,b)=>((b.status!=='allocated')-(a.status!=='allocated'))||b.id-a.id);
   const row=o=>{const when=[fmt(o.date),[o.start,o.end].filter(Boolean).join('–'),o.exam,o.venue].filter(Boolean).map(esc).join(' · ');
-    if(o.status==='allocated'&&o.standby)return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin:6px 0">✅ Standby: <b>${esc(o.standby.name)}</b></div>${acts(o.standby,standbyAllocMsg(o.standby,o))}</div>`;
+    if(o.status==='allocated'&&o.standby)return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin:6px 0">✅ Standby: <b>${esc(o.standby.name)}</b></div>${acts(o.standby,standbyAllocMsg(o.standby,o))}<div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`;
     const fr=free(o).filter(p=>key(p)!==o.k);
-    return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div></div>`};
+    return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div><div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`};
   const M=$('md');
   open('<h2>🆘 Standby Requests</h2>'+(L.length?L.map(row).join(''):'<p style="color:var(--mu)">No standby requests yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">Only staff free at that time are listed.</p>');
+  M.querySelectorAll('[data-sd]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const o=standbys.find(x=>x.id==b.dataset.sd);if(!o||!confirm('Remove standby request of '+o.name+' ('+fmt(o.date)+' '+slot(o)+')?'))return;standbys=standbys.filter(x=>x.id!=o.id);cloud('standby/'+o.id,null);standbyBoard()});
   M.querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;
     const o=standbys.find(x=>x.id==b.dataset.al),sel=M.querySelector('[data-sel="'+b.dataset.al+'"]'),p=o&&staff().find(x=>key(x)===sel.value);
     if(!p){sel.focus();return}
@@ -418,6 +428,53 @@ function board(){
   M.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const[sid,rid]=b.dataset.dr.split('|'),s=swaps.find(x=>x.id==sid);if(!s||!s.replies)return;delete s.replies[rid];sv('swaps2',swaps);board();cloud('swaps/'+sid+'/replies/'+rid,null)});
   M.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);board();cloud('swaps/'+b.dataset.r,null)})}
 
+const p2s=n=>String(n).padStart(2,'0');
+const normT=t=>{const m=String(t||'').trim().match(/^(\d{1,2}):(\d{2})$/);return m&&+m[1]<24&&+m[2]<60?p2s(m[1])+':'+m[2]:null};
+const normD=(v,o)=>{v=String(v||'').trim();if(v===o)return v;const x=pd(v);return x?x.getFullYear()+'-'+p2s(x.getMonth()+1)+'-'+p2s(x.getDate()):null};
+function saveRoster(){setData(data);cloud('roster',data)}
+function rosterAdmin(tab,q){
+  if(!isAdmin)return;tab=tab||'d';q=q||'';
+  open(`<h2>✏️ Edit roster</h2><div class="btns" style="margin-bottom:8px"><button class="${tab==='d'?'b2':'x'}" id="rtD">Duties</button><button class="${tab==='s'?'b2':'x'}" id="rtS">Invigilators</button><button class="b2" id="rAdd">➕ Add ${tab==='s'?'invigilator':'duty'}</button></div><input id="rq" placeholder="Search name, exam, date, venue…" value="${esc(q)}" style="width:100%;margin-bottom:6px"><div id="rl"></div>`);
+  const M=$('md'),ret=()=>[tab,$('rq').value];
+  const list=()=>{const t=$('rq').value.trim().toLowerCase();let h='',more=0;
+    if(tab==='d'){
+      const rows=data.map((r,i)=>[r,i]).filter(([r])=>!t||[r.name,r.exam,r.venue,r.date,r.role].join(' ').toLowerCase().includes(t)).sort((a,b)=>when(a[0]).localeCompare(when(b[0]))||a[0].name.localeCompare(b[0].name));
+      more=Math.max(0,rows.length-50);
+      h=rows.slice(0,50).map(([r,i])=>`<div class="row" style="display:block"><b>${esc(r.name)}</b> <small>${esc(r.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${esc(fmt(r.date))} · ${esc(slot(r))} · ${esc(r.exam)} · ${esc(r.venue)}</div><div class="btns" style="margin-top:4px"><button class="x" data-ed="${i}">Edit</button><button class="x" data-rm="${i}" style="color:var(--dg)">Remove</button></div></div>`).join('')}
+    else{
+      const L=staff().filter(p=>!t||p.name.toLowerCase().includes(t));more=Math.max(0,L.length-50);
+      h=L.slice(0,50).map(p=>`<div class="row" style="display:block"><b>${esc(p.name)}</b> <small>${data.filter(r=>key(r)===key(p)).length} duties</small><div style="font-size:.88rem;color:var(--mu)">${esc(p.phone||'No phone')}</div><div class="btns" style="margin-top:4px"><button class="x" data-se="${esc(key(p))}">Edit</button><button class="x" data-sr="${esc(key(p))}" style="color:var(--dg)">Remove</button></div></div>`).join('')}
+    $('rl').innerHTML=(h||'<p style="color:var(--mu)">Nothing found.</p>')+(more?`<p style="font-size:.78rem;color:var(--mu)">${more} more — refine the search.</p>`:'');
+    M.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>dutyForm(+b.dataset.ed,ret()));
+    M.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const r=data[+b.dataset.rm];if(!r||!confirm('Remove this duty for '+r.name+' on '+fmt(r.date)+' '+slot(r)+'?'))return;data.splice(+b.dataset.rm,1);saveRoster();rosterAdmin(...ret())});
+    M.querySelectorAll('[data-se]').forEach(b=>b.onclick=()=>staffForm(b.dataset.se,ret()));
+    M.querySelectorAll('[data-sr]').forEach(b=>b.onclick=()=>{const p=staff().find(x=>key(x)===b.dataset.sr);if(!p||!confirm('Remove '+p.name+' and all their duties?'))return;data=data.filter(r=>key(r)!==b.dataset.sr);saveRoster();rosterAdmin(...ret())})};
+  list();$('rq').oninput=list;
+  $('rtD').onclick=()=>rosterAdmin('d',$('rq').value);$('rtS').onclick=()=>rosterAdmin('s',$('rq').value);
+  $('rAdd').onclick=()=>dutyForm(-1,ret())}
+function staffForm(k,ret){
+  const p=staff().find(x=>key(x)===k);if(!p)return;
+  open(`<h2>✏️ Edit invigilator</h2><label>Name *</label><input id="sfN" value="${esc(p.name)}" style="width:100%"><label>Mobile</label><input id="sfP" type="tel" value="${esc(p.phone||'')}" placeholder="923001234567" style="width:100%"><p style="font-size:.78rem;color:var(--mu)">Applies to all duties of this invigilator.</p><p id="sfM" style="color:var(--dg);margin:4px 0"></p><button class="b b2" id="sfSv" style="width:100%">Save</button><button class="x" id="sfC" style="width:100%;margin-top:8px">Cancel</button>`);
+  $('sfC').onclick=()=>rosterAdmin(...ret);
+  $('sfSv').onclick=()=>{const name=$('sfN').value.trim(),phone=$('sfP').value.trim();
+    if(!name){$('sfM').textContent='Name is required.';return}
+    if(phone&&ph(phone).length<10){$('sfM').textContent='Mobile needs country code, e.g. 923001234567.';return}
+    data.forEach(r=>{if(key(r)===k){r.id=k;r.name=name;r.phone=phone}});saveRoster();rosterAdmin(...ret)}}
+function dutyForm(i,ret){
+  const r=i>=0?data[i]:{name:'',phone:'',date:'',start:'',end:'',exam:'',venue:'',role:''},k0=i>=0?key(r):'',v=x=>esc(x||'');
+  const so=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===k0?' selected':''}>${esc(p.name)}</option>`).join('');
+  open(`<h2>${i>=0?'✏️ Edit duty':'➕ Add duty'}</h2><div class="pf"><div class="full"><label>Invigilator</label><select id="rfS"><option value="__n"${i>=0?'':' selected'}>➕ New invigilator</option>${so}</select></div><div><label>Name *</label><input id="rfN" value="${v(r.name)}"></div><div><label>Mobile</label><input id="rfP" type="tel" value="${v(r.phone)}" placeholder="923001234567"></div><div><label>Date *</label><input id="rfD" value="${v(r.date)}" placeholder="2026-10-12"></div><div><label>Role</label><input id="rfR" value="${v(r.role)}" placeholder="Invigilator"></div><div><label>Start *</label><input id="rfT1" value="${v(r.start)}" placeholder="09:00"></div><div><label>End *</label><input id="rfT2" value="${v(r.end)}" placeholder="12:00"></div><div><label>Exam</label><input id="rfE" value="${v(r.exam)}"></div><div><label>Venue</label><input id="rfV" value="${v(r.venue)}"></div></div><p style="font-size:.78rem;color:var(--mu)">Changing name/mobile of an existing invigilator updates all their duties.</p><p id="rfM" style="color:var(--dg);margin:4px 0"></p><button class="b b2" id="rfSv" style="width:100%">Save</button><button class="x" id="rfC" style="width:100%;margin-top:8px">Cancel</button>`);
+  $('rfC').onclick=()=>rosterAdmin(...ret);
+  $('rfS').onchange=()=>{const k=$('rfS').value;if(k==='__n'){$('rfN').value='';$('rfP').value='';$('rfN').focus()}else{const p=staff().find(x=>key(x)===k);$('rfN').value=p.name;$('rfP').value=p.phone||''}};
+  $('rfSv').onclick=()=>{const g=id=>$(id).value.trim(),err=m=>{$('rfM').textContent=m},name=g('rfN'),phone=g('rfP'),sel=$('rfS').value,t1=normT(g('rfT1')),t2=normT(g('rfT2')),dt=normD(g('rfD'),r.date);
+    if(!name)return err('Name is required.');
+    if(phone&&ph(phone).length<10)return err('Mobile needs country code, e.g. 923001234567.');
+    if(!dt)return err('Date not recognised (use e.g. 2026-10-12).');
+    if(!t1||!t2||t1>=t2)return err('Enter valid times with start before end (e.g. 09:00 and 12:00).');
+    let k=sel;if(sel==='__n')k='N'+Date.now().toString(36);else data.forEach(x=>{if(key(x)===sel){x.id=sel;x.name=name;x.phone=phone}});
+    const row={id:k,name,phone,date:dt,start:t1,end:t2,exam:g('rfE'),venue:g('rfV'),role:g('rfR')};
+    if(i>=0)data[i]=row;else data.push(row);
+    saveRoster();rosterAdmin(...ret)}}
 function setData(d){data=d;sv('duty2',d);fillFilters();render()}
 $('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)};
@@ -434,7 +491,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navi
 let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
 function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
 $('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
-$('pendBar').onclick=()=>isAdmin?(swaps.some(s=>s.approved===false)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;
+$('pendBar').onclick=()=>isAdmin?(swaps.some(s=>s.approved===false)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;$('bRosAdm').onclick=()=>rosterAdmin();
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
