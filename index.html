@@ -2,10 +2,10 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ECE Exam</title>
+<title>EE Exams</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png?v=2">
-<link rel="apple-touch-icon" href="icon-192.png?v=2">
+<link rel="icon" type="image/png" href="icon-192.png?v=3">
+<link rel="apple-touch-icon" href="icon-192.png?v=3">
 <meta name="theme-color" content="#0b2e2a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -174,12 +174,12 @@ input,select,textarea{font-size:16px}
 <body>
 <div id="pendBar" hidden><span id="pendTx"></span><b id="pendGo"></b></div>
 <header class="bar"><div class="wrap">
-    <div class="ttl"><img class="logo" src="icon-192.png?v=2" alt="ECE Exam" width="48" height="48" onerror="this.hidden=true"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
+    <div class="ttl"><img class="logo" src="icon-192.png?v=3" alt="EE Exams" width="48" height="48" onerror="this.hidden=true"><h1>Duty Lookup</h1><span id="st" class="st"></span></div>
     <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
       <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Post a swap request</small></span><span class="sm">🔄<br>Swap Duty</span></button>
-      <button class="b1" id="bStandby"><span class="lg">🆘 Request Standby Invigilator<br><small>Ask Mr. Sharoze (DEC Member)</small></span><span class="sm">🆘<br>Standby</span></button>
+      <button class="b1" id="bStandby"><span class="lg">🆘 Request Standby Invigilator<br><small>Ask Mr. Sharoze Sohail (DEC Member)</small></span><span class="sm">🆘<br>Standby</span></button>
       <button class="b1" id="bInst" hidden>Install app</button>
     </div>
 </div></header>
@@ -208,6 +208,7 @@ input,select,textarea{font-size:16px}
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
+    <div class="btns" style="margin-top:4px"><button class="b2" id="bSbAdm">🆘 Standby requests</button></div>
     <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
     <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
   </section>
@@ -229,6 +230,7 @@ S4,Hina Malik,923001110004,2026-10-16,09:00,12:00,Biochemistry,Hall A,Invigilato
 const ld=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let data=ld('duty2'),swaps=ld('swaps2'),isAdmin=false;
+let standbys=[];
 const key=r=>r.id||r.name, slot=r=>r.start+'–'+r.end;
 const pd=d=>{d=String(d||'').trim();let m;
   if(m=d.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))return new Date(+m[1],m[2]-1,+m[3]);
@@ -306,23 +308,38 @@ function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has 
 function post(i,note,quiet){const r=data[i];
   const s={id:Date.now(),k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,note:note||'',approved:false};
   swaps.unshift(s);sv('swaps2',swaps);if(!quiet)board();cloud('swaps/'+s.id,s)}
-const SHAROZE_PHONE='';
-const standbyMsg=(me,r)=>`Hi Sharoze, this is ${nt(me)}. I need a standby invigilator for my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue}). Could you please arrange one? Thank you!`;
-function standbyFlow(){if(needData())return;
-  open(`<h2>🆘 Request standby invigilator</h2><p style="color:var(--mu)">Your request goes to Mr. Sharoze (DEC Member).</p><label>1. Who are you?</label><select id="sy1"><option value="">Select your name</option>${staffOpts()}</select><div id="sy2"></div><div id="sy3"></div>`);
-  $('sy1').onchange=()=>{const k=$('sy1').value;$('sy3').innerHTML='';
-    $('sy2').innerHTML=k?`<label>2. Which duty needs a standby?</label><select id="sy2s"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
-    if(k)$('sy2s').onchange=()=>{const v=$('sy2s').value;if(v===''){$('sy3').innerHTML='';return}
-      const r=data[+v],sp=SHAROZE_PHONE||(staff().find(p=>/sharoze/i.test(p.name))||{}).phone||'';
-      $('sy3').innerHTML='<label>3. Send request</label>'+`<div class="row"><b>Sharoze</b> <small>DEC Member</small>${acts({phone:sp},standbyMsg(r.name,r))}</div>`}}}
 const NTFY_TOPIC='ece-swap-bpzp5ysiw';
 function notifyAdmin(o){if(!NTFY_TOPIC)return;
-  try{fetch('https://ntfy.sh/'+NTFY_TOPIC,{method:'POST',body:'New swap request awaiting approval: '+o.name+', '+fmt(o.date)+(o.start?' '+[o.start,o.end].filter(Boolean).join('-'):''),headers:{Title:'Swap request pending',Priority:'high',Tags:'bell',Click:location.origin+location.pathname}}).catch(()=>{})}catch(e){}}
+  try{fetch('https://ntfy.sh/'+NTFY_TOPIC,{method:'POST',body:(o.type==='standby'?'Standby invigilator requested: ':'New swap request awaiting approval: ')+o.name+', '+fmt(o.date)+(o.start?' '+[o.start,o.end].filter(Boolean).join('-'):''),headers:{Title:o.type==='standby'?'Standby request':'Swap request pending',Priority:'high',Tags:'bell',Click:location.origin+location.pathname}}).catch(()=>{})}catch(e){}}
 // Admin WhatsApp number (digits only, with country code, e.g. 923001234567). Leave blank to pick the contact in WhatsApp.
 const ADMIN_PHONE='';
 let adminPh=ADMIN_PHONE;try{adminPh=localStorage.getItem('adminPh')||ADMIN_PHONE}catch(e){}
 const adminMsg=o=>`Hello Admin,\n*${nt(o.name)}*${o.role?' ('+o.role+')':''} has requested a duty swap, pending your approval.\n\n${fmt(o.date)}${o.start?' · '+[o.start,o.end].filter(Boolean).join('–'):''}${o.exam?' · '+o.exam:''}${o.venue?' · '+o.venue:''}\nMobile: ${o.phone}${o.note?'\nNote: '+o.note:''}\n\nApprove in app: ${location.origin+location.pathname}\nThank you.`;
 const adminLink=o=>'https://wa.me/'+ph(adminPh)+'?text='+encodeURIComponent(adminMsg(o));
+const standbyAdminMsg=o=>`Hello Admin,\n*${nt(o.name)}*${o.role?' ('+o.role+')':''} needs a standby invigilator for the duty below.\n\n${fmt(o.date)}${o.start?' · '+[o.start,o.end].filter(Boolean).join('–'):''}${o.exam?' · '+o.exam:''}${o.venue?' · '+o.venue:''}\nMobile: ${o.phone}\n\nThank you.`;
+function standbyFlow(){if(needData())return;
+  open(`<h2>🆘 Request standby invigilator</h2><p style="color:var(--mu)">Your request goes to Mr. Sharoze Sohail (DEC Member).</p><label>1. Who are you?</label><select id="sy1"><option value="">Select your name</option>${staffOpts()}</select><div id="sy2"></div><div id="sy3"></div>`);
+  $('sy1').onchange=()=>{const k=$('sy1').value;$('sy3').innerHTML='';
+    $('sy2').innerHTML=k?`<label>2. Which duty needs a standby?</label><select id="sy2s"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
+    if(k)$('sy2s').onchange=()=>{const v=$('sy2s').value;if(v==='')return;
+      const r=data[+v],o={id:Date.now(),type:'standby',k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,role:r.role||''};
+      const dup=standbys.some(x=>x.name===o.name&&x.date===o.date&&x.start===o.start&&x.end===o.end);
+      if(!dup){standbys.unshift(o);cloud('standby/'+o.id,o);notifyAdmin(o)}
+      open(`<h2>✅ Standby request ${dup?'already sent':'sent'}</h2><p style="color:var(--mu);font-size:.92rem">Tap below to message the admin, then press <b>Send</b>.</p><div style="background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:.85rem;white-space:pre-wrap;line-height:1.45">${esc(standbyAdminMsg(o).replace(/\*/g,''))}</div><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${ph(adminPh)}?text=${encodeURIComponent(standbyAdminMsg(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}}}
+const standbyAllocMsg=(p,o)=>`Hi ${nt(p.name)}, you have been allocated as standby invigilator on ${fmt(o.date)}, ${slot(o)} (${o.exam}, ${o.venue}) in place of ${nt(o.name)}. Please confirm. Thank you!`;
+function standbyBoard(){
+  updPend();
+  const L=standbys.slice().sort((a,b)=>((b.status!=='allocated')-(a.status!=='allocated'))||b.id-a.id);
+  const row=o=>{const when=[fmt(o.date),[o.start,o.end].filter(Boolean).join('–'),o.exam,o.venue].filter(Boolean).map(esc).join(' · ');
+    if(o.status==='allocated'&&o.standby)return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin:6px 0">✅ Standby: <b>${esc(o.standby.name)}</b></div>${acts(o.standby,standbyAllocMsg(o.standby,o))}</div>`;
+    const fr=free(o).filter(p=>key(p)!==o.k);
+    return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div></div>`};
+  const M=$('md');
+  open('<h2>🆘 Standby Requests</h2>'+(L.length?L.map(row).join(''):'<p style="color:var(--mu)">No standby requests yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">Only staff free at that time are listed.</p>');
+  M.querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;
+    const o=standbys.find(x=>x.id==b.dataset.al),sel=M.querySelector('[data-sel="'+b.dataset.al+'"]'),p=o&&staff().find(x=>key(x)===sel.value);
+    if(!p){sel.focus();return}
+    o.status='allocated';o.standby={name:p.name,phone:p.phone||'',k:key(p)};o.allocatedAt=Date.now();cloud('standby/'+o.id,o);standbyBoard()})}
 function sentScreen(o,dup){
   open(`<h2>✅ Request ${dup?'already posted':'saved'}</h2><p style="color:var(--mu);font-size:.92rem">It will be listed once the admin approves. Tap below to message the admin, then press <b>Send</b>.</p><div style="background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:.85rem;white-space:pre-wrap;line-height:1.45">${esc(adminMsg(o).replace(/\*/g,''))}</div><a class="b wa" id="nwa" target="_blank" rel="noopener" href="${esc(adminLink(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}
 function postForm(pre){
@@ -367,10 +384,10 @@ function swapRow(s){
   <div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'No replies yet'}</div>
   <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`;
   return pend?h.split('\n  <div class="rp')[0]+'</div>':h}
-function updPend(){const n=swaps.filter(s=>s.approved===false).length;
-  $('pendBar').hidden=n<1;$('bBoard').classList.toggle('blink',isAdmin&&n>0);
-  if(n&&isAdmin&&navigator.vibrate&&!updPend.v){updPend.v=1;try{navigator.vibrate([120,60,120])}catch(e){}}
-  if(n){$('pendTx').textContent=n+' swap request'+(n>1?'s':'')+' pending approval';$('pendGo').textContent=isAdmin?'Review ›':'Admin login ›'}}
+function updPend(){const n=swaps.filter(s=>s.approved===false).length,m=standbys.filter(x=>x.status!=='allocated').length;
+  $('pendBar').hidden=n+m<1;$('bBoard').classList.toggle('blink',isAdmin&&n>0);
+  if(n+m&&isAdmin&&navigator.vibrate&&!updPend.v){updPend.v=1;try{navigator.vibrate([120,60,120])}catch(e){}}
+  if(n+m){$('pendTx').textContent=[n?n+' swap request'+(n>1?'s':''):'',m?m+' standby request'+(m>1?'s':''):''].filter(Boolean).join(' · ')+' pending'+(n?' approval':'');$('pendGo').textContent=isAdmin?'Review ›':'Admin login ›'}}
 function board(){
   updPend();
   const vis=(isAdmin?swaps:swaps.filter(s=>s.approved!==false)).slice().sort((a,b)=>(b.approved===false)-(a.approved===false));
@@ -417,7 +434,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navi
 let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
 function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
 $('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
-$('pendBar').onclick=()=>isAdmin?board():$('adminBtn').click();$('bBoard').onclick=board;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;
+$('pendBar').onclick=()=>isAdmin?(swaps.some(s=>s.approved===false)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -437,6 +454,8 @@ try{if(window.firebase){
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
+  fbDb.ref(FBROOT+'standby').on('value',x=>{const v=x.val()||{};standbys=Object.values(v).sort((a,b)=>b.id-a.id);updPend();
+    if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Standby Requests')&&![...$('md').querySelectorAll('select')].some(t=>t.value))standbyBoard()},e=>console.warn(e));
   fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);updPend();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps')&&![...$('md').querySelectorAll('textarea')].some(t=>t.value))board()},e=>console.warn(e));
 }}catch(e){console.warn('Firebase unavailable, using local mode',e)}
