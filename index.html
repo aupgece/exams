@@ -284,6 +284,7 @@ function free(duty){const busy=new Set(data.filter(x=>x.date===duty.date&&x.star
   return staff().filter(p=>!busy.has(key(p)))}
 function acts(p,msg){const n=ph(p.phone),cp=`<button class="b x cp" data-m="${esc(msg)}">Copy message</button>`;return n?`<span class="act"><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>${cp}</span>`:`<span class="act"><small>No phone</small>${cp}</span>`}
 const nt=n=>String(n||'').replace(/^\s*(mr|mrs|ms)\.?\s+/i,'').trim();
+const dn=n=>String(n||'').replace(/^\s*(dm|di)\.?\s+/i,'').trim();
 const swapMsg=(to,me,r)=>`Hi ${nt(to)}, this is ${nt(me)}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
 
 function fillFilters(){
@@ -313,8 +314,8 @@ function render(){
   $('cnt').textContent=`${by.size} staff, ${rows.length} of ${data.length} duties`;
   if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter.</div></div>';return}
   const cnt=n=>n>1?`${n} duties`:'1 duty';
-  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(r.name)}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
-  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="av">${esc(initials(rs[0].name))}</div><div class="who"><div class="name">${esc(rs[0].name)}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span>${rs.length>1?`<button class="link fs" data-pr="${esc(key(rs[0]))}">🖨 Print</button>`:''}</div>`+
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(dn(r.name))}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
+  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="who"><div class="name">${esc(dn(rs[0].name))}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span>${rs.length>1?`<button class="link fs" data-pr="${esc(key(rs[0]))}">🖨 Print</button>`:''}</div>`+
     `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div>${isAdmin?`<button class="link fs" data-ad="${esc(key(rs[0]))}" style="margin-top:10px;width:100%">➕ Add duty</button>`:''}</div>`).join('')+'</div>';
 }
 const listEl=$('list');
@@ -326,7 +327,7 @@ function printSheet(title,meta,tbl,note){
   document.body.classList.add('pr1');setTimeout(()=>window.print(),50)}
 function printFM(k){
   const rs=data.filter(r=>key(r)===k).sort((a,b)=>when(a).localeCompare(when(b)));if(!rs.length)return;
-  printSheet('Duty Roster',[['Faculty member',rs[0].name],['Total duties',rs.length]],
+  printSheet('Duty Roster',[['Faculty member',dn(rs[0].name)],['Total duties',rs.length]],
    `<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th></tr></thead><tbody>${rs.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td></tr>`).join('')}</tbody></table>`,
    '')}
 function printAll(){
@@ -334,7 +335,7 @@ function printAll(){
   const f=[];if($('q').value.trim())f.push('Name: '+$('q').value.trim());if($('d').value)f.push('Date: '+fmtY($('d').value));if($('t').value)f.push('Time: '+$('t').value);if($('r').value)f.push('Role: '+$('r').value);
   const n=groups.reduce((a,g)=>a+g.length,0);
   printSheet('Duty Roster',[['Faculty members',groups.length],['Duties',n],['Filter',f.length?f.join(' · '):'All duties']],
-   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(r.name)}</b>${rs.length>1?`<br><small>${rs.length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td></tr>`).join('')).join('')}</tbody></table>`,
+   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${rs.length>1?`<br><small>${rs.length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td></tr>`).join('')).join('')}</tbody></table>`,
    groups.length+' faculty members, '+n+' duties')}
 window.addEventListener('afterprint',()=>document.body.classList.remove('pr1'));
 listEl.addEventListener('click',e=>{const ab=e.target.closest('[data-ad]');if(ab){if(isAdmin)dutyForm(-1,null,ab.dataset.ad);return}const pb=e.target.closest('[data-pr]');if(pb){printFM(pb.dataset.pr);return}const m=e.target.closest('[data-more]');if(m){const w=m.previousElementSibling;w.hidden=!w.hidden;m.textContent=w.hidden?`Show ${m.dataset.more} more ${m.dataset.more>1?'duties':'duty'} ▾`:'Show less ▴';return}const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
@@ -382,9 +383,9 @@ function standbyBoard(){
   updPend();
   const L=standbys.slice().sort((a,b)=>((b.status!=='allocated')-(a.status!=='allocated'))||b.id-a.id);
   const row=o=>{const when=[fmt(o.date),[o.start,o.end].filter(Boolean).join('–'),o.exam,o.venue].filter(Boolean).map(esc).join(' · ');
-    if(o.status==='allocated'&&o.standby)return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin:6px 0">✅ Standby: <b>${esc(o.standby.name)}</b></div>${acts(o.standby,standbyAllocMsg(o.standby,o))}<div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`;
+    if(o.status==='allocated'&&o.standby)return `<div class="row" style="display:block"><b>${esc(dn(o.name))}</b> <small>${esc(o.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin:6px 0">✅ Standby: <b>${esc(dn(o.standby.name))}</b></div>${acts(o.standby,standbyAllocMsg(o.standby,o))}<div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`;
     const fr=free(o).filter(p=>key(p)!==o.k);
-    return `<div class="row" style="display:block"><b>${esc(o.name)}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div><div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`};
+    return `<div class="row" style="display:block"><b>${esc(dn(o.name))}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(dn(p.name))}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div><div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`};
   const M=$('md');
   open('<h2>🆘 Standby Requests</h2>'+(L.length?L.map(row).join(''):'<p style="color:var(--mu)">No standby requests yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">Only staff free at that time are listed.</p>');
   M.querySelectorAll('[data-sd]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const o=standbys.find(x=>x.id==b.dataset.sd);if(!o||!confirm('Remove standby request of '+o.name+' ('+fmt(o.date)+' '+slot(o)+')?'))return;standbys=standbys.filter(x=>x.id!=o.id);cloud('standby/'+o.id,null);standbyBoard()});
@@ -402,7 +403,7 @@ function postForm(pre){
   let cd=null;
   const fillDuty=r=>{cd=r||null;if(!r){$('pfinfo').hidden=true;return}
     $('pf2').value=r.phone||$('pf2').value;$('pf3').value=r.date;$('pf4').value=slot(r);$('pf5').value=r.venue||'';
-    $('pfinfo').hidden=false;$('pfinfo').innerHTML=`<b>${esc(r.name)}</b>${esc([fmt(r.date),slot(r)].join(', '))}<br>${esc([r.exam,r.venue,r.role].filter(Boolean).join(' · '))}`};
+    $('pfinfo').hidden=false;$('pfinfo').innerHTML=`<b>${esc(dn(r.name))}</b>${esc([fmt(r.date),slot(r)].join(', '))}<br>${esc([r.exam,r.venue,r.role].filter(Boolean).join(' · '))}`};
   const pickName=()=>{const k=$('pfn').value,o=k==='__o';$('pf1').hidden=!o;$('pfdw').hidden=true;cd=null;$('pfinfo').hidden=true;
     if(o){['pf2','pf3','pf4','pf5'].forEach(i=>$(i).value='');$('pf1').focus();return}
     if(!k)return;me=k;
