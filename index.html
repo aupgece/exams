@@ -306,7 +306,7 @@ const p2=n=>String(n).padStart(2,'0');
 function ics(i){const r=data[i],x=pd(r.date);
   if(!x)return alert('Date format not recognised.');
   const d=x.getFullYear()+p2(x.getMonth()+1)+p2(x.getDate()),hm=v=>{const [h,m]=String(v||'0:0').split(':');return p2(h)+p2(m||0)+'00'},e=v=>String(v||'').replace(/[,;]/g,'\\$&');
-  dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Duty Lookup//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
+  dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//EE Exams Duty Roster//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
 function open(html){$('md').innerHTML=html+'<div style="margin-top:12px"><button class="x" id="cl">Close</button></div>';$('ov').classList.add('on');$('cl').onclick=close}
 function close(){$('ov').classList.remove('on')}
 $('ov').onclick=e=>{if(e.target.id==='ov')close()};
