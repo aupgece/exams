@@ -221,7 +221,7 @@ input,select,textarea{font-size:16px}
 </div></header>
 <main>
   <div class="filters">
-    <label class="f"><span>Name</span><input id="q" type="search" placeholder="Search by name..." aria-label="Search by name"></label>
+    <label class="f"><span>Name</span><input id="q" type="search" placeholder="Type your name to search..." autofocus aria-label="Search by name"></label>
     <label class="f"><span>Date</span><select id="d"><option value="">All Dates</option></select></label>
     <label class="f"><span>Time slot</span><select id="t"><option value="">All Time Slots</option></select></label>
     <label class="f"><span>Role</span><select id="r"><option value="">All Roles</option></select></label>
@@ -267,6 +267,55 @@ const ld=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let data=ld('duty2'),swaps=ld('swaps2'),isAdmin=false;
 let standbys=[];
+let EFF=[],HAND=[],SW=[];
+// Effective roster = base roster with every approved + taken swap applied
+// A swap counts as taken when another FM presses Take & give alternate duty, OR replies offering an alternate duty of their own
+const offerLbl=r=>[fmt(r.date),slot(r),r.exam].filter(Boolean).join(' · ');
+const replyGive=v=>{if(v.give)return v.give;if(!v.offer)return null;
+  const r=data.find(r=>r.name===v.name&&offerLbl(r)===v.offer);
+  return r?{k:key(r),name:r.name,date:r.date,start:r.start,end:r.end,exam:r.exam||'',venue:r.venue||'',role:r.role||''}:null};
+const takerOf=x=>{if(!x||x.approved===false)return null;
+  if(x.status==='filled'&&x.takenBy)return{name:x.takenBy,k:x.takenK||'',at:x.takenAt||0,give:x.giveBack||null};
+  const c=Object.values(x.replies||{}).filter(v=>v&&v.name&&v.name!==x.name).map(v=>({v,g:replyGive(v)})).filter(o=>o.g).sort((a,b)=>(a.v.at||0)-(b.v.at||0))[0];
+  return c?{name:c.v.name,k:c.g.k||'',at:c.v.at||0,give:c.g,via:'reply'}:null};
+const nD=d=>{const x=pd(d);return x?x.getTime():String(d||'').trim()},nT=t=>String(t||'').trim().replace(/^(\d):/,'0$1:');
+const sameSlot=(r,x)=>nD(r.date)===nD(x.date)&&nT(r.start)===nT(x.start)&&nT(r.end)===nT(x.end);
+const ownRow=(r,x)=>key(r)===x.k||r.name===x.name||String(r.name).trim().toLowerCase()===String(x.name||'').trim().toLowerCase();
+const overlapRow=(r,x)=>nD(r.date)===nD(x.date)&&nT(r.start)<nT(x.end||'23:59')&&nT(x.start)<nT(r.end);
+const findRow=(base,x)=>base.find(r=>!r._from&&ownRow(r,x)&&sameSlot(r,x))||base.find(r=>ownRow(r,x)&&sameSlot(r,x))||base.find(r=>!r._from&&ownRow(r,x)&&overlapRow(r,x));
+// Effective roster = base roster with every approved + taken swap applied; open/pending swaps are flagged
+function rebuild(){
+  const base=data.map((r,i)=>Object.assign({},r,{_i:i})),st=new Map(data.map(r=>[key(r),r]));HAND=[];SW=[];
+  swaps.filter(x=>takerOf(x)).sort((a,b)=>takerOf(a).at-takerOf(b).at).forEach(x=>{
+    const tk=takerOf(x);let row=findRow(base,x);const tp=(tk.k&&st.get(tk.k))||[...st.values()].find(v=>v.name===tk.name);
+    if(!row){row={id:x.k||x.name,name:x.name,phone:x.phone||'',date:x.date,start:x.start,end:x.end,exam:x.exam||'',venue:x.venue||'',role:x.role||''};base.push(row)}
+    const from=row.name,fromK=key(row),fromPh=row.phone||x.phone||'';
+    row._from=from;row.id=tp?key(tp):tk.name;row.name=tk.name;row.phone=tp?(tp.phone||''):'';
+    HAND.push({from,fromK,to:row.name,toK:key(row),date:row.date,start:row.start,end:row.end,exam:row.exam,venue:row.venue,role:row.role||''});
+    SW.push({taker:tk.name,from,date:row.date,start:row.start,end:row.end,exam:row.exam||'',venue:row.venue||'',give:tk.give||null,at:tk.at});
+    const g=tk.give;if(g){const gr=base.find(r=>!r._from&&(key(r)===g.k||r.name===g.name)&&sameSlot(r,g));
+      if(gr){const gfrom=gr.name,gfromK=key(gr);gr._from=gfrom;gr.id=fromK;gr.name=from;gr.phone=fromPh;
+        HAND.push({from:gfrom,fromK:gfromK,to:from,toK:fromK,date:gr.date,start:gr.start,end:gr.end,exam:gr.exam,venue:gr.venue,role:gr.role||''})}}});
+  swaps.filter(x=>!takerOf(x)).forEach(x=>{
+    const row=findRow(base,x);if(row&&!row._from&&!row._open){const rp=Object.values(x.replies||{}).filter(v=>v&&v.name&&v.name!==x.name).sort((p,q)=>(p.at||0)-(q.at||0))[0];
+      row._open=x.approved===false?'Swap requested (awaiting approval)':rp?'Swap approved · reply from '+dn(rp.name)+' (exchange not confirmed yet)':'Swap open (approved, no taker yet)'}});
+  EFF=base}
+const swTxt=r=>r._from?'Taken from '+dn(r._from):r._to?'Given to '+dn(r._to):r._open||'';
+const swCell=r=>r._from?`<b style="color:#15803d">⇄ Taken from ${esc(dn(r._from))}</b>`:r._to?`<b style="color:#b42318">⇄ Given to ${esc(dn(r._to))}</b>`:r._open?`<b style="color:#b45309">⏳ ${esc(r._open)}</b>`:'—';
+function withGiven(rows){
+  const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
+  const ex=HAND.filter(h=>(!d||h.date===d)&&(!t||h.start+'–'+h.end===t)&&(!ro||h.role===ro)&&(!q||h.from.toLowerCase().includes(q)))
+   .map(h=>({id:h.fromK,name:h.from,phone:'',date:h.date,start:h.start,end:h.end,exam:h.exam,venue:h.venue,role:h.role,_to:h.to}));
+  const bySort=$('s').value==='d';
+  return rows.concat(ex).sort(bySort?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)))}
+function handNote(k){const h=HAND.filter(x=>x.fromK===k);return h.length?'Handed over via approved swap: '+h.map(x=>fmt(x.date)+' '+x.start+'–'+x.end+' → '+dn(x.to)).join('; '):''}
+function swapsFor(rows){
+  const q=$('q').value.trim().toLowerCase(),d=$('d').value;
+  return SW.filter(x=>(!q||x.taker.toLowerCase().includes(q)||x.from.toLowerCase().includes(q))&&(!d||x.date===d||(x.give&&x.give.date===d)))}
+function swapTable(list,title){if(!list.length)return '';
+  return `<h3 style="margin:16px 0 6px;font-size:13px;color:#0b2e2a">${esc(title)}</h3><table class="z"><thead><tr><th class="c">#</th><th>Duty taken</th><th>Taken by</th><th>From (original FM)</th><th>Duty given in exchange</th></tr></thead><tbody>${list.map((x,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(x.date))}<br>${esc(x.start+'–'+x.end)}${x.exam?'<br>'+esc(x.exam):''}</td><td><b>${esc(dn(x.taker))}</b></td><td>${esc(dn(x.from))}</td><td>${x.give?esc(fmtY(x.give.date))+'<br>'+esc(x.give.start+'–'+x.give.end)+(x.give.exam?'<br>'+esc(x.give.exam):''):'—'}</td></tr>`).join('')}</tbody></table>`}
+function swapLogHtml(rows){const h=swapsFor(rows);
+  return h.length?swapTable(h,'Duties taken through approved swaps ('+h.length+')'):'<p style="margin-top:14px;font-size:11px;color:#555">No duty has been taken through a swap.</p>'}
 const key=r=>r.id||r.name, slot=r=>r.start+'–'+r.end;
 const pd=d=>{d=String(d||'').trim();let m;
   if(m=d.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))return new Date(+m[1],m[2]-1,+m[3]);
@@ -280,14 +329,14 @@ const ph=p=>(p||'').replace(/\D/g,'');
 function parse(t){const L=t.trim().split(/\r?\n/).map(l=>l.split(',').map(c=>c.trim()));const h=L.shift().map(x=>x.toLowerCase());
   return L.filter(r=>r.length>2).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]||''])))}
 function staff(){return [...new Map(data.map(r=>[key(r),r])).values()].sort((a,b)=>a.name.localeCompare(b.name))}
-function free(duty){const busy=new Set(data.filter(x=>x.date===duty.date&&x.start<duty.end&&duty.start<x.end).map(key));
+function free(duty){const busy=new Set(EFF.filter(x=>x.date===duty.date&&x.start<duty.end&&duty.start<x.end).map(key));
   return staff().filter(p=>!busy.has(key(p)))}
 function acts(p,msg){const n=ph(p.phone),cp=`<button class="b x cp" data-m="${esc(msg)}">Copy message</button>`;return n?`<span class="act"><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>${cp}</span>`:`<span class="act"><small>No phone</small>${cp}</span>`}
 const nt=n=>String(n||'').replace(/^\s*(mr|mrs|ms)\.?\s+/i,'').trim();
 const dn=n=>String(n||'').replace(/^\s*(dm|di)\.?\s+/i,'').trim();
 const swapMsg=(to,me,r)=>`Hi ${nt(to)}, this is ${nt(me)}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
 
-function fillFilters(){
+function fillFilters(){rebuild();
   const ds=[...new Set(data.map(r=>r.date))].sort(), ts=[...new Set(data.map(slot))].sort(), ro=[...new Set(data.map(r=>r.role).filter(Boolean))].sort();
   const cd=$('d').value,ct=$('t').value,cr=$('r').value;
   $('d').innerHTML='<option value="">All Dates</option>'+ds.map(d=>`<option value="${esc(d)}">${esc(fmt(d))}</option>`).join('');
@@ -301,22 +350,26 @@ const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</bu
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
   return `<div class="dy"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
-  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${ac(data.indexOf(r))}</div></div>`}
+  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${ac(EFF.indexOf(r))}</div></div>`}
+function getRows(){const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
+  const rows=EFF.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
+  rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));return rows}
+const groupRows=rows=>{const by=new Map();rows.forEach(r=>{const k=key(r);if(!by.has(k))by.set(k,[]);by.get(k).push(r)});return [...by.values()]};
 function render(){
+  rebuild();
+  {const hf=!!($('q').value.trim()||$('d').value||$('t').value||$('r').value);$('prt').textContent=hf?'Print / PDF (results)':'Print / PDF (all FMs)';$('exp').textContent=hf?'Export CSV (results)':'Export CSV (all FMs)'}
   const L=$('list');cur=[];groups=[];$('cnt').textContent='';
   if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
-  const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
-  const rows=data.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
-  rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));
-  cur=rows;
-  const by=new Map();rows.forEach(r=>{const k=key(r);if(!by.has(k))by.set(k,[]);by.get(k).push(r)});
-  groups=[...by.values()];
-  $('cnt').textContent=`${by.size} staff, ${rows.length} of ${data.length} duties`;
-  if(!by.size){L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter.</div></div>';return}
+  const q=$('q').value.trim(),d=$('d').value,t=$('t').value,ro=$('r').value;
+  if(q.length<2){L.innerHTML=`<div class="box empty"><div style="font-size:2.4rem">🔍</div><h3>Search your name to see your duties</h3><div>Type at least 2 letters of your name in the search box above.${(d||t||ro)?'<br>Date / time / role filters only narrow a name search.':''}</div></div>`;return}
+  const rows=getRows();cur=rows;const allG=groupRows(rows),MAXFM=8;groups=allG.slice(0,MAXFM);const by={size:groups.length};
+  $('cnt').textContent=allG.length>MAXFM?`Showing ${MAXFM} of ${allG.length} matching staff, type more letters to narrow`:`${allG.length} staff, ${rows.length} duties`;
+  if(!by.size){const ql=q.toLowerCase(),hs=q?HAND.filter(x=>x.from.toLowerCase().includes(ql)):[];
+    L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter or check the spelling.</div>'+(hs.length?'<div style="margin-top:10px;text-align:left">'+hs.map(x=>'🔄 '+esc(dn(x.from))+': '+esc(fmt(x.date))+' '+esc(x.start+'–'+x.end)+' was handed over to <b>'+esc(dn(x.to))+'</b> (approved swap)').join('<br>')+'</div>':'')+'</div>';return}
   const cnt=n=>n>1?`${n} duties`:'1 duty';
-  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(dn(r.name))}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(data.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(dn(r.name))}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}${r._from?`<br><span class="tag tfl">🔄 from ${esc(dn(r._from))}</span>`:''}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(EFF.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
   else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="who"><div class="name">${esc(dn(rs[0].name))}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span>${rs.length>1?`<button class="link fs" data-pr="${esc(key(rs[0]))}">🖨 Print</button>`:''}</div>`+
-    `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div>${isAdmin?`<button class="link fs" data-ad="${esc(key(rs[0]))}" style="margin-top:10px;width:100%">➕ Add duty</button>`:''}</div>`).join('')+'</div>';
+    `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div>${HAND.filter(h=>h.fromK===key(rs[0])).map(h=>`<div class="n" style="margin-top:8px">🔄 ${esc(fmt(h.date))} ${esc(h.start+'–'+h.end)} handed over to ${esc(dn(h.to))}</div>`).join('')}${isAdmin?`<button class="link fs" data-ad="${esc(key(rs[0]))}" style="margin-top:10px;width:100%">➕ Add duty</button>`:''}</div>`).join('')+'</div>';
 }
 const listEl=$('list');
 const fmtY=d=>{const x=pd(d);return x?x.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'}):d};
@@ -326,34 +379,35 @@ function printSheet(title,meta,tbl,note){
   sh.innerHTML=`<div class="ph"><img src="icon-192.png?v=3" alt="" onerror="this.hidden=true"><div><h2>${esc(title)}</h2><div class="s">EE Exams · Examination duty roster</div></div><div class="d">Printed on<br><b>${esc(now)}</b></div></div><div class="mt">${meta.map(([k,v])=>`<span>${esc(k)}: <b>${esc(v)}</b></span>`).join('')}</div>${tbl}<div class="ft"><span>${esc(note||'')}</span><span>EE Exams</span></div>`;
   document.body.classList.add('pr1');setTimeout(()=>window.print(),50)}
 function printFM(k){
-  const rs=data.filter(r=>key(r)===k).sort((a,b)=>when(a).localeCompare(when(b)));if(!rs.length)return;
-  printSheet('Duty Roster',[['Faculty member',dn(rs[0].name)],['Total duties',rs.length]],
-   `<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th></tr></thead><tbody>${rs.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td></tr>`).join('')}</tbody></table>`,
-   '')}
+  const act=EFF.filter(r=>key(r)===k),given=HAND.filter(h=>h.fromK===k).map(h=>({id:k,name:h.from,date:h.date,start:h.start,end:h.end,exam:h.exam,venue:h.venue,role:h.role,_to:h.to}));
+  const rs=act.concat(given).sort((a,b)=>when(a).localeCompare(when(b)));if(!rs.length)return;
+  printSheet('Duty Roster',[['Faculty member',dn(rs[0].name)],['Total duties',act.length],['Swapped duties',rs.filter(r=>r._from||r._to||r._open).length]],
+   `<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${rs.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')}</tbody></table>`+swapTable(SW.filter(x=>x.taker===rs[0].name||x.from===rs[0].name),'Swaps involving this FM'),
+   handNote(k))}
 function printAll(){
-  if(!groups.length)return;
+  const rowsAll=getRows(),groups=groupRows(withGiven(rowsAll));if(!groups.length)return;
   const f=[];if($('q').value.trim())f.push('Name: '+$('q').value.trim());if($('d').value)f.push('Date: '+fmtY($('d').value));if($('t').value)f.push('Time: '+$('t').value);if($('r').value)f.push('Role: '+$('r').value);
-  const n=groups.reduce((a,g)=>a+g.length,0);
-  printSheet('Duty Roster',[['Faculty members',groups.length],['Duties',n],['Filter',f.length?f.join(' · '):'All duties']],
-   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${rs.length>1?`<br><small>${rs.length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td></tr>`).join('')).join('')}</tbody></table>`,
+  const n=rowsAll.length;
+  printSheet('Duty Roster',[['Faculty members',groups.length],['Duties',n],['Approved swaps applied',swapsFor(rowsAll).length],['Filter',f.length?f.join(' · '):'All faculty members, all duties']],
+   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${rs.filter(x=>!x._to).length>1?`<br><small>${rs.filter(x=>!x._to).length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')).join('')}</tbody></table>`+swapLogHtml(rowsAll),
    groups.length+' faculty members, '+n+' duties')}
 window.addEventListener('afterprint',()=>document.body.classList.remove('pr1'));
 listEl.addEventListener('click',e=>{const ab=e.target.closest('[data-ad]');if(ab){if(isAdmin)dutyForm(-1,null,ab.dataset.ad);return}const pb=e.target.closest('[data-pr]');if(pb){printFM(pb.dataset.pr);return}const m=e.target.closest('[data-more]');if(m){const w=m.previousElementSibling;w.hidden=!w.hidden;m.textContent=w.hidden?`Show ${m.dataset.more} more ${m.dataset.more>1?'duties':'duty'} ▾`:'Show less ▴';return}const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
 listEl.addEventListener('change',e=>{const s=e.target.closest('select[data-g]');if(!s)return;const rs=groups[+s.dataset.g];if(!rs)return;
   const tr=s.closest('tr');
   if(tr){const r=rs[+s.value];tr.querySelector('.c-ex').innerHTML=esc(r.exam)+'<br><span class="n">'+esc(r.venue)+'</span>';
-    tr.querySelector('.c-ro').innerHTML=r.role?`<span class="tag">${esc(r.role)}</span>`:'';tr.querySelector('.c-ac').innerHTML=ac(data.indexOf(r))}
+    tr.querySelector('.c-ro').innerHTML=r.role?`<span class="tag">${esc(r.role)}</span>`:'';tr.querySelector('.c-ac').innerHTML=ac(EFF.indexOf(r))}
   else{const w=s.closest('.box').querySelector('.tkw');w.innerHTML=s.value==='all'?rs.map(ticket).join(''):ticket(rs[+s.value])}});
 function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
 const p2=n=>String(n).padStart(2,'0');
-function ics(i){const r=data[i],x=pd(r.date);
+function ics(i){const r=EFF[i],x=pd(r.date);
   if(!x)return alert('Date format not recognised.');
   const d=x.getFullYear()+p2(x.getMonth()+1)+p2(x.getDate()),hm=v=>{const [h,m]=String(v||'0:0').split(':');return p2(h)+p2(m||0)+'00'},e=v=>String(v||'').replace(/[,;]/g,'\\$&');
   dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Duty Lookup//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
 function open(html){$('md').innerHTML=html+'<div style="margin-top:12px"><button class="x" id="cl">Close</button></div>';$('ov').classList.add('on');$('cl').onclick=close}
 function close(){$('ov').classList.remove('on')}
 $('ov').onclick=e=>{if(e.target.id==='ov')close()};
-const dutyOpts=k=>data.map((r,i)=>[r,i]).filter(([r])=>key(r)===k).map(([r,i])=>`<option value="${i}">${esc(fmt(r.date))} ${esc(slot(r))} — ${esc(r.exam)}</option>`).join('');
+const dutyOpts=k=>EFF.map((r,i)=>[r,i]).filter(([r])=>key(r)===k).map(([r,i])=>`<option value="${i}">${esc(fmt(r.date))} ${esc(slot(r))} — ${esc(r.exam)}</option>`).join('');
 const staffOpts=()=>staff().map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('');
 function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has not been uploaded yet.</p>');return true}}
 
@@ -374,7 +428,7 @@ function standbyFlow(){if(needData())return;
   $('sy1').onchange=()=>{const k=$('sy1').value;$('sy3').innerHTML='';
     $('sy2').innerHTML=k?`<label>2. Which duty needs a standby?</label><select id="sy2s"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
     if(k)$('sy2s').onchange=()=>{const v=$('sy2s').value;if(v==='')return;
-      const r=data[+v],o={id:Date.now(),type:'standby',k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,role:r.role||''};
+      const r=EFF[+v],o={id:Date.now(),type:'standby',k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,role:r.role||''};
       const dup=standbys.some(x=>x.name===o.name&&x.date===o.date&&x.start===o.start&&x.end===o.end);
       if(!dup){standbys.unshift(o);cloud('standby/'+o.id,o);notifyAdmin(o)}
       open(`<h2>✅ Standby request ${dup?'already sent':'sent'}</h2><p style="color:var(--mu);font-size:.92rem">Tap below to message the admin, then press <b>Send</b>.</p><div style="background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:.85rem;white-space:pre-wrap;line-height:1.45">${esc(standbyAdminMsg(o).replace(/\*/g,''))}</div><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${ph(adminPh)}?text=${encodeURIComponent(standbyAdminMsg(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}}}
@@ -396,7 +450,7 @@ function standbyBoard(){
 function sentScreen(o,dup){
   open(`<h2>✅ Request ${dup?'already posted':'saved'}</h2><p style="color:var(--mu);font-size:.92rem">It will be listed once the admin approves. Tap below to message the admin, then press <b>Send</b>.</p><div style="background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:.85rem;white-space:pre-wrap;line-height:1.45">${esc(adminMsg(o).replace(/\*/g,''))}</div><a class="b wa" id="nwa" target="_blank" rel="noopener" href="${esc(adminLink(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}
 function postForm(pre){
-  const r0=pre!==undefined?data[pre]:null,v=x=>esc(x||''),sel=r0?key(r0):me;
+  const r0=pre!==undefined?EFF[pre]:null,v=x=>esc(x||''),sel=r0?key(r0):me;
   const ns=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===sel?' selected':''}>${esc(p.name)}</option>`).join('');
   open(`<h2>📣 Post a Swap Request</h2><p style="color:var(--mu)">Pick your name and duty — the details fill in automatically. Colleagues can then contact you via WhatsApp/Call.</p><div class="pf"><div class="full"><label>Your name *</label><select id="pfn"><option value="">Select your name</option>${ns}<option value="__o">Other (type name)</option></select><input id="pf1" placeholder="Type your full name" hidden></div><div class="full" id="pfdw" hidden><label>Your duty *</label><select id="pfd"></select></div><div id="pfinfo" class="full rp" hidden></div><div><label>Mobile *</label><input id="pf2" type="tel" placeholder="+92 3XX XXXXXXX"></div><div><label>Duty date *</label><input id="pf3" placeholder="e.g. 02-Jun-2026"></div><div><label>Time slot *</label><input id="pf4" placeholder="9:00-12:00"></div><div><label>Room (optional)</label><input id="pf5" placeholder="R-101"></div><div class="full"><label>Notes (optional)</label><textarea id="pf6" rows="3" maxlength="500" placeholder="Why you need a swap, what you can offer in return..."></textarea></div></div><button class="b b2" id="pfp" style="width:100%">Post Request</button><button class="x" id="pfc" style="width:100%;margin-top:8px">Cancel</button>`);
   $('cl').remove();$('pfc').onclick=close;
@@ -407,13 +461,13 @@ function postForm(pre){
   const pickName=()=>{const k=$('pfn').value,o=k==='__o';$('pf1').hidden=!o;$('pfdw').hidden=true;cd=null;$('pfinfo').hidden=true;
     if(o){['pf2','pf3','pf4','pf5'].forEach(i=>$(i).value='');$('pf1').focus();return}
     if(!k)return;me=k;
-    const rs=data.filter(r=>key(r)===k);if(!rs.length)return;
+    const rs=EFF.filter(r=>key(r)===k);if(!rs.length)return;
     $('pf2').value=rs[0].phone||'';
-    $('pfd').innerHTML=(rs.length>1?'<option value="">Select duty</option>':'')+rs.map(r=>`<option value="${data.indexOf(r)}">${esc(fmt(r.date))} ${esc(slot(r))} — ${esc(r.exam)}</option>`).join('');
+    $('pfd').innerHTML=(rs.length>1?'<option value="">Select duty</option>':'')+rs.map(r=>`<option value="${EFF.indexOf(r)}">${esc(fmt(r.date))} ${esc(slot(r))} — ${esc(r.exam)}</option>`).join('');
     $('pfdw').hidden=false;
-    const want=r0&&key(r0)===k?data.indexOf(r0):(rs.length===1?data.indexOf(rs[0]):-1);
-    if(want>=0){$('pfd').value=want;fillDuty(data[want])}else{['pf3','pf4','pf5'].forEach(i=>$(i).value='')}};
-  $('pfn').onchange=pickName;$('pfd').onchange=()=>{const x=$('pfd').value;fillDuty(x===''?null:data[+x])};
+    const want=r0&&key(r0)===k?EFF.indexOf(r0):(rs.length===1?EFF.indexOf(rs[0]):-1);
+    if(want>=0){$('pfd').value=want;fillDuty(EFF[want])}else{['pf3','pf4','pf5'].forEach(i=>$(i).value='')}};
+  $('pfn').onchange=pickName;$('pfd').onchange=()=>{const x=$('pfd').value;fillDuty(x===''?null:EFF[+x])};
   if(sel&&$('pfn').value===sel)pickName();
   $('pfp').onclick=()=>{
     const g=i=>$('pf'+i).value.trim(),k=$('pfn').value,p=k&&k!=='__o'?staff().find(x=>key(x)===k):null,name=p?p.name:g(1),phone=g(2),date=g(3),sl=g(4);
@@ -426,17 +480,33 @@ function postForm(pre){
     sentScreen(o,dup)}}
 const rt=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 let me='';
-const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
+const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg||x.offer?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.offer?`<div>🔄 Gives alternate duty: <b>${esc(x.offer)}</b></div>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
 function swapRow(s){
-  const pend=s.approved===false;
+  const pend=s.approved===false,tk=takerOf(s);
   const n=ph(s.phone),reps=Object.entries(s.replies||{}).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>a.at-b.at);
   const wm=`Hi ${nt(s.name)}, I saw your swap request for ${[fmt(s.date),[s.start,s.end].filter(Boolean).join('–')].filter(Boolean).join(', ')}${s.exam?' ('+s.exam+')':''}. I can help — let me know!`;
   const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
-  const h=`<div class="row"><div><b>${esc(s.name)}</b> <span class="tag${s.status==='filled'?' tfl':''}">${pend?'⏳ Pending approval':s.status==='filled'?'✓ Filled':'Open'}</span><br>${s.status==='filled'?`<small>Taken by ${esc(s.takenBy)} · ${esc(rt(s.takenAt))}</small><br>`:''}<small>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
-  <div class="act">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${pend||s.status==='filled'?'':`<button class="b b2" data-tk="${s.id}">✓ I'll Take It</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
+  const h=`<div class="row"><div><b>${esc(s.name)}</b> <span class="tag${tk?' tfl':''}">${pend?'⏳ Pending approval':tk?'✓ Taken':'Open'}</span><br>${tk?`<small>Taken by <b>${esc(dn(tk.name))}</b> · ${esc(rt(tk.at))}</small><br>${tk.give?`<small>🔄 In exchange gives: ${esc([fmt(tk.give.date),[tk.give.start,tk.give.end].join('–'),tk.give.exam].filter(Boolean).join(' · '))}</small><br>`:''}`:''}<small>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
+  <div class="act">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${pend||tk?'':`<button class="b b2" data-tk="${s.id}">🔄 Take &amp; give alternate duty</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin&&s.status==='filled'&&s.takenBy?`<button class="link dg" data-un="${s.id}">Undo take</button>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
   <div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'No replies yet'}</div>
-  <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`;
+  <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><select class="alt" aria-label="Alternate duty you can give"><option value="">🔄 Alternate duty you can offer (optional)</option></select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`;
   return pend?h.split('\n  <div class="rp')[0]+'</div>':h}
+function exchangeOpts(s,p){
+  const isOwner=x=>s.k?key(x)===s.k:x.name===s.name,ov=(x,r)=>x.date===r.date&&x.start<r.end&&r.start<x.end;
+  return EFF.filter(r=>key(r)===key(p)&&!r._to).filter(r=>
+    !EFF.some(x=>x!==r&&key(x)===key(p)&&s.start&&s.end&&ov(x,s))&&
+    !EFF.some(x=>isOwner(x)&&!(x.date===s.date&&x.start===s.start&&x.end===s.end)&&ov(x,r)))}
+function exchangeForm(s,p){
+  const opts=exchangeOpts(s,p);
+  if(!opts.length){alert('You have no duty that can be given in exchange (time clash for you or for '+nt(s.name)+'). A swap needs a duty in return.');return}
+  const lab=r=>[fmt(r.date),slot(r),r.exam,r.venue].filter(Boolean).join(' · ');
+  open(`<h2>🔄 Swap duties</h2><p style="color:var(--mu);font-size:.92rem">You take <b>${esc(dn(s.name))}</b>'s duty:<br><b>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue].filter(Boolean).join(' · '))}</b></p><label>Duty you give in return *</label><select id="xg"><option value="">Select your duty</option>${opts.map((r,i)=>`<option value="${i}">${esc(lab(r))}</option>`).join('')}</select><p id="xe" style="color:var(--dg);margin:0 0 8px"></p><button class="b b2" id="xok" style="width:100%">Confirm swap</button><button class="x" id="xno" style="width:100%;margin-top:8px">Back</button>`);
+  $('cl').remove();$('xno').onclick=board;
+  $('xok').onclick=()=>{const v=$('xg').value;if(v===''){$('xe').textContent='Choose the duty you will give in return.';return}
+    const r=opts[+v],gb={k:key(r),name:r.name,date:r.date,start:r.start,end:r.end,exam:r.exam||'',venue:r.venue||'',role:r.role||''};
+    s.status='filled';s.takenBy=p.name;s.takenAt=Date.now();s.takenK=key(p);s.giveBack=gb;sv('swaps2',swaps);
+    ['status','takenBy','takenAt','takenK','giveBack'].forEach(f=>cloud('swaps/'+s.id+'/'+f,s[f]));
+    rebuild();render();board()}}
 function updPend(){const n=swaps.filter(s=>s.approved===false).length,m=standbys.filter(x=>x.status!=='allocated').length;
   $('pendBar').hidden=n+m<1;$('bBoard').classList.toggle('blink',isAdmin&&n>0);
   if(n+m&&isAdmin&&navigator.vibrate&&!updPend.v){updPend.v=1;try{navigator.vibrate([120,60,120])}catch(e){}}
@@ -444,10 +514,13 @@ function updPend(){const n=swaps.filter(s=>s.approved===false).length,m=standbys
 function board(){
   updPend();
   const vis=(isAdmin?swaps:swaps.filter(s=>s.approved!==false)).slice().sort((a,b)=>(b.approved===false)-(a.approved===false));
-  open('<h2>📋 Posted Swaps</h2><button class="b b2" id="bpost" style="width:100%;margin-bottom:8px">➕ Post a swap request</button>'+(vis.length?vis.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
+  open('<h2>📋 Posted Swaps</h2><button class="b b2" id="bpost" style="width:100%;margin-bottom:8px">➕ Post a swap request</button>'+(vis.length?vis.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">A swap is completed with <b>Take &amp; give alternate duty</b>: you choose one of your own duties to give in return.</p><p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
   const M=$('md');$('bpost').onclick=()=>postForm();
-  M.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{const f=$('rf'+b.dataset.rp);f.hidden=!f.hidden;if(!f.hidden)f.querySelector('textarea').focus()});
-  M.querySelectorAll('.rf select').forEach(x=>x.onchange=()=>{me=x.value});
+  const fillAlt=f=>{const sel=f.querySelector('select'),alt=f.querySelector('.alt'),k=sel.value;
+    const sw=swaps.find(x=>'rf'+x.id===f.id),pp=staff().find(x=>key(x)===k);
+    alt.innerHTML='<option value="">🔄 Alternate duty you can offer (optional)</option>'+(k&&sw&&pp?exchangeOpts(sw,pp).map(r=>`<option value="${EFF.indexOf(r)}">${esc([fmt(r.date),slot(r),r.exam].filter(Boolean).join(' · '))}</option>`).join(''):'')};
+  M.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{const f=$('rf'+b.dataset.rp);f.hidden=!f.hidden;if(!f.hidden){fillAlt(f);f.querySelector('textarea').focus()}});
+  M.querySelectorAll('.rf select:not(.alt)').forEach(x=>x.onchange=()=>{me=x.value;fillAlt(x.closest('.rf'))});
   M.querySelectorAll('[data-wa]').forEach(a=>a.addEventListener('click',e=>{
     const s=swaps.find(x=>x.id==a.dataset.wa),p=staff().find(x=>key(x)===me);
     if(!s)return;
@@ -460,16 +533,19 @@ function board(){
     const s=swaps.find(x=>x.id==b.dataset.tk),p=staff().find(x=>key(x)===me);if(!s)return;
     if(!p){const f=$('rf'+s.id);f.hidden=false;f.querySelector('select').focus();alert("Select your name first, then tap I'll Take It again.");return}
     if(key(p)===s.k){alert('You cannot take your own swap.');return}
-    if(!confirm('Take over this duty from '+nt(s.name)+'?'))return;
-    s.status='filled';s.takenBy=p.name;s.takenAt=Date.now();sv('swaps2',swaps);
-    cloud('swaps/'+s.id+'/status','filled');cloud('swaps/'+s.id+'/takenBy',p.name);cloud('swaps/'+s.id+'/takenAt',s.takenAt);board()});
+    if(takerOf(s)){alert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
+    exchangeForm(s,p)});
+  M.querySelectorAll('[data-un]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.un);if(!s||!confirm('Undo this take-over? The duty returns to '+nt(s.name)+'.'))return;
+    delete s.status;delete s.takenBy;delete s.takenAt;delete s.takenK;delete s.giveBack;sv('swaps2',swaps);['status','takenBy','takenAt','takenK','giveBack'].forEach(f=>cloud('swaps/'+s.id+'/'+f,null));rebuild();render();board()});
   M.querySelectorAll('[data-ps]').forEach(b=>b.onclick=()=>{const f=b.closest('.rf'),sel=f.querySelector('select'),ta=f.querySelector('textarea'),t=ta.value.trim();
-    if(!sel.value){sel.focus();return}if(!t){ta.focus();return}
+    const alt=f.querySelector('.alt'),ar=alt&&alt.value!==''?EFF[+alt.value]:null;
+    if(!sel.value){sel.focus();return}if(!t&&!ar){ta.focus();return}
     const s=swaps.find(x=>x.id==b.dataset.ps),p=staff().find(x=>key(x)===sel.value);if(!s||!p)return;me=sel.value;
-    const id='r'+Date.now()+Math.floor(Math.random()*1000),rep={name:p.name,msg:t.slice(0,500),at:Date.now(),via:'App'};
+    const id='r'+Date.now()+Math.floor(Math.random()*1000),rep={name:p.name,msg:t.slice(0,500),at:Date.now(),via:'App'};if(ar){if(takerOf(s)){alert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
+      rep.offer=offerLbl(ar);rep.give={k:key(ar),name:ar.name,date:ar.date,start:ar.start,end:ar.end,exam:ar.exam||'',venue:ar.venue||'',role:ar.role||''}}
     (s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep);board()});
   M.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const[sid,rid]=b.dataset.dr.split('|'),s=swaps.find(x=>x.id==sid);if(!s||!s.replies)return;delete s.replies[rid];sv('swaps2',swaps);board();cloud('swaps/'+sid+'/replies/'+rid,null)});
-  M.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);board();cloud('swaps/'+b.dataset.r,null)})}
+  M.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);rebuild();render();board();cloud('swaps/'+b.dataset.r,null)})}
 
 const p2s=n=>String(n).padStart(2,'0');
 const normT=t=>{const m=String(t||'').trim().match(/^(\d{1,2}):(\d{2})$/);return m&&+m[1]<24&&+m[2]<60?p2s(m[1])+':'+m[2]:null};
@@ -528,8 +604,8 @@ $('vC').onclick=()=>{view='c';$('vC').classList.add('on');$('vT').classList.remo
 $('vT').onclick=()=>{view='t';$('vT').classList.add('on');$('vC').classList.remove('on');render()};
 $('clr').onclick=()=>{$('q').value=$('d').value=$('t').value=$('r').value='';render()};
 $('prt').onclick=printAll;
-$('exp').onclick=()=>{if(!cur.length)return;const H=['name','date','start','end','exam','venue','role'],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
-  dl('duty-roster.csv',[H.join(',')].concat(cur.map(r=>H.map(k=>q(r[k])).join(','))).join('\r\n'),'text/csv')};
+$('exp').onclick=()=>{const cur=withGiven(getRows());if(!cur.length)return;const H=['name','date','start','end','exam','venue','role'],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  dl('duty-roster.csv',[H.concat('swap_status').join(',')].concat(cur.map(r=>H.map(k=>q(r[k])).concat(q(swTxt(r))).join(','))).join('\r\n'),'text/csv')};
 document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navigator.clipboard)navigator.clipboard.writeText(b.dataset.m).then(()=>{b.textContent='Copied'})});
 let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
 function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
@@ -556,12 +632,12 @@ try{if(window.firebase){
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
   fbDb.ref(FBROOT+'standby').on('value',x=>{const v=x.val()||{};standbys=Object.values(v).sort((a,b)=>b.id-a.id);updPend();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Standby Requests')&&![...$('md').querySelectorAll('select')].some(t=>t.value))standbyBoard()},e=>console.warn(e));
-  fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);updPend();
+  fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);updPend();render();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps')&&![...$('md').querySelectorAll('textarea')].some(t=>t.value))board()},e=>console.warn(e));
 }}catch(e){console.warn('Firebase unavailable, using local mode',e)}
 let dip;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('bInst').hidden=false});
 $('bInst').onclick=async()=>{if(!dip)return;dip.prompt();await dip.userChoice;dip=null;$('bInst').hidden=true};
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});
 fillFilters();render();
 </script>
 
