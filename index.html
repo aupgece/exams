@@ -141,6 +141,19 @@ input,select,textarea{font-size:16px}
 .rp b{display:block;color:var(--ti);margin-bottom:2px}
 .rp div{padding:2px 0}.rp div span{color:var(--mu);font-size:.8rem}
 .rp.none{color:var(--mu)}
+.xc{margin:8px 0 2px;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--card)}
+.xh{display:flex;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;background:var(--soft);padding:8px 12px;font-size:.8rem;color:var(--mu)}
+.xh b{color:var(--wa);font-size:.85rem}
+.xp{padding:10px 12px;border-top:1px solid var(--bd)}
+.xn{font-weight:800;margin-bottom:4px}
+.xn small{font-weight:600;color:var(--mu);margin-left:6px}
+.xl{border-left:4px solid var(--bd);padding:3px 0 3px 10px;margin:8px 0 0}
+.xl.o{border-color:var(--dg)}.xl.i{border-color:var(--wa)}
+.xl em{display:block;font-style:normal;font-size:.78rem;font-weight:800;margin-bottom:2px}
+.xl.o em{color:var(--dg)}.xl.i em{color:var(--wa)}
+.xd{display:flex;flex-wrap:wrap;gap:3px 10px;align-items:center;font-size:.85rem}
+.xd b{font-size:.88rem}.xd span{color:var(--mu)}
+.xd .tag{color:var(--ti)}
 .rb{padding:6px 0;border-top:1px solid var(--bd)}
 .rb:first-of-type{border-top:0}
 .rb span{color:var(--mu);font-size:.78rem}
@@ -481,12 +494,18 @@ function postForm(pre){
 const rt=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 let me='';
 const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg||x.offer?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.offer?`<div>🔄 Gives alternate duty: <b>${esc(x.offer)}</b></div>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
+const xDuty=d=>`<div class="xd"><b>${esc(fmtY(d.date))}</b><span>🕒 ${esc([d.start,d.end].filter(Boolean).join('–'))}</span>${d.exam?`<span>📝 ${esc(d.exam)}</span>`:''}${d.venue?`<span>📍 ${esc(d.venue)}</span>`:''}${d.role?`<span class="tag">${esc(d.role)}</span>`:''}</div>`;
+const xPerson=(name,tag,gives,gets,other)=>`<div class="xp"><div class="xn">${esc(dn(name))}<small>${tag}</small></div>${gives?`<div class="xl o"><em>⇄ Gives to ${esc(dn(other))}</em>${xDuty(gives)}</div>`:''}${gets?`<div class="xl i"><em>⇄ Takes from ${esc(dn(other))}</em>${xDuty(gets)}</div>`:''}</div>`;
+function xchg(s,tk){const g=tk.give,own={date:s.date,start:s.start,end:s.end,exam:s.exam,venue:s.venue,role:s.role};
+  return `<div class="xc"><div class="xh"><b>✓ Swap completed</b><span>Approved · taken ${esc(rt(tk.at))}</span></div>`+
+   xPerson(s.name,'posted the swap',own,g,tk.name)+
+   (g?xPerson(tk.name,'took the duty',g,own,s.name):xPerson(tk.name,'took the duty',null,own,s.name)+'<div class="xp" style="color:var(--mu);font-size:.85rem">No duty was given in exchange.</div>')+`</div>`}
 function swapRow(s){
   const pend=s.approved===false,tk=takerOf(s);
   const n=ph(s.phone),reps=Object.entries(s.replies||{}).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>a.at-b.at);
   const wm=`Hi ${nt(s.name)}, I saw your swap request for ${[fmt(s.date),[s.start,s.end].filter(Boolean).join('–')].filter(Boolean).join(', ')}${s.exam?' ('+s.exam+')':''}. I can help — let me know!`;
   const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
-  const h=`<div class="row"><div><b>${esc(s.name)}</b> <span class="tag${tk?' tfl':''}">${pend?'⏳ Pending approval':tk?'✓ Taken':'Open'}</span><br>${tk?`<small>Taken by <b>${esc(dn(tk.name))}</b> · ${esc(rt(tk.at))}</small><br>${tk.give?`<small>🔄 In exchange gives: ${esc([fmt(tk.give.date),[tk.give.start,tk.give.end].join('–'),tk.give.exam].filter(Boolean).join(' · '))}</small><br>`:''}`:''}<small>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</small>${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
+  const h=`<div class="row"><div${tk?' class="wd" style="flex:1 1 100%"':''}><b>${esc(s.name)}</b> <span class="tag${tk?' tfl':''}">${pend?'⏳ Pending approval':tk?'✓ Taken':'Open'}</span><br>${tk?xchg(s,tk):`<small>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</small>`}${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
   <div class="act">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${pend||tk?'':`<button class="b b2" data-tk="${s.id}">🔄 Take &amp; give alternate duty</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin&&s.status==='filled'&&s.takenBy?`<button class="link dg" data-un="${s.id}">Undo take</button>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
   <div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'No replies yet'}</div>
   <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><select class="alt" aria-label="Alternate duty you can give"><option value="">🔄 Alternate duty you can offer (optional)</option></select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`;
