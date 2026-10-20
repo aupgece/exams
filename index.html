@@ -141,19 +141,27 @@ input,select,textarea{font-size:16px}
 .rp b{display:block;color:var(--ti);margin-bottom:2px}
 .rp div{padding:2px 0}.rp div span{color:var(--mu);font-size:.8rem}
 .rp.none{color:var(--mu)}
-.xc{margin:8px 0 2px;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--card)}
-.xh{display:flex;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;background:var(--soft);padding:8px 12px;font-size:.8rem;color:var(--mu)}
-.xh b{color:var(--wa);font-size:.85rem}
-.xp{padding:10px 12px;border-top:1px solid var(--bd)}
-.xn{font-weight:800;margin-bottom:4px}
-.xn small{font-weight:600;color:var(--mu);margin-left:6px}
-.xl{border-left:4px solid var(--bd);padding:3px 0 3px 10px;margin:8px 0 0}
-.xl.o{border-color:var(--dg)}.xl.i{border-color:var(--wa)}
-.xl em{display:block;font-style:normal;font-size:.78rem;font-weight:800;margin-bottom:2px}
-.xl.o em{color:var(--dg)}.xl.i em{color:var(--wa)}
-.xd{display:flex;flex-wrap:wrap;gap:3px 10px;align-items:center;font-size:.85rem}
-.xd b{font-size:.88rem}.xd span{color:var(--mu)}
-.xd .tag{color:var(--ti)}
+.sc{border:1px solid var(--bd);border-left:5px solid var(--ti);border-radius:14px;padding:12px;margin:0 0 12px;background:var(--card)}
+.sc.pend{border-left-color:var(--gold)}.sc.done{border-left-color:var(--wa)}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.av{width:38px;height:38px;border-radius:50%;background:var(--soft);color:var(--ti);font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.sn{flex:1;min-width:0}.sn b{display:block;line-height:1.2}.sn small{color:var(--mu);font-size:.78rem}
+.sd{display:flex;gap:12px;align-items:center;background:var(--in);border-radius:12px;padding:10px}
+.dc{flex:none;width:58px;text-align:center;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:4px 0}
+.dc small{display:block;font-size:.7rem;font-weight:700;color:var(--mu);text-transform:uppercase}.dc b{display:block;font-size:1.4rem;line-height:1.1;color:var(--ti)}
+.dl{font-size:.74rem;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.03em}
+.dt{font-size:1.05rem;font-weight:800;margin:1px 0}.dx{font-size:.85rem;color:var(--mu)}
+.sq{margin-top:8px;font-size:.88rem;color:var(--mu);font-style:italic}
+.sa{margin:10px 0}
+.sc .rp{margin-top:2px}
+.xc{margin:0;background:var(--soft);border-radius:12px;padding:4px 12px}
+.xr{padding:9px 0;border-top:1px solid var(--bd)}.xr:first-child{border-top:0}
+.xw{font-size:.82rem;color:var(--mu);margin-bottom:2px}.xw b{color:var(--tx)}.xw i{font-style:normal;color:var(--wa);font-weight:800;margin:0 4px}
+.xm{padding:8px 0;font-size:.9rem;line-height:1.4}
+.xn{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--wa);color:#fff;font-size:.72rem;font-weight:800;align-items:center;justify-content:center;margin-right:6px}
+.xd{font-weight:800;font-size:.95rem;color:var(--tx)}
+.xs{font-size:.82rem;color:var(--mu)}
+.xt{font-size:.78rem;color:var(--mu);padding:7px 0 5px;border-top:1px solid var(--bd)}
 .rb{padding:6px 0;border-top:1px solid var(--bd)}
 .rb:first-of-type{border-top:0}
 .rb span{color:var(--mu);font-size:.78rem}
@@ -493,23 +501,23 @@ function postForm(pre){
     sentScreen(o,dup)}}
 const rt=t=>new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 let me='';
-const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.msg||x.offer?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.offer?`<div>🔄 Gives alternate duty: <b>${esc(x.offer)}</b></div>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
-const xDuty=d=>`<div class="xd"><b>${esc(fmtY(d.date))}</b><span>🕒 ${esc([d.start,d.end].filter(Boolean).join('–'))}</span>${d.exam?`<span>📝 ${esc(d.exam)}</span>`:''}${d.venue?`<span>📍 ${esc(d.venue)}</span>`:''}${d.role?`<span class="tag">${esc(d.role)}</span>`:''}</div>`;
-const xPerson=(name,tag,gives,gets,other)=>`<div class="xp"><div class="xn">${esc(dn(name))}<small>${tag}</small></div>${gives?`<div class="xl o"><em>⇄ Gives to ${esc(dn(other))}</em>${xDuty(gives)}</div>`:''}${gets?`<div class="xl i"><em>⇄ Takes from ${esc(dn(other))}</em>${xDuty(gets)}</div>`:''}</div>`;
+const bubble=(s,x)=>`<div class="rb"><b>${esc(x.name)}</b> <span>${esc(rt(x.at))}${x.offer?' · 🔄 offered a duty swap':x.msg?'':' · via '+esc(x.via||'WhatsApp')}</span>${isAdmin?` <button class="link dg" data-dr="${s.id}|${x.id}">Delete</button>`:''}${x.msg?`<div>${esc(x.msg)}</div>`:''}</div>`;
+const xRow=(from,to,d,n)=>`<div class="xr"><div class="xw"><span class="xn">${n}</span><b>${esc(dn(from))}</b>'s duty — now done by <b>${esc(dn(to))}</b></div><div class="xd">${esc(fmt(d.date))} · ${esc([d.start,d.end].filter(Boolean).join('–'))}</div><div class="xs">${esc([d.exam,d.venue,d.role].filter(Boolean).join(' · '))}</div></div>`;
 function xchg(s,tk){const g=tk.give,own={date:s.date,start:s.start,end:s.end,exam:s.exam,venue:s.venue,role:s.role};
-  return `<div class="xc"><div class="xh"><b>✓ Swap completed</b><span>Approved · taken ${esc(rt(tk.at))}</span></div>`+
-   xPerson(s.name,'posted the swap',own,g,tk.name)+
-   (g?xPerson(tk.name,'took the duty',g,own,s.name):xPerson(tk.name,'took the duty',null,own,s.name)+'<div class="xp" style="color:var(--mu);font-size:.85rem">No duty was given in exchange.</div>')+`</div>`}
+  return `<div class="xc"><div class="xm">🔄 <b>${esc(dn(tk.name))}</b> took <b>${esc(dn(s.name))}</b>'s duty${g?' and gave his/her own duty in return. The two exchanged duties.':'. No duty was given in return.'}</div>${xRow(s.name,tk.name,own,1)}${g?xRow(tk.name,s.name,g,2):''}<div class="xt">Swapped on ${esc(rt(tk.at))} · the roster is updated</div></div>`}
 function swapRow(s){
-  const pend=s.approved===false,tk=takerOf(s);
+  const pend=s.approved===false,tk=takerOf(s),dp=dparts(s.date);
   const n=ph(s.phone),reps=Object.entries(s.replies||{}).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>a.at-b.at);
   const wm=`Hi ${nt(s.name)}, I saw your swap request for ${[fmt(s.date),[s.start,s.end].filter(Boolean).join('–')].filter(Boolean).join(', ')}${s.exam?' ('+s.exam+')':''}. I can help — let me know!`;
   const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
-  const h=`<div class="row"><div${tk?' class="wd" style="flex:1 1 100%"':''}><b>${esc(s.name)}</b> <span class="tag${tk?' tfl':''}">${pend?'⏳ Pending approval':tk?'✓ Taken':'Open'}</span><br>${tk?xchg(s,tk):`<small>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</small>`}${s.note?`<br><small>“${esc(s.note)}”</small>`:''}</div>
-  <div class="act">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${pend||tk?'':`<button class="b b2" data-tk="${s.id}">🔄 Take &amp; give alternate duty</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin&&s.status==='filled'&&s.takenBy?`<button class="link dg" data-un="${s.id}">Undo take</button>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>
-  <div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'No replies yet'}</div>
-  <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><select class="alt" aria-label="Alternate duty you can give"><option value="">🔄 Alternate duty you can offer (optional)</option></select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div></div>`;
-  return pend?h.split('\n  <div class="rp')[0]+'</div>':h}
+  const cls=pend?'pend':tk?'done':'open',lbl=pend?'⏳ Pending approval':tk?'✓ Swapped':'Open';
+  const duty=`<div class="sd"><div class="dc">${dp?`<small>${esc(dp.w)}</small><b>${dp.d}</b><small>${esc(dp.m)}</small>`:'<b>📅</b>'}</div><div class="di"><div class="dl">Wants to swap this duty</div><div class="dt">🕒 ${esc([s.start,s.end].filter(Boolean).join('–')||'—')}</div><div class="dx">${esc([s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</div></div></div>`;
+  const act=`<div class="act sa">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${pend||tk?'':`<button class="b b2" data-tk="${s.id}">🔄 Take &amp; give alternate duty</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin&&s.status==='filled'&&s.takenBy?`<button class="link dg" data-un="${s.id}">Undo take</button>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>`;
+  const head=`<div class="sh"><div class="av">${esc(initials(dn(s.name)))}</div><div class="sn"><b>${esc(s.name)}</b><small>Posted ${esc(rt(s.id))}</small></div><span class="tag${tk?' tfl':''}">${lbl}</span></div>`;
+  const body=(tk?xchg(s,tk):duty)+(s.note?`<div class="sq">“${esc(s.note)}”</div>`:'');
+  const tail=pend?'':`<div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'💬 No replies yet'}</div>
+  <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><select class="alt" aria-label="Alternate duty you can give"><option value="">🔄 Alternate duty you can offer (optional)</option></select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div>`;
+  return `<div class="sc ${cls}">${head}${body}${act}${tail}</div>`}
 function exchangeOpts(s,p){
   const isOwner=x=>s.k?key(x)===s.k:x.name===s.name,ov=(x,r)=>x.date===r.date&&x.start<r.end&&r.start<x.end;
   return EFF.filter(r=>key(r)===key(p)&&!r._to).filter(r=>
