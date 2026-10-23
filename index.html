@@ -260,8 +260,8 @@ input,select,textarea{font-size:16px}
   <div id="list"></div>
   <div class="fl"><button class="link" id="bTheme">Theme: Auto</button><button class="link" id="adminBtn">🔒 Admin</button></div>
   <section id="adminPanel" hidden=""><div style="display:flex;justify-content:space-between;align-items:center"><b>Admin: upload duty data</b><button class="link" id="lock">Lock</button></div>
-    <p>CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
-    <input type="file" id="file" accept=".csv,text/csv">
+    <p>Upload a CSV or the Excel duty roster (.xlsx). CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
+    <input type="file" id="file" accept=".csv,text/csv,.xlsx,.xls">
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
@@ -272,6 +272,7 @@ input,select,textarea{font-size:16px}
 </main>
 <div class="ov" id="ov"><div class="md" id="md"></div></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
@@ -286,7 +287,8 @@ S3,Omar Nasser,923001110003,2026-10-14,14:00,17:00,Pathology Paper 1,Hall C,Invi
 S4,Hina Malik,923001110004,2026-10-16,09:00,12:00,Biochemistry,Hall A,Invigilator`;
 const ld=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-let data=ld('duty2'),swaps=ld('swaps2'),isAdmin=false;
+const nr=a=>(a.forEach(r=>{if(r&&r.role)r.role=String(r.role).replace(/^(invigilator)\s*\d+$/i,'$1')}),a);
+let data=nr(ld('duty2')),swaps=ld('swaps2'),isAdmin=false;
 let standbys=[];
 let EFF=[],HAND=[],SW=[];
 // Effective roster = base roster with every approved + taken swap applied
@@ -621,9 +623,29 @@ function dutyForm(i,ret,pre){
     const row={id:k,name,phone,date:dt,start:t1,end:t2,exam:g('rfE'),venue:g('rfV'),role:g('rfR')};
     if(i>=0)data[i]=row;else data.push(row);
     saveRoster();ret?rosterAdmin(...ret):close()}}
-function setData(d){data=d;sv('duty2',d);fillFilters();render()}
+function setData(d){data=nr(d);sv('duty2',d);fillFilters();render()}
 $('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
-$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)};
+// Excel roster (room-wise blocks per day/slot) -> CSV rows: one duty per invigilator
+function xlsxToCsv(buf){
+  const wb=XLSX.read(buf,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+  const M={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const ph={};data.forEach(r=>{if(r.phone)ph[r.name]=r.phone});
+  const out=['id,name,phone,date,start,end,exam,venue,role'];let date='',st='',en='';
+  const person=n=>n&&!/^[–—-]$/.test(n)&&!/^(CE|MTS|BME)(\s*\+\s*(CE|MTS|BME))*$/i.test(n);
+  rows.forEach(r=>{
+    const c0=String(r[0]).trim();
+    const h=c0.match(/(\d{1,2})-([A-Za-z]{3})-(\d{2,4})\s*\|\s*(\d{1,2}:\d{2})\s*[–—-]\s*(\d{1,2}:\d{2})/);
+    if(h){const y=h[3].length===2?'20'+h[3]:h[3];date=`${y}-${String(M[h[2].toLowerCase()]).padStart(2,'0')}-${h[1].padStart(2,'0')}`;st=h[4].padStart(5,'0');en=h[5].padStart(5,'0');return}
+    if(!date||!/^\d+$/.test(c0))return;
+    const room=String(r[1]).trim(),blk=String(r[2]).trim(),venue=blk?`${room} (${blk})`:room;
+    [[r[4],'Invigilator'],[r[5],'Invigilator']].forEach(([n,role])=>{
+      n=String(n).trim();if(!person(n))return;
+      out.push([n,n,ph[n]||'',date,st,en,'Mid-term Exam',venue,role].map(x=>String(x).replace(/,/g,' ')).join(','))})});
+  return out.join('\n')}
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  if(/\.xlsx?$/i.test(f.name)){r.onload=()=>{try{$('csv').value=xlsxToCsv(new Uint8Array(r.result));$('load').click()}catch(err){$('msg').textContent='Could not read Excel file.'}};r.readAsArrayBuffer(f)}
+  else{r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)}};
 $('sample').onclick=()=>{const d=parse(SAMPLE);setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
 $('clear').onclick=()=>{if(!confirm('Clear the roster and all posted swaps for everyone?'))return;swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'};
 ['q','d','t','r','s'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
@@ -655,7 +677,7 @@ function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=
 try{if(window.firebase){
   firebase.initializeApp(FBCFG);fbDb=firebase.database();
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
-  fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('duty2',data);fillFilters();render()},e=>console.warn(e));
+  fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=nr(v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[]);sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
   fbDb.ref(FBROOT+'standby').on('value',x=>{const v=x.val()||{};standbys=Object.values(v).sort((a,b)=>b.id-a.id);updPend();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Standby Requests')&&![...$('md').querySelectorAll('select')].some(t=>t.value))standbyBoard()},e=>console.warn(e));
