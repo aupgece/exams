@@ -242,7 +242,7 @@ input,select,textarea{font-size:16px}
 </div></header>
 <main>
   <div class="filters">
-    <label class="f"><span>Name</span><input id="q" type="search" placeholder="Type your name to search..." autofocus aria-label="Search by name"></label>
+    <label class="f"><span>Name</span><input id="q" type="search" list="nl" autocomplete="off" placeholder="Type or pick a name..." autofocus aria-label="Search by name"><datalist id="nl"></datalist></label>
     <label class="f"><span>Date</span><select id="d"><option value="">All Dates</option></select></label>
     <label class="f"><span>Time slot</span><select id="t"><option value="">All Time Slots</option></select></label>
     <label class="f"><span>Role</span><select id="r"><option value="">All Roles</option></select></label>
@@ -326,14 +326,14 @@ function rebuild(){
 const swTxt=r=>r._from?'Taken from '+dn(r._from):r._to?'Given to '+dn(r._to):r._open||'';
 const swCell=r=>r._from?`<b style="color:#15803d">⇄ Taken from ${esc(dn(r._from))}</b>`:r._to?`<b style="color:#b42318">⇄ Given to ${esc(dn(r._to))}</b>`:r._open?`<b style="color:#b45309">⏳ ${esc(r._open)}</b>`:'—';
 function withGiven(rows){
-  const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
+  const q=qv().trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
   const ex=HAND.filter(h=>(!d||h.date===d)&&(!t||h.start+'–'+h.end===t)&&(!ro||h.role===ro)&&(!q||h.from.toLowerCase().includes(q)))
    .map(h=>({id:h.fromK,name:h.from,phone:'',date:h.date,start:h.start,end:h.end,exam:h.exam,venue:h.venue,role:h.role,_to:h.to}));
   const bySort=$('s').value==='d';
   return rows.concat(ex).sort(bySort?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)))}
 function handNote(k){const h=HAND.filter(x=>x.fromK===k);return h.length?'Handed over via approved swap: '+h.map(x=>fmt(x.date)+' '+x.start+'–'+x.end+' → '+dn(x.to)).join('; '):''}
 function swapsFor(rows){
-  const q=$('q').value.trim().toLowerCase(),d=$('d').value;
+  const q=qv().trim().toLowerCase(),d=$('d').value;
   return SW.filter(x=>(!q||x.taker.toLowerCase().includes(q)||x.from.toLowerCase().includes(q))&&(!d||x.date===d||(x.give&&x.give.date===d)))}
 function swapTable(list,title){if(!list.length)return '';
   return `<h3 style="margin:16px 0 6px;font-size:13px;color:#0b2e2a">${esc(title)}</h3><table class="z"><thead><tr><th class="c">#</th><th>Duty taken</th><th>Taken by</th><th>From (original FM)</th><th>Duty given in exchange</th></tr></thead><tbody>${list.map((x,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(x.date))}<br>${esc(x.start+'–'+x.end)}${x.exam?'<br>'+esc(x.exam):''}</td><td><b>${esc(dn(x.taker))}</b></td><td>${esc(dn(x.from))}</td><td>${x.give?esc(fmtY(x.give.date))+'<br>'+esc(x.give.start+'–'+x.give.end)+(x.give.exam?'<br>'+esc(x.give.exam):''):'—'}</td></tr>`).join('')}</tbody></table>`}
@@ -366,26 +366,28 @@ function fillFilters(){rebuild();
   $('t').innerHTML='<option value="">All Time Slots</option>'+ts.map(t=>`<option>${esc(t)}</option>`).join('');
   $('r').innerHTML='<option value="">All Roles</option>'+ro.map(x=>`<option>${esc(x)}</option>`).join('');
   $('d').value=cd;$('t').value=ct;$('r').value=cr;
+  $('nl').innerHTML='<option value="All FMs"></option>'+[...new Set(data.map(r=>r.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${esc(n)}"></option>`).join('');
 }
-let view='c',cur=[],groups=[];
+let view='c',cur=[],groups=[],showAll=false;
+const qv=()=>showAll?'':$('q').value;
 const when=r=>r.date+r.start;
 const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</button></div>`;
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
   return `<div class="dy"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
   <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${ac(EFF.indexOf(r))}</div></div>`}
-function getRows(){const q=$('q').value.trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
+function getRows(){const q=qv().trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
   const rows=EFF.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
   rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));return rows}
 const groupRows=rows=>{const by=new Map();rows.forEach(r=>{const k=key(r);if(!by.has(k))by.set(k,[]);by.get(k).push(r)});return [...by.values()]};
 function render(){
   rebuild();
-  {const hf=!!($('q').value.trim()||$('d').value||$('t').value||$('r').value);$('prt').textContent=hf?'Print / PDF (results)':'Print / PDF (all FMs)';$('exp').textContent=hf?'Export CSV (results)':'Export CSV (all FMs)'}
+  {const hf=!!(qv().trim()||$('d').value||$('t').value||$('r').value);$('prt').textContent=hf?'Print / PDF (results)':'Print / PDF (all FMs)';$('exp').textContent=hf?'Export CSV (results)':'Export CSV (all FMs)'}
   const L=$('list');cur=[];groups=[];$('cnt').textContent='';
   if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
-  const q=$('q').value.trim(),d=$('d').value,t=$('t').value,ro=$('r').value;
-  if(q.length<2){L.innerHTML=`<div class="box empty"><div style="font-size:2.4rem">🔍</div><h3>Search your name to see your duties</h3><div>Type at least 2 letters of your name in the search box above.${(d||t||ro)?'<br>Date / time / role filters only narrow a name search.':''}</div></div>`;return}
-  const rows=getRows();cur=rows;const allG=groupRows(rows),MAXFM=8;groups=allG.slice(0,MAXFM);const by={size:groups.length};
+  const q=qv().trim(),d=$('d').value,t=$('t').value,ro=$('r').value;
+  if(q.length<2&&!(d||t||ro||showAll)){L.innerHTML=`<div class="box empty"><div style="font-size:2.4rem">🔍</div><h3>Search your name to see your duties</h3><div>Type at least 2 letters of your name, or pick a Date, Time slot or Role above.</div></div>`;return}
+  const rows=getRows();cur=rows;const allG=groupRows(rows),MAXFM=q.length<2?Infinity:8;groups=allG.slice(0,MAXFM);const by={size:groups.length};
   $('cnt').textContent=allG.length>MAXFM?`Showing ${MAXFM} of ${allG.length} matching staff, type more letters to narrow`:`${allG.length} staff, ${rows.length} duties`;
   if(!by.size){const ql=q.toLowerCase(),hs=q?HAND.filter(x=>x.from.toLowerCase().includes(ql)):[];
     L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter or check the spelling.</div>'+(hs.length?'<div style="margin-top:10px;text-align:left">'+hs.map(x=>'🔄 '+esc(dn(x.from))+': '+esc(fmt(x.date))+' '+esc(x.start+'–'+x.end)+' was handed over to <b>'+esc(dn(x.to))+'</b> (approved swap)').join('<br>')+'</div>':'')+'</div>';return}
@@ -409,7 +411,7 @@ function printFM(k){
    handNote(k))}
 function printAll(){
   const rowsAll=getRows(),groups=groupRows(withGiven(rowsAll));if(!groups.length)return;
-  const f=[];if($('q').value.trim())f.push('Name: '+$('q').value.trim());if($('d').value)f.push('Date: '+fmtY($('d').value));if($('t').value)f.push('Time: '+$('t').value);if($('r').value)f.push('Role: '+$('r').value);
+  const f=[];if(qv().trim())f.push('Name: '+qv().trim());if($('d').value)f.push('Date: '+fmtY($('d').value));if($('t').value)f.push('Time: '+$('t').value);if($('r').value)f.push('Role: '+$('r').value);
   const n=rowsAll.length;
   printSheet('Duty Roster',[['Faculty members',groups.length],['Duties',n],['Approved swaps applied',swapsFor(rowsAll).length],['Filter',f.length?f.join(' · '):'All faculty members, all duties']],
    `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${rs.filter(x=>!x._to).length>1?`<br><small>${rs.filter(x=>!x._to).length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')).join('')}</tbody></table>`+swapLogHtml(rowsAll),
@@ -648,10 +650,11 @@ $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileRe
   else{r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)}};
 $('sample').onclick=()=>{const d=parse(SAMPLE);setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
 $('clear').onclick=()=>{if(!confirm('Clear the roster and all posted swaps for everyone?'))return;swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'};
+$('q').addEventListener('input',()=>{showAll=$('q').value.trim().toLowerCase()==='all fms'});
 ['q','d','t','r','s'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
 $('vC').onclick=()=>{view='c';$('vC').classList.add('on');$('vT').classList.remove('on');render()};
 $('vT').onclick=()=>{view='t';$('vT').classList.add('on');$('vC').classList.remove('on');render()};
-$('clr').onclick=()=>{$('q').value=$('d').value=$('t').value=$('r').value='';render()};
+$('clr').onclick=()=>{showAll=false;$('q').value=$('d').value=$('t').value=$('r').value='';render()};
 $('prt').onclick=printAll;
 $('exp').onclick=()=>{const cur=withGiven(getRows());if(!cur.length)return;const H=['name','date','start','end','exam','venue','role'],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   dl('duty-roster.csv',[H.concat('swap_status').join(',')].concat(cur.map(r=>H.map(k=>q(r[k])).concat(q(swTxt(r))).join(','))).join('\r\n'),'text/csv')};
