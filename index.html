@@ -276,6 +276,7 @@ input,select,textarea{font-size:16px}
 .sbr-q .sbr-p:not(.hit){opacity:.5}
 .sbr-rm{color:var(--mu);font-size:.8rem}
 </style>
+<style id="apStyle"></style>
 </head>
 <body>
 <div id="pendBar" hidden><span id="pendTx"></span><b id="pendGo"></b></div>
@@ -315,7 +316,7 @@ input,select,textarea{font-size:16px}
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
-    <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bSbAdm">🆘 DEC requests</button></div>
+    <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bThemeAdm">🎨 Theme &amp; layout</button><button class="b2" id="bSbAdm">🆘 DEC requests</button></div>
     <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Standby roster (by date &amp; slot)</b> <small>(upload the Standby Roster Excel; shown on duty cards and under "Standby Roster"; replaces the previous standby roster)</small>
     <input type="file" id="sbrFile" accept=".xlsx,.xls,.csv" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbrClear">Clear standby roster</button></div><p id="sbrMsg"></p></div>
         <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
@@ -764,9 +765,57 @@ $('prt').onclick=printAll;
 $('exp').onclick=()=>{const cur=withGiven(getRows());if(!cur.length)return;const H=['name','date','start','end','exam','venue','role'],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   dl('duty-roster.csv',[H.concat('swap_status').join(',')].concat(cur.map(r=>H.map(k=>q(r[k])).concat(q(swTxt(r))).join(','))).join('\r\n'),'text/csv')};
 document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navigator.clipboard)navigator.clipboard.writeText(b.dataset.m).then(()=>{b.textContent='Copied'})});
-let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
-function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
-$('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
+let tm='auto',tmUser=null;try{tmUser=localStorage.getItem('theme');tm=tmUser||'auto'}catch(e){}
+function setTheme(m,save){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);if(save){try{localStorage.setItem('theme',m);tmUser=m}catch(e){}}}
+$('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm],true);setTheme(tm);
+
+/* ===== Admin: theme & layout ===== */
+const PAL={
+ teal:{n:'Teal',nv:'#0b2e2a',pb:'#0e6b61',ti:'#0e5f56',soft:'#dff0ec',bg:'#eef3f2',nvD:'#071d1a',pbD:'#1a9082',tiD:'#7fd8c8',softD:'#173a35'},
+ ocean:{n:'Ocean',nv:'#0b2447',pb:'#1d4ed8',ti:'#1e40af',soft:'#dbe7fb',bg:'#eef2f9',nvD:'#071428',pbD:'#3b82f6',tiD:'#93c5fd',softD:'#172554'},
+ purple:{n:'Royal',nv:'#2e1065',pb:'#6d28d9',ti:'#5b21b6',soft:'#ece4fb',bg:'#f3f0f9',nvD:'#1b0a3d',pbD:'#8b5cf6',tiD:'#c4b5fd',softD:'#2e1a5e'},
+ sunset:{n:'Sunset',nv:'#4a1d0a',pb:'#c2410c',ti:'#9a3412',soft:'#fde8dc',bg:'#faf3ee',nvD:'#2a1005',pbD:'#ea580c',tiD:'#fdba74',softD:'#3b1a0a'},
+ rose:{n:'Rose',nv:'#500724',pb:'#be185d',ti:'#9d174d',soft:'#fbe1ec',bg:'#faf0f4',nvD:'#2e0415',pbD:'#ec4899',tiD:'#f9a8d4',softD:'#3f0f26'},
+ slate:{n:'Slate',nv:'#1e293b',pb:'#334155',ti:'#334155',soft:'#e2e8f0',bg:'#f1f5f9',nvD:'#0f172a',pbD:'#64748b',tiD:'#cbd5e1',softD:'#1e293b'}};
+const APDEF={pal:'teal',mode:'auto',dens:'normal',font:'m',round:'normal',width:'normal',btns:'grid',view:'c'};
+let AP=(()=>{const a=ld('appearance');return Object.assign({},APDEF,Array.isArray(a)?{}:a)})(),apViewDone=false;
+function apCss(a){const P=PAL[a.pal]||PAL.teal;
+ const dk=`--nv:${P.nvD};--pb:${P.pbD};--ti:${P.tiD};--soft:${P.softD}`;
+ let c=`:root{--nv:${P.nv};--pb:${P.pb};--ti:${P.ti};--soft:${P.soft};--bg:${P.bg}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dk}}}
+:root[data-theme="dark"]{${dk}}`;
+ c+=`html{font-size:${{s:'92%',m:'100%',l:'112%'}[a.font]||'100%'}}`;
+ const W={narrow:'820px',normal:'1040px',wide:'1320px'}[a.width]||'1040px';c+=`.wrap,main{max-width:${W}}`;
+ const R={sharp:'3px',normal:'',round:'22px'}[a.round];if(R)c+=`.box,.dy,.sc,.filters,.xc,.md,.bar .btns button,.dc{border-radius:${R}!important}`;
+ if(a.dens==='compact')c+=`.db{padding:6px 10px}.sc{padding:8px}.box{padding:11px}.dt{padding:6px 4px}.filters{padding:10px;gap:8px}`;
+ if(a.dens==='roomy')c+=`.db{padding:14px 16px}.sc{padding:16px}.box{padding:20px}.dt{padding:14px 4px}.filters{padding:18px;gap:16px}`;
+ if(a.btns==='stack')c+=`@media (min-width:641px){.bar .btns{grid-template-columns:1fr}}`;
+ return c}
+function applyAP(a){a=a||AP;$('apStyle').textContent=apCss(a);
+ const m=document.querySelector('meta[name=theme-color]');if(m)m.content=(PAL[a.pal]||PAL.teal).nv;
+ if(!tmUser)setTheme(a.mode||'auto')}
+function applyView(){if(apViewDone)return;apViewDone=true;if(AP.view==='t'&&$('vT'))$('vT').click()}
+function themeAdmin(){
+ const backup=Object.assign({},AP);let D=Object.assign({},AP);
+ const grp=(k,t,opts)=>`<div style="margin:10px 0 4px;font-weight:700;font-size:.88rem">${t}</div><div class="btns" data-g="${k}">${opts.map(([v,l])=>`<button class="${D[k]===v?'b2':'x'}" data-k="${k}" data-v="${v}" style="min-height:38px;padding:6px 12px;font-size:.85rem">${l}</button>`).join('')}</div>`;
+ const draw=()=>{open(`<h2>🎨 Theme &amp; layout</h2><p style="color:var(--mu);font-size:.88rem;margin:0">Tap an option to preview it live. Press <b>Save for everyone</b> to apply it for all staff.</p>`+
+  grp('pal','Colour theme',Object.entries(PAL).map(([k,v])=>[k,v.n]))+
+  grp('mode','Default mode',[['auto','Auto'],['light','Light'],['dark','Dark']])+
+  grp('dens','Spacing',[['compact','Compact'],['normal','Normal'],['roomy','Roomy']])+
+  grp('font','Text size',[['s','Small'],['m','Medium'],['l','Large']])+
+  grp('round','Corners',[['sharp','Sharp'],['normal','Normal'],['round','Round']])+
+  grp('width','Page width',[['narrow','Narrow'],['normal','Standard'],['wide','Wide']])+
+  grp('btns','Home buttons',[['grid','Grid'],['stack','One per row']])+
+  grp('view','Duty list view',[['c','Cards'],['t','Table']])+
+  `<button class="b b2" id="apSave" style="width:100%;margin-top:14px">💾 Save for everyone</button><button class="x" id="apReset" style="width:100%;margin-top:8px">Reset to default</button>`);
+  $('cl').textContent='Cancel';
+  $('cl').onclick=()=>{AP=backup;applyAP();close()};
+  $('md').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{D[b.dataset.k]=b.dataset.v;AP=Object.assign({},D);applyAP(D);if(b.dataset.k==='mode'){tmUser=null;setTheme(D.mode)}draw()});
+  $('apReset').onclick=()=>{D=Object.assign({},APDEF);AP=Object.assign({},D);applyAP(D);setTheme('auto');draw()};
+  $('apSave').onclick=()=>{AP=Object.assign({},D);sv('appearance',AP);cloud('appearance',AP);try{localStorage.removeItem('theme')}catch(e){}tmUser=null;applyAP();close();$('msg').textContent='Theme & layout saved for everyone.'}};
+ draw()}
+applyAP();applyView();
+$('bThemeAdm').onclick=themeAdmin;
 $('pendBar').onclick=()=>isAdmin?(swaps.some(needsAdm)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bDone').onclick=approvedView;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;$('bRosAdm').onclick=()=>rosterAdmin();
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
@@ -872,6 +921,7 @@ try{if(window.firebase){
   firebase.initializeApp(FBCFG);fbDb=firebase.database();
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=nr(v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[]);sv('duty2',data);fillFilters();render()},e=>console.warn(e));
+  fbDb.ref(FBROOT+'appearance').on('value',x=>{const v=x.val();if(v&&typeof v==='object'){AP=Object.assign({},APDEF,v);sv('appearance',AP);if(!$('md').querySelector('#apSave')){applyAP();applyView()}}},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
   fbDb.ref(FBROOT+'standbyPool').on('value',x=>{const v=x.val();pool=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbpool',pool)},e=>console.warn(e));
   fbDb.ref(FBROOT+'standbyRoster').on('value',x=>{const v=x.val();sbr=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbr',sbr);fillFilters();render()},e=>console.warn(e));
