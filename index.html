@@ -375,7 +375,7 @@ function rebuild(){
     const from=row.name,fromK=key(row),fromPh=row.phone||x.phone||'';
     row._from=from;row.id=tp?key(tp):tk.name;row.name=tk.name;row.phone=tp?(tp.phone||''):'';
     HAND.push({from,fromK,to:row.name,toK:key(row),date:row.date,start:row.start,end:row.end,exam:row.exam,venue:row.venue,role:row.role||''});
-    SW.push({taker:tk.name,from,date:row.date,start:row.start,end:row.end,exam:row.exam||'',venue:row.venue||'',give:tk.give||null,at:tk.at});
+    SW.push({id:x.id,taker:tk.name,from,date:row.date,start:row.start,end:row.end,exam:row.exam||'',venue:row.venue||'',give:tk.give||null,at:tk.at});
     const g=tk.give;if(g){const gr=base.find(r=>!r._from&&(key(r)===g.k||r.name===g.name)&&sameSlot(r,g));
       if(gr){const gfrom=gr.name,gfromK=key(gr);gr._from=gfrom;gr.id=fromK;gr.name=from;gr.phone=fromPh;
         HAND.push({from:gfrom,fromK:gfromK,to:from,toK:fromK,date:gr.date,start:gr.start,end:gr.end,exam:gr.exam,venue:gr.venue,role:gr.role||''})}}});
@@ -638,8 +638,11 @@ function updPend(){const n=swaps.filter(needsAdm).length,m=standbys.filter(x=>x.
 function approvedView(){
   rebuild();const list=SW.slice().sort((a,b)=>(b.at||0)-(a.at||0));
   const ln=r=>esc([fmtY(r.date),[r.start,r.end].filter(Boolean).join('–'),r.exam,r.venue].filter(Boolean).join(' · '));
-  open('<h2>✅ Approved Swapped</h2><button class="b x" id="bback" style="width:100%;margin-bottom:8px">← Back to Posted Swaps</button>'+(list.length?list.map(x=>`<div class="xc"><div class="xm">🔄 <b>${esc(dn(x.taker))}</b> took <b>${esc(dn(x.from))}</b>'s duty${x.give?' and gave a duty in return.':'.'}</div><div style="font-size:.9rem;margin:6px 0"><b>${esc(dn(x.taker))}</b> now has:<br>${ln(x)}</div>${x.give?`<div style="font-size:.9rem;margin:6px 0"><b>${esc(dn(x.from))}</b> now has:<br>${ln(x.give)}</div>`:''}<div class="xt">Approved by DEC · ${esc(rt(x.at))}</div></div>`).join(''):'<p style="color:var(--mu)">No approved swaps yet. A swap appears here once it is taken by an FM and approved by DEC.</p>')+`<p style="font-size:.78rem;color:var(--mu)">${list.length} approved swap${list.length===1?'':'s'}.</p>`);
-  const b=$('bback');if(b)b.onclick=board}
+  open('<h2>✅ Approved Swapped</h2><button class="b x" id="bback" style="width:100%;margin-bottom:8px">← Back to Posted Swaps</button>'+(list.length?list.map(x=>`<div class="xc"><div class="xm">🔄 <b>${esc(dn(x.taker))}</b> took <b>${esc(dn(x.from))}</b>'s duty${x.give?' and gave a duty in return.':'.'}</div><div style="font-size:.9rem;margin:6px 0"><b>${esc(dn(x.taker))}</b> now has:<br>${ln(x)}</div>${x.give?`<div style="font-size:.9rem;margin:6px 0"><b>${esc(dn(x.from))}</b> now has:<br>${ln(x.give)}</div>`:''}<div class="xt">Approved by DEC · ${esc(rt(x.at))}</div>${isAdmin?`<button class="link dg" data-rsw="${x.id}" style="margin-top:6px">Remove</button>`:''}</div>`).join(''):'<p style="color:var(--mu)">No approved swaps yet. A swap appears here once it is taken by an FM and approved by DEC.</p>')+`<p style="font-size:.78rem;color:var(--mu)">${list.length} approved swap${list.length===1?'':'s'}.</p>`);
+  const b=$('bback');if(b)b.onclick=board;
+  $('md').querySelectorAll('[data-rsw]').forEach(x=>x.onclick=()=>{if(!isAdmin)return;const id=x.dataset.rsw;
+    uiConfirm('Remove this approved swap? The duties return to their original owners in the roster.',()=>{
+      swaps=swaps.filter(z=>String(z.id)!==String(id));sv('swaps2',swaps);cloud('swaps/'+id,null);rebuild();render();approvedView()},'Remove')})}
 function board(){
   updPend();
   const vis=(isAdmin?swaps:swaps.filter(s=>s.approved!==false)).slice().sort((a,b)=>needsAdm(b)-needsAdm(a));
