@@ -229,7 +229,30 @@ input,select,textarea{font-size:16px}
  .bar{background:#fff;color:#000;border-bottom:2px solid #000}.sub{color:#333}.st{display:none}
  body{background:#fff}.box{break-inside:avoid}
 }
-@media (prefers-reduced-motion:reduce){#pendBar,#pendBar::before,#bBoard.blink{animation:none}}</style>
+@media (prefers-reduced-motion:reduce){#pendBar,#pendBar::before,#bBoard.blink{animation:none}}
+/* standby roster modal */
+.sbr-t{font-size:1.25rem;font-weight:800}.sbr-s{color:var(--mu);font-size:.85rem}
+.sbr-sw{display:flex;align-items:center;gap:8px;background:var(--in);border:1.5px solid var(--bd);border-radius:12px;padding:0 10px;margin:10px 0 8px}
+.sbr-sw:focus-within{border-color:var(--pb)}
+.sbr-sw input{flex:1;min-width:0;border:0;background:transparent;color:var(--tx);font:inherit;min-height:44px;outline:0}
+.sbr-x{min-height:30px;padding:2px 9px;background:var(--bd);color:var(--tx);border-radius:999px;font-size:.8rem}
+.sbr-ch{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
+.sbr-ch button{flex:none;min-height:36px;padding:4px 12px;border-radius:999px;background:var(--card);color:var(--tx);border:1px solid var(--bd);font-size:.82rem}
+.sbr-ch button.on{background:var(--pb);color:#fff;border-color:var(--pb)}
+.sbr-sum{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 4px}
+.sbr-sum span{background:var(--soft);color:var(--ti);border-radius:999px;padding:3px 10px;font-size:.82rem;font-weight:700}
+.sbr-dh{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font-weight:800;font-size:.95rem;color:var(--ti)}
+.sbr-today{background:var(--gold);color:#10231f;border-radius:999px;font-size:.7rem;padding:1px 8px}
+.sbr-c{display:flex;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.sbr-tm{flex:none;min-width:60px;text-align:center;background:var(--soft);border-radius:9px;padding:6px 4px;display:flex;flex-direction:column;justify-content:center;line-height:1.25}
+.sbr-tm small{color:var(--mu)}
+.sbr-n{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.sbr-p{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:8px}
+.sbr-p i{flex:none;width:22px;height:22px;border-radius:50%;background:var(--pb);color:#fff;font-style:normal;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.sbr-p.hit{background:var(--gold);color:#10231f;font-weight:800}.sbr-p.hit i{background:#10231f;color:#fff}
+.sbr-q .sbr-p:not(.hit){opacity:.5}
+.sbr-rm{color:var(--mu);font-size:.8rem}
+</style>
 </head>
 <body>
 <div id="pendBar" hidden><span id="pendTx"></span><b id="pendGo"></b></div>
@@ -240,6 +263,7 @@ input,select,textarea{font-size:16px}
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
       <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Post a swap request</small></span><span class="sm">🔄<br>Swap Duty</span></button>
       <button class="b1" id="bStandby"><span class="lg">🆘 Request DEC<br><small>For any query – Mr. Sharoze Sohail (DEC Member)</small></span><span class="sm">🆘<br>DEC</span></button>
+      <button class="b1" id="bSbr"><span class="lg">🛡️ Standby Roster<br><small>Standby invigilators by slot</small></span><span class="sm">🛡️<br>Standby</span></button>
       <button class="b1" id="bInst" hidden>Install app</button>
     </div>
 </div></header>
@@ -269,9 +293,9 @@ input,select,textarea{font-size:16px}
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
     <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bSbAdm">🆘 DEC requests</button></div>
-    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Additional standby invigilators</b> <small>(upload Excel or PDF with names and mobile numbers; replaces the previous extra list)</small>
-    <input type="file" id="sbFile" accept=".xlsx,.xls,.csv,.pdf,application/pdf" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbClear">Clear extra list</button></div><p id="sbMsg"></p></div>
-    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
+    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Standby roster (by date &amp; slot)</b> <small>(upload the Standby Roster Excel; shown on duty cards and under "Standby Roster"; replaces the previous standby roster)</small>
+    <input type="file" id="sbrFile" accept=".xlsx,.xls,.csv" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbrClear">Clear standby roster</button></div><p id="sbrMsg"></p></div>
+        <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
     <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
   </section>
 </main>
@@ -296,6 +320,7 @@ const nr=a=>(a.forEach(r=>{if(r&&r.role)r.role=String(r.role).replace(/^(invigil
 let data=nr(ld('duty2')),swaps=ld('swaps2'),isAdmin=false;
 let standbys=[];
 let pool=ld('sbpool');
+let sbr=ld('sbr');
 const extras=()=>{const have=new Set(staff().map(x=>String(x.name).trim().toLowerCase()));return pool.filter(x=>x&&x.name&&!have.has(String(x.name).trim().toLowerCase())).map(x=>({id:'X:'+x.name,name:x.name,phone:x.phone||''}))};
 let EFF=[],HAND=[],SW=[];
 // Effective roster = base roster with every approved + taken swap applied
@@ -369,13 +394,13 @@ const cell=p=>{const d=String(p||'').replace(/\D/g,'');return d.length===12&&d.s
 const swapMsg=(to,me,r)=>`Hi ${nt(to)}, this is ${nt(me)}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
 
 function fillFilters(){rebuild();
-  const ds=[...new Set(data.map(r=>r.date))].sort(), ts=[...new Set(data.map(slot))].sort(), ro=[...new Set(data.map(r=>r.role).filter(Boolean))].sort();
+  const sbx=SBROWS(),ds=[...new Set(data.map(r=>r.date).concat(sbx.map(r=>r.date)))].sort(), ts=[...new Set(data.map(slot).concat(sbx.map(slot)))].sort(), ro=[...new Set(data.map(r=>r.role).filter(Boolean).concat(sbx.length?['Standby']:[]))].sort();
   const cd=$('d').value,ct=$('t').value,cr=$('r').value;
   $('d').innerHTML='<option value="">All Dates</option>'+ds.map(d=>`<option value="${esc(d)}">${esc(fmt(d))}</option>`).join('');
   $('t').innerHTML='<option value="">All Time Slots</option>'+ts.map(t=>`<option>${esc(t)}</option>`).join('');
   $('r').innerHTML='<option value="">All Roles</option>'+ro.map(x=>`<option>${esc(x)}</option>`).join('');
   $('d').value=cd;$('t').value=ct;$('r').value=cr;
-  $('nl').innerHTML='<option value="All FMs"></option>'+[...new Set(data.map(r=>r.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${esc(n)}"></option>`).join('');
+  $('nl').innerHTML='<option value="All Invigilators/Standby"></option>'+[...new Set(data.map(r=>r.name).concat(sbx.map(r=>r.name)).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${esc(n)}"></option>`).join('');
 }
 let view='c',cur=[],groups=[],showAll=false;
 const qv=()=>showAll?'':$('q').value;
@@ -384,14 +409,14 @@ const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</bu
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
   return `<div class="dy"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
-  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${r.phone?`<div class="vn">${phl(r.phone)}</div>`:''}${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${ac(EFF.indexOf(r))}</div></div>`}
+  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${sbLine(r)}${r.phone?`<div class="vn">${phl(r.phone)}</div>`:''}${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${r._sb?'':ac(EFF.indexOf(r))}</div></div>`}
 function getRows(){const q=qv().trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
-  const rows=EFF.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
+  const rows=EFF.concat(SBROWS()).filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
   rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));return rows}
 const groupRows=rows=>{const by=new Map();rows.forEach(r=>{const k=key(r);if(!by.has(k))by.set(k,[]);by.get(k).push(r)});return [...by.values()]};
 function render(){
   rebuild();
-  {const hf=!!(qv().trim()||$('d').value||$('t').value||$('r').value);$('prt').textContent=hf?'Print / PDF (results)':'Print / PDF (all FMs)';$('exp').textContent=hf?'Export CSV (results)':'Export CSV (all FMs)'}
+  {const hf=!!(qv().trim()||$('d').value||$('t').value||$('r').value);$('prt').textContent=hf?'Print / PDF (results)':'Print / PDF (all invigilators/standby)';$('exp').textContent=hf?'Export CSV (results)':'Export CSV (all invigilators/standby)'}
   const L=$('list');cur=[];groups=[];$('cnt').textContent='';
   if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
   const q=qv().trim(),d=$('d').value,t=$('t').value,ro=$('r').value;
@@ -401,8 +426,8 @@ function render(){
   if(!by.size){const ql=q.toLowerCase(),hs=q?HAND.filter(x=>x.from.toLowerCase().includes(ql)):[];
     L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter or check the spelling.</div>'+(hs.length?'<div style="margin-top:10px;text-align:left">'+hs.map(x=>'🔄 '+esc(dn(x.from))+': '+esc(fmt(x.date))+' '+esc(x.start+'–'+x.end)+' was handed over to <b>'+esc(dn(x.to))+'</b> (approved swap)').join('<br>')+'</div>':'')+'</div>';return}
   const cnt=n=>n>1?`${n} duties`:'1 duty';
-  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(dn(r.name))}</b>${r.phone?`<br><small>${phl(r.phone)}</small>`:''}${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}${r._from?`<br><span class="tag tfl">🔄 from ${esc(dn(r._from))}</span>`:''}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(EFF.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
-  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="who"><div class="name">${esc(dn(rs[0].name))}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span>${rs.length>1?`<button class="link fs" data-pr="${esc(key(rs[0]))}">🖨 Print</button>`:''}</div>`+
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(dn(r.name))}</b>${r.phone?`<br><small>${phl(r.phone)}</small>`:''}${rs.length>1||rs.some(r=>r._sb)?` <span class="n">· ${rs.length} ${rs.length>1?'entries':'entry'}</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}${r._from?`<br><span class="tag tfl">🔄 from ${esc(dn(r._from))}</span>`:''}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${r._sb?'':ac(EFF.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
+  else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="who"><div class="name">${esc(dn(rs[0].name))}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span>${rs.length>1||rs.some(r=>r._sb)?`<button class="link fs" data-pr="${esc(key(rs[0]))}">🖨 Print</button>`:''}</div>`+
     `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div>${HAND.filter(h=>h.fromK===key(rs[0])).map(h=>`<div class="n" style="margin-top:8px">🔄 ${esc(fmt(h.date))} ${esc(h.start+'–'+h.end)} handed over to ${esc(dn(h.to))}</div>`).join('')}${isAdmin?`<button class="link fs" data-ad="${esc(key(rs[0]))}" style="margin-top:10px;width:100%">➕ Add duty</button>`:''}</div>`).join('')+'</div>';
 }
 const listEl=$('list');
@@ -414,8 +439,8 @@ function printSheet(title,meta,tbl,note){
   document.body.classList.add('pr1');setTimeout(()=>window.print(),50)}
 function printFM(k){
   const act=EFF.filter(r=>key(r)===k),given=HAND.filter(h=>h.fromK===k).map(h=>({id:k,name:h.from,date:h.date,start:h.start,end:h.end,exam:h.exam,venue:h.venue,role:h.role,_to:h.to}));
-  const rs=act.concat(given).sort((a,b)=>when(a).localeCompare(when(b)));if(!rs.length)return;
-  printSheet('Duty Roster',[['Faculty member',dn(rs[0].name)],['Total duties',act.length],['Swapped duties',rs.filter(r=>r._from||r._to||r._open).length]],
+  const rs=act.concat(given,SBROWS().filter(r=>key(r)===k)).sort((a,b)=>when(a).localeCompare(when(b)));if(!rs.length)return;
+  printSheet(act.length||given.length?'Duty Roster':'Standby Roster',[['Faculty member',dn(rs[0].name)],['Total duties',act.length],['Standby slots',rs.filter(r=>r._sb).length],['Swapped duties',rs.filter(r=>r._from||r._to||r._open).length]],
    `<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${rs.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')}</tbody></table>`+swapTable(SW.filter(x=>x.taker===rs[0].name||x.from===rs[0].name),'Swaps involving this FM'),
    handNote(k))}
 function printAll(){
@@ -663,7 +688,7 @@ $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileRe
   else{r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)}};
 $('sample').onclick=()=>{const d=parse(SAMPLE);setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
 $('clear').onclick=()=>{if(!confirm('Clear the roster and all posted swaps for everyone?'))return;swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'};
-$('q').addEventListener('input',()=>{showAll=$('q').value.trim().toLowerCase()==='all fms'});
+$('q').addEventListener('input',()=>{showAll=/^all (fms|invigilators)/.test($('q').value.trim().toLowerCase())});
 ['q','d','t','r','s'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
 $('vC').onclick=()=>{view='c';$('vC').classList.add('on');$('vT').classList.remove('on');render()};
 $('vT').onclick=()=>{view='t';$('vT').classList.add('on');$('vC').classList.remove('on');render()};
@@ -705,17 +730,72 @@ async function pdfRows(buf){await loadPdfJs();const pdf=await pdfjsLib.getDocume
     tc.items.forEach(t=>{if(!t.str.trim())return;const y=Math.round(t.transform[5]),x=t.transform[4];let l=L.find(l=>Math.abs(l.y-y)<=3);if(!l){l={y,t:[]};L.push(l)}l.t.push({x,s:t.str})});
     L.sort((a,b)=>b.y-a.y).forEach(l=>rows.push([l.t.sort((a,b)=>a.x-b.x).map(t=>t.s).join(' ')]))}
   return rows}
-function sbSave(list){pool=list;sv('sbpool',pool);cloud('standbyPool',pool.length?pool:null)}
-$('sbFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const m=$('sbMsg');m.textContent='Reading…';
+
+/* ---- Standby roster (by slot) ---- */
+const sbrAt=r=>sbr.filter(x=>x&&nD(x.date)===nD(r.date)&&nT(x.start)<nT(r.end||'23:59')&&nT(r.start)<nT(x.end));
+const sbrNames=x=>(Array.isArray(x.names)?x.names:Object.values(x.names||{})).filter(Boolean);
+const nn=n=>String(n||'').toLowerCase().replace(/^\s*(mr|mrs|ms|dr|dm|di)\.?\s+/,'').replace(/\s+/g,' ').trim();
+function SBROWS(){const st=new Map();staff().forEach(p=>st.set(nn(p.name),p));const out=[];
+  sbr.forEach(x=>{if(!x)return;sbrNames(x).forEach((n,i)=>{const p=st.get(nn(n));
+    out.push({id:p?p.id||p.name:'SB:'+nn(n),name:p?p.name:n,phone:p?p.phone||'':'',date:x.date,start:x.start,end:x.end,exam:'Standby invigilator',venue:'Standby '+(i+1),role:'Standby',_sb:true})})});
+  return out}
+function sbLine(r){if(r._sb)return '';const m=sbrAt(r).filter(x=>sbrNames(x).length);if(!m.length)return '';
+  return `<div class="vn" style="margin-top:2px">🛡️ <b>Standby:</b> ${m.map(x=>esc(sbrNames(x).join(', '))).join(' | ')}</div>`}
+function sbrParse(rows){const MO={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12},out=[];
+  rows.forEach(c=>{const a=String(c[0]||'').trim(),b=String(c[1]||'').trim();
+    const dm=a.match(/(\d{1,2})[-\/. ]([A-Za-z]{3})[A-Za-z]*[-\/. ](\d{4})/),tm=b.match(/(\d{1,2}):(\d{2})\s*[\u2013\u2014-]\s*(\d{1,2}):(\d{2})/);
+    if(!dm||!tm||!MO[dm[2].toLowerCase()])return;
+    const p=n=>String(n).padStart(2,'0');
+    out.push({date:dm[3]+'-'+p(MO[dm[2].toLowerCase()])+'-'+p(dm[1]),start:p(tm[1])+':'+tm[2],end:p(tm[3])+':'+tm[4],
+      names:[c[2],c[3],c[4]].map(v=>String(v||'').trim()).filter(Boolean),remarks:String(c[5]||'').trim()})});
+  return out}
+function sbrSave(list){sbr=list;sv('sbr',sbr);cloud('standbyRoster',sbr.length?sbr:null);fillFilters();render()}
+let sbrQ='',sbrD='';
+function sbrView(){sbrQ='';sbrD='';
+  open(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="sbr-t">🛡️ Standby Roster</div><button class="x" id="sbrP">🖨 Print</button></div><div class="sbr-s" id="sbrSub"></div>
+  <div class="sbr-sw"><span>🔍</span><input id="sbrQ" type="search" placeholder="Search standby invigilator…" autocomplete="off"><button class="sbr-x" id="sbrX" hidden aria-label="Clear search">✕</button></div>
+  <div class="sbr-ch" id="sbrCh"></div><div class="sbr-sum" id="sbrSum"></div><div id="sbrBody"></div>`);
+  $('sbrQ').oninput=()=>{sbrQ=$('sbrQ').value;sbrPaint()};
+  $('sbrX').onclick=()=>{sbrQ='';$('sbrQ').value='';sbrPaint();$('sbrQ').focus()};
+  $('sbrP').onclick=sbrPrint;
+  $('sbrCh').onclick=e=>{const b=e.target.closest('[data-d]');if(!b)return;sbrD=b.dataset.d;sbrPaint()};
+  sbrPaint()}
+function sbrPrint(){
+  const q=sbrQ.trim().toLowerCase(),hit=n=>!!q&&n.toLowerCase().includes(q);
+  const L=sbr.slice().sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).filter(x=>(!sbrD||x.date===sbrD)&&(!q||sbrNames(x).some(hit)));
+  if(!L.length)return;
+  const meta=[['Slots',L.length]];if(sbrQ.trim())meta.unshift(['Name',sbrQ.trim()]);if(sbrD)meta.push(['Day',fmtY(sbrD)]);
+  const cell=(x,i)=>{const n=sbrNames(x)[i];return n?(hit(n)?'<b>'+esc(n)+'</b>':esc(n)):''};
+  printSheet('Standby Roster',meta,`<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Standby 1</th><th>Standby 2</th><th>Standby 3</th><th>Remarks</th></tr></thead><tbody>${L.map((x,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(x.date))}</td><td>${esc(x.start+'–'+x.end)}</td><td>${cell(x,0)}</td><td>${cell(x,1)}</td><td>${cell(x,2)}</td><td>${esc(x.remarks||'')}</td></tr>`).join('')}</tbody></table>`,'')}
+function sbrPaint(){
+  const q=sbrQ.trim().toLowerCase(),days=[...new Set(sbr.map(x=>x.date))].sort(),hit=n=>!!q&&n.toLowerCase().includes(q);
+  const now=new Date(),today=now.getFullYear()+'-'+p2(now.getMonth()+1)+'-'+p2(now.getDate());
+  if(sbrD&&!days.includes(sbrD))sbrD='';
+  $('sbrSub').textContent=sbr.length?`${sbr.length} slots · ${days.length} days`:'';
+  $('sbrX').hidden=!sbrQ;$('sbrP').hidden=!sbr.length;
+  $('sbrCh').innerHTML=days.length>1?[['','All days']].concat(days.map(d=>{const p=dparts(d);return [d,p?p.w+' '+p.d:d]})).map(([d,l])=>`<button data-d="${esc(d)}" class="${sbrD===d?'on':''}">${esc(l)}</button>`).join(''):'';
+  if(!sbr.length){$('sbrSum').innerHTML='';$('sbrBody').innerHTML='<div class="box empty"><div style="font-size:2.2rem">🛡️</div><h3>No standby roster yet</h3><div>Ask the administrator to upload it.</div></div>';return}
+  const L=sbr.slice().sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).filter(x=>(!sbrD||x.date===sbrD)&&(!q||sbrNames(x).some(hit)));
+  const cnt=new Map();L.forEach(x=>sbrNames(x).filter(hit).forEach(n=>cnt.set(n,(cnt.get(n)||0)+1)));
+  $('sbrSum').innerHTML=q?[...cnt.entries()].map(([n,c])=>`<span>${esc(n)} · ${c} standby ${c>1?'slots':'slot'}</span>`).join(''):'';
+  if(!L.length){$('sbrBody').innerHTML=`<div class="box empty"><div style="font-size:2.2rem">🔍</div><h3>No match</h3><div>${q?'No standby invigilator matches “'+esc(sbrQ.trim())+'”.':'No slots for this day.'}</div></div>`;return}
+  const by=new Map();L.forEach(x=>{if(!by.has(x.date))by.set(x.date,[]);by.get(x.date).push(x)});
+  $('sbrBody').className=q?'sbr-q':'';
+  $('sbrBody').innerHTML=[...by.entries()].map(([d,xs])=>{const ld=longD(d);
+    return `<div class="sbr-dh">📅 ${esc(ld&&ld.w?ld.w+', '+ld.f:d)}${d===today?'<span class="sbr-today">Today</span>':''}</div>`+xs.map(x=>{const ns=sbrNames(x);
+      return `<div class="sbr-c"><div class="sbr-tm"><b>${esc(x.start)}</b><small>${esc(x.end)}</small></div><div class="sbr-n">${ns.length?ns.map((n,i)=>`<div class="sbr-p${hit(n)?' hit':''}"><i>${i+1}</i><span>${esc(n)}</span></div>`).join(''):'<span class="sbr-rm">No standby assigned</span>'}${x.remarks?`<div class="sbr-rm">${esc(x.remarks)}</div>`:''}</div></div>`}).join('')}).join('')}
+$('bSbr').onclick=()=>sbrView();
+$('sbrFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const m=$('sbrMsg');m.textContent='Reading…';
   try{const buf=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(f)});
-    let res;
-    if(/\.pdf$/i.test(f.name))res=sbParse(await pdfRows(new Uint8Array(buf)),true);
-    else{const wb=XLSX.read(new Uint8Array(buf),{type:'array'});let rows=[];wb.SheetNames.forEach(n=>rows=rows.concat(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:false})));res=sbParse(rows,false)}
-    if(!res.list.length){m.textContent='No names with mobile numbers found in this file.';return}
-    sbSave(res.list);m.textContent=`Loaded ${res.list.length} extra standby invigilators`+(res.skipped?` (${res.skipped} rows skipped: no mobile number)`:'')+(fbOK?' and shared with all staff.':'.')+' Preview: '+res.list.slice(0,3).map(x=>x.name+' '+x.phone).join('; ')+(res.list.length>3?'…':'')}
+    const wb=XLSX.read(new Uint8Array(buf),{type:'array'});let rows=[];
+    wb.SheetNames.forEach(n=>rows=rows.concat(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:false})));
+    const list=sbrParse(rows);
+    if(!list.length){m.textContent='No slots found. Expected columns: Date / Day, Time, Standby 1-3, Remarks.';e.target.value='';return}
+    sbrSave(list);m.textContent=`Loaded ${list.length} standby slots`+(fbOK?' and shared with all staff.':'.')}
   catch(err){m.textContent='Could not read this file.'}
   e.target.value=''};
-$('sbClear').onclick=()=>{if(!confirm('Clear the extra standby list?'))return;sbSave([]);$('sbMsg').textContent='Extra list cleared.'};
+$('sbrClear').onclick=()=>{if(!confirm('Clear the standby roster?'))return;sbrSave([]);$('sbrMsg').textContent='Standby roster cleared.'};
+function sbSave(list){pool=list;sv('sbpool',pool);cloud('standbyPool',pool.length?pool:null)}
 $('admSave').onclick=()=>{const n=ph($('admPh').value);if(n.length<10){$('admMsg').textContent='Enter number with country code, e.g. 923001234567';return}adminPh=n;try{localStorage.setItem('adminPh',n)}catch(e){}cloud('adminPhone',n);$('admMsg').textContent='Saved.'};
 $('lock').onclick=()=>{isAdmin=false;updPend();render();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
 const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
@@ -727,6 +807,7 @@ try{if(window.firebase){
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=nr(v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[]);sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
   fbDb.ref(FBROOT+'standbyPool').on('value',x=>{const v=x.val();pool=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbpool',pool)},e=>console.warn(e));
+  fbDb.ref(FBROOT+'standbyRoster').on('value',x=>{const v=x.val();sbr=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbr',sbr);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'standby').on('value',x=>{const v=x.val()||{};standbys=Object.values(v).sort((a,b)=>b.id-a.id);updPend();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('DEC Requests')&&![...$('md').querySelectorAll('select')].some(t=>t.value))standbyBoard()},e=>console.warn(e));
   fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);updPend();render();
