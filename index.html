@@ -316,7 +316,7 @@ input,select,textarea{font-size:16px}
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
-    <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bThemeAdm">🎨 Theme &amp; layout</button><button class="b2" id="bSbAdm">🆘 DEC requests</button></div>
+    <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bThemeAdm">🎨 Theme &amp; layout</button><button class="b2" id="bSbAdm">🆘 DEC requests</button><button class="b2" id="bSbrEd">🛡️ Edit standby roster</button></div>
     <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Standby roster (by date &amp; slot)</b> <small>(upload the Standby Roster Excel; shown on duty cards and under "Standby Roster"; replaces the previous standby roster)</small>
     <input type="file" id="sbrFile" accept=".xlsx,.xls,.csv" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbrClear">Clear standby roster</button></div><p id="sbrMsg"></p></div>
         <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
@@ -865,15 +865,54 @@ function sbrParse(rows){const MO={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:
     out.push({date:dm[3]+'-'+p(MO[dm[2].toLowerCase()])+'-'+p(dm[1]),start:p(tm[1])+':'+tm[2],end:p(tm[3])+':'+tm[4],
       names:[c[2],c[3],c[4]].map(v=>String(v||'').trim()).filter(Boolean),remarks:String(c[5]||'').trim()})});
   return out}
+/* ===== Admin: edit / add standby individuals ===== */
+function sbrEdit(){
+ if(!isAdmin)return;
+ const pn=[...new Set([...staff().map(p=>p.name),...extras().map(p=>p.name)])].sort((a,b)=>a.localeCompare(b));
+ const lst=()=>sbr.filter(Boolean).map(x=>({date:x.date,start:x.start,end:x.end,names:sbrNames(x).slice(),remarks:x.remarks||''}));
+ const commit=L=>{sbrSave(L);try{rebuild()}catch(e){}render()};
+ const inp='min-height:38px;padding:6px 8px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit;font-size:.9rem';
+ const paint=()=>{
+  const sc=$('md').scrollTop,L=lst().map((x,i)=>({x,i})).sort((a,b)=>(a.x.date+a.x.start).localeCompare(b.x.date+b.x.start));
+  let last='';
+  open(`<h2>🛡️ Edit standby roster</h2><p style="color:var(--mu);font-size:.85rem;margin:0 0 8px">Add or remove standby people, change slot times, or add new slots. Every change is saved straight away for everyone.</p>
+  <datalist id="sbDL">${pn.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+  <div class="box" style="margin-bottom:12px"><b>➕ Add standby person</b>
+   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px"><input type="date" id="nsD" style="${inp}"><input type="time" id="nsS" style="${inp}"><input type="time" id="nsE" style="${inp}"></div>
+   <input id="nsN" list="sbDL" placeholder="Person name (pick or type)" autocomplete="off" style="${inp};width:100%;margin-top:6px">
+   <button class="b b2" id="nsA" style="width:100%;margin-top:6px">Add as standby</button><div id="nsM" style="color:var(--dg);font-size:.82rem;margin-top:4px"></div></div>`+
+  (L.length?L.map(({x,i})=>{const h=x.date!==last?`<div class="sbr-dh">${esc(fmtY(x.date))}</div>`:'';last=x.date;
+   return h+`<div class="sbr-c" style="flex-direction:column;gap:8px"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="time" data-f="start" data-i="${i}" value="${esc(x.start)}" style="${inp}"><span>–</span><input type="time" data-f="end" data-i="${i}" value="${esc(x.end)}" style="${inp}"><button class="x" data-del="${i}" style="margin-left:auto;min-height:34px;padding:4px 10px;font-size:.8rem">🗑 Delete slot</button></div>
+   <div class="sbr-n">${x.names.length?x.names.map((n,j)=>`<div class="sbr-p"><i>${j+1}</i><span style="flex:1">${esc(n)}</span><button class="sbr-x" data-rm="${i}:${j}" aria-label="Remove ${esc(n)}">✕</button></div>`).join(''):'<div class="vn">No one assigned yet</div>'}</div>
+   <div style="display:flex;gap:6px"><input list="sbDL" data-n="${i}" placeholder="Add person to this slot" autocomplete="off" style="${inp};flex:1;min-width:0"><button class="b2" data-add="${i}" style="min-height:38px;padding:6px 14px">Add</button></div></div>`}).join(''):'<div class="box empty"><div style="font-size:2rem">🛡️</div><h3>No standby slots yet</h3><div>Use the form above to add the first one.</div></div>'));
+  $('cl').textContent='Done';$('cl').onclick=()=>{close();sbrView()};
+  $('md').scrollTop=sc;
+  const M=$('md');
+  $('nsA').onclick=()=>{const d=$('nsD').value,a=$('nsS').value,b=$('nsE').value,n=$('nsN').value.trim(),m=$('nsM');
+   if(!d||!a||!b||!n){m.textContent='Enter the date, start, end and a name.';return}
+   if(nT(b)<=nT(a)){m.textContent='End time must be after start time.';return}
+   const A=lst();let sl=A.find(x=>nD(x.date)===nD(d)&&nT(x.start)===nT(a)&&nT(x.end)===nT(b));
+   if(!sl){sl={date:d,start:a,end:b,names:[],remarks:''};A.push(sl)}
+   if(sl.names.some(v=>v.toLowerCase()===n.toLowerCase())){m.textContent=n+' is already on that slot.';return}
+   sl.names.push(n);commit(A);paint()};
+  M.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const i=+b.dataset.add,v=M.querySelector('[data-n="'+i+'"]').value.trim();if(!v)return;
+   const A=lst();if(A[i].names.some(x=>x.toLowerCase()===v.toLowerCase())){uiAlert(v+' is already on this slot.');return}
+   A[i].names.push(v);commit(A);paint()});
+  M.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const [i,j]=b.dataset.rm.split(':').map(Number);const A=lst();A[i].names.splice(j,1);commit(A);paint()});
+  M.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>uiConfirm('Delete this standby slot and everyone on it?',()=>{const A=lst();A.splice(+b.dataset.del,1);commit(A);paint()},'Delete'));
+  M.querySelectorAll('[data-f]').forEach(b=>b.onchange=()=>{const A=lst(),i=+b.dataset.i;if(!b.value)return;A[i][b.dataset.f]=b.value;
+   if(nT(A[i].end)<=nT(A[i].start)){uiAlert('End time must be after start time.');paint();return}commit(A);paint()});
+ };
+ paint()}
 function sbrSave(list){sbr=list;sv('sbr',sbr);cloud('standbyRoster',sbr.length?sbr:null);fillFilters();render()}
 let sbrQ='',sbrD='';
 function sbrView(){sbrQ='';sbrD='';
-  open(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="sbr-t">🛡️ Standby Roster</div><button class="x" id="sbrP">🖨 Print</button></div><div class="sbr-s" id="sbrSub"></div>
+  open(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="sbr-t">🛡️ Standby Roster</div><span style="display:flex;gap:6px">${isAdmin?'<button class="x" id="sbrE">✏️ Edit</button>':''}<button class="x" id="sbrP">🖨 Print</button></span></div><div class="sbr-s" id="sbrSub"></div>
   <div class="sbr-sw"><span>🔍</span><input id="sbrQ" type="search" placeholder="Search standby invigilator…" autocomplete="off"><button class="sbr-x" id="sbrX" hidden aria-label="Clear search">✕</button></div>
   <div class="sbr-ch" id="sbrCh"></div><div class="sbr-sum" id="sbrSum"></div><div id="sbrBody"></div>`);
   $('sbrQ').oninput=()=>{sbrQ=$('sbrQ').value;sbrPaint()};
   $('sbrX').onclick=()=>{sbrQ='';$('sbrQ').value='';sbrPaint();$('sbrQ').focus()};
-  $('sbrP').onclick=sbrPrint;
+  $('sbrP').onclick=sbrPrint;if($('sbrE'))$('sbrE').onclick=sbrEdit;
   $('sbrCh').onclick=e=>{const b=e.target.closest('[data-d]');if(!b)return;sbrD=b.dataset.d;sbrPaint()};
   sbrPaint()}
 function sbrPrint(){
@@ -910,6 +949,7 @@ $('sbrFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const m=$
     sbrSave(list);m.textContent=`Loaded ${list.length} standby slots`+(fbOK?' and shared with all staff.':'.')}
   catch(err){m.textContent='Could not read this file.'}
   e.target.value=''};
+$('bSbrEd').onclick=sbrEdit;
 $('sbrClear').onclick=()=>uiConfirm('Clear the standby roster?',()=>{sbrSave([]);$('sbrMsg').textContent='Standby roster cleared.'},'Clear');
 function sbSave(list){pool=list;sv('sbpool',pool);cloud('standbyPool',pool.length?pool:null)}
 $('admSave').onclick=()=>{const n=ph($('admPh').value);if(n.length<10){$('admMsg').textContent='Enter number with country code, e.g. 923001234567';return}adminPh=n;try{localStorage.setItem('adminPh',n)}catch(e){}cloud('adminPhone',n);$('admMsg').textContent='Saved.'};
