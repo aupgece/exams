@@ -410,7 +410,7 @@ const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</bu
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
   return `<div class="dy"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
-  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${sbLine(r)}${r.phone?`<div class="vn">${phl(r.phone)}</div>`:''}${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${r._sb?'':ac(EFF.indexOf(r))}</div></div>`}
+  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div>${r.venue?`<div class="vn">📍 ${esc(r.venue)}</div>`:''}${sbLine(r)}${r.phone?`<div class="vn">${phl(r.phone)}</div>`:''}${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${r._sb?'':ac(EFF.indexOf(r))}</div></div>`}
 function getRows(){const q=qv().trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
   const rows=EFF.concat(SBROWS()).filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
   rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));return rows}
@@ -738,7 +738,7 @@ const sbrNames=x=>(Array.isArray(x.names)?x.names:Object.values(x.names||{})).fi
 const nn=n=>String(n||'').toLowerCase().replace(/^\s*(mr|mrs|ms|dr|dm|di)\.?\s+/,'').replace(/\s+/g,' ').trim();
 function SBROWS(){const st=new Map();staff().forEach(p=>st.set(nn(p.name),p));const out=[];
   sbr.forEach(x=>{if(!x)return;sbrNames(x).forEach((n,i)=>{const p=st.get(nn(n));
-    out.push({id:p?p.id||p.name:'SB:'+nn(n),name:p?p.name:n,phone:p?p.phone||'':'',date:x.date,start:x.start,end:x.end,exam:'Standby invigilator',venue:'Standby '+(i+1),role:'Standby',_sb:true})})});
+    out.push({id:p?p.id||p.name:'SB:'+nn(n),name:p?p.name:n,phone:p?p.phone||'':'',date:x.date,start:x.start,end:x.end,exam:'Mid-term Exam',venue:'',role:'Standby',_sb:true})})});
   return out}
 function sbLine(r){if(r._sb)return '';const m=sbrAt(r).filter(x=>sbrNames(x).length);if(!m.length)return '';
   return `<div class="vn" style="margin-top:2px">🛡️ <b>Standby:</b> ${m.map(x=>esc(sbrNames(x).join(', '))).join(' | ')}</div>`}
