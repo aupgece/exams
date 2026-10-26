@@ -883,7 +883,8 @@ function sbrEdit(){
    <button class="b b2" id="nsA" style="width:100%;margin-top:6px">Add as standby</button><div id="nsM" style="color:var(--dg);font-size:.82rem;margin-top:4px"></div></div>`+
   (L.length?L.map(({x,i})=>{const h=x.date!==last?`<div class="sbr-dh">${esc(fmtY(x.date))}</div>`:'';last=x.date;
    return h+`<div class="sbr-c" style="flex-direction:column;gap:8px"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="time" data-f="start" data-i="${i}" value="${esc(x.start)}" style="${inp}"><span>–</span><input type="time" data-f="end" data-i="${i}" value="${esc(x.end)}" style="${inp}"><button class="x" data-del="${i}" style="margin-left:auto;min-height:34px;padding:4px 10px;font-size:.8rem">🗑 Delete slot</button></div>
-   <div class="sbr-n">${x.names.length?x.names.map((n,j)=>`<div class="sbr-p"><i>${j+1}</i><span style="flex:1">${esc(n)}</span><button class="sbr-x" data-rm="${i}:${j}" aria-label="Remove ${esc(n)}">✕</button></div>`).join(''):'<div class="vn">No one assigned yet</div>'}</div>
+   <div class="sbr-n">${x.names.length?x.names.map((n,j)=>`<div class="sbr-p"><i>${j+1}</i><input list="sbDL" data-nm="${i}:${j}" value="${esc(n)}" autocomplete="off" aria-label="Standby name ${j+1}" style="${inp};flex:1;min-width:0"><button class="sbr-x" data-rm="${i}:${j}" aria-label="Remove ${esc(n)}">✕</button></div>`).join(''):'<div class="vn">No one assigned yet</div>'}</div>
+   <input data-rem="${i}" value="${esc(x.remarks)}" placeholder="Remarks / note (e.g. ABS, invigilator)" autocomplete="off" style="${inp};width:100%">
    <div style="display:flex;gap:6px"><input list="sbDL" data-n="${i}" placeholder="Add person to this slot" autocomplete="off" style="${inp};flex:1;min-width:0"><button class="b2" data-add="${i}" style="min-height:38px;padding:6px 14px">Add</button></div></div>`}).join(''):'<div class="box empty"><div style="font-size:2rem">🛡️</div><h3>No standby slots yet</h3><div>Use the form above to add the first one.</div></div>'));
   $('cl').textContent='Done';$('cl').onclick=()=>{close();sbrView()};
   $('md').scrollTop=sc;
@@ -898,6 +899,11 @@ function sbrEdit(){
   M.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const i=+b.dataset.add,v=M.querySelector('[data-n="'+i+'"]').value.trim();if(!v)return;
    const A=lst();if(A[i].names.some(x=>x.toLowerCase()===v.toLowerCase())){uiAlert(v+' is already on this slot.');return}
    A[i].names.push(v);commit(A);paint()});
+  M.querySelectorAll('[data-nm]').forEach(b=>b.onchange=()=>{const [i,j]=b.dataset.nm.split(':').map(Number),v=b.value.trim(),A=lst();
+   if(!v){A[i].names.splice(j,1);commit(A);paint();return}
+   if(A[i].names.some((x,k)=>k!==j&&x.toLowerCase()===v.toLowerCase())){uiAlert(v+' is already on this slot.');paint();return}
+   A[i].names[j]=v;commit(A);paint()});
+  M.querySelectorAll('[data-rem]').forEach(b=>b.onchange=()=>{const A=lst();A[+b.dataset.rem].remarks=b.value.trim();commit(A);paint()});
   M.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const [i,j]=b.dataset.rm.split(':').map(Number);const A=lst();A[i].names.splice(j,1);commit(A);paint()});
   M.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>uiConfirm('Delete this standby slot and everyone on it?',()=>{const A=lst();A.splice(+b.dataset.del,1);commit(A);paint()},'Delete'));
   M.querySelectorAll('[data-f]').forEach(b=>b.onchange=()=>{const A=lst(),i=+b.dataset.i;if(!b.value)return;A[i][b.dataset.f]=b.value;
