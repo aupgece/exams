@@ -127,6 +127,27 @@ td select{min-width:210px}
 /* modal */
 .ov{position:fixed;inset:0;background:rgba(5,14,12,.62);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
 .ov.on{display:flex}
+#dlg{z-index:60;align-items:center!important;padding:14px!important}
+#dlg .md{max-width:380px;width:100%;border-radius:16px!important;padding:0!important;overflow:hidden;display:flex;flex-direction:column;max-height:88dvh;max-height:88vh;animation:dgIn .16s ease-out}
+@supports(height:1dvh){#dlg .md{max-height:88dvh}}
+@keyframes dgIn{from{transform:translateY(10px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.dg-top{flex:none;display:flex;align-items:center;gap:10px;text-align:left;background:linear-gradient(135deg,var(--nv),var(--pb));color:#fff;padding:10px 14px}
+.dg-top.warn{background:linear-gradient(135deg,#6e1a10,var(--dg))}
+.dg-ic{flex:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.dg-top h3{margin:0;font-size:1rem;line-height:1.2}.dg-top p{margin:1px 0 0;font-size:.78rem;opacity:.9;line-height:1.25}
+.dg-bd{display:flex;flex-direction:column;min-height:0;padding:12px 14px 14px}
+.dg-msg{margin:0 0 12px;line-height:1.45;font-size:.95rem}
+.dg-act{flex:none;display:flex;gap:8px}
+.dg-act button{flex:1;min-height:42px;border-radius:10px;font-weight:800;padding:6px 10px}
+.dg-danger{background:var(--dg);color:#fff}
+.dg-s{flex:none;width:100%;min-height:40px;padding:6px 12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--in);color:var(--tx);font:inherit;margin-bottom:8px}
+#dlg .dg-s{margin:0 0 8px;padding:6px 12px}
+.dg-cb{position:relative;flex:none;margin-bottom:8px}.dg-cb .dg-s{margin:0!important;padding-right:30px!important}.dg-ar{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu)}
+.dg-list{flex:1 1 auto;min-height:0;max-height:min(36vh,250px);overflow:auto;display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.dg-row{flex:none;justify-content:flex-start!important;gap:9px;background:var(--card);color:var(--tx);border:1.5px solid var(--bd);border-radius:10px;padding:4px 8px;min-height:40px;text-align:left;width:100%;font-size:.9rem}
+.dg-row .av2{flex:none;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--ti);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem}
+.dg-row.on{border-color:var(--pb);background:var(--soft)}.dg-row.on .av2{background:var(--pb);color:#fff}
+.dg-err{flex:none;color:var(--dg);min-height:0;font-size:.82rem;margin:0 0 6px}.dg-err:empty{display:none}
 .md{background:var(--card);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:540px;max-height:85%;overflow:auto;padding:20px}
 .md h2{margin:0 0 12px;font-size:1.25rem;font-weight:800}
 .md select,.md input,.md textarea{width:100%;padding:10px;margin:4px 0 12px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit}
@@ -301,6 +322,7 @@ input,select,textarea{font-size:16px}
   </section>
 </main>
 <div class="ov" id="ov"><div class="md" id="md"></div></div>
+<div class="ov" id="dlg"><div class="md" id="dlgB"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -461,12 +483,35 @@ listEl.addEventListener('change',e=>{const s=e.target.closest('select[data-g]');
 function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
 const p2=n=>String(n).padStart(2,'0');
 function ics(i){const r=EFF[i],x=pd(r.date);
-  if(!x)return alert('Date format not recognised.');
+  if(!x)return uiAlert('Date format not recognised.');
   const d=x.getFullYear()+p2(x.getMonth()+1)+p2(x.getDate()),hm=v=>{const [h,m]=String(v||'0:0').split(':');return p2(h)+p2(m||0)+'00'},e=v=>String(v||'').replace(/[,;]/g,'\\$&');
   dl('duty-'+d+'.ics',['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Duty Lookup//EN','BEGIN:VEVENT','UID:'+(r.id||i)+'-'+d+'@dutylookup','DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART:'+d+'T'+hm(r.start),'DTEND:'+d+'T'+hm(r.end),'SUMMARY:'+e((r.role||'Duty')+': '+r.exam),'LOCATION:'+e(r.venue),'END:VEVENT','END:VCALENDAR'].join('\r\n'),'text/calendar')}
 function open(html){$('md').innerHTML=html+'<div style="margin-top:12px"><button class="x" id="cl">Close</button></div>';$('ov').classList.add('on');$('cl').onclick=close}
 function close(){$('ov').classList.remove('on')}
 $('ov').onclick=e=>{if(e.target.id==='ov')close()};
+/* in-page dialogs (replace native alert/confirm) */
+function dlg(html,wire){$('dlgB').innerHTML=html;$('dlg').classList.add('on');if(wire)wire()}
+function dlgClose(){$('dlg').classList.remove('on')}
+$('dlg').onclick=e=>{if(e.target.id==='dlg')dlgClose()};
+const dgTop=(ic,t,sub,warn)=>`<div class="dg-top${warn?' warn':''}"><div class="dg-ic">${ic}</div><h3>${esc(t)}</h3>${sub?`<p>${esc(sub)}</p>`:''}</div>`;
+function uiAlert(msg,cb,title){dlg(dgTop('ℹ️',title||'Notice')+`<div class="dg-bd"><p class="dg-msg">${esc(msg)}</p><div class="dg-act"><button class="b2" id="dOk">OK</button></div></div>`,()=>{$('dOk').onclick=()=>{dlgClose();if(cb)cb()};$('dOk').focus()})}
+function uiConfirm(msg,yes,label){const danger=!!label&&label!=='Confirm';
+  dlg(dgTop(danger?'⚠️':'❓','Please confirm','',danger)+`<div class="dg-bd"><p class="dg-msg">${esc(msg)}</p><div class="dg-act"><button class="x" id="dNo">Cancel</button><button class="${danger?'dg-danger':'b2'}" id="dYes">${esc(label||'Confirm')}</button></div></div>`,()=>{$('dNo').onclick=dlgClose;$('dYes').onclick=()=>{dlgClose();yes()}})}
+function askName(msg,cb){let sel='';
+  dlg(dgTop('👤','Select your name',msg)+`<div class="dg-bd"><div class="dg-cb"><input class="dg-s" id="dS" type="text" placeholder="Select or search your name…" autocomplete="off" aria-label="Your name"><span class="dg-ar">▾</span></div><div class="dg-list" id="dL" hidden></div><p class="dg-err" id="dNe"></p><div class="dg-act"><button class="x" id="dNo">Cancel</button><button class="b2" id="dYes">Continue</button></div></div>`,()=>{
+    const I=$('dS'),L=$('dL'),match=q=>staff().filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase()));
+    const paint=()=>{const m=match(sel?'':I.value.trim());
+      L.innerHTML=m.length?m.map(p=>`<button type="button" class="dg-row${key(p)===sel?' on':''}" data-k="${esc(key(p))}"><span class="av2">${esc(initials(dn(p.name)))}</span><span>${esc(dn(p.name))}</span></button>`).join(''):'<p class="dg-msg" style="color:var(--mu);margin:4px 0">No name found.</p>';L.hidden=false};
+    const pick=k=>{const p=staff().find(x=>key(x)===k);if(!p)return;sel=k;I.value=dn(p.name);L.hidden=true;$('dNe').textContent=''};
+    if(me&&staff().some(x=>key(x)===me))pick(me);
+    I.onfocus=()=>{if(sel)I.select();paint()};I.onclick=()=>{if(L.hidden)paint()};
+    I.oninput=()=>{sel='';$('dNe').textContent='';paint()};
+    L.onclick=e=>{const b=e.target.closest('[data-k]');if(b)pick(b.dataset.k)};
+    $('dNo').onclick=dlgClose;
+    $('dYes').onclick=()=>{let p=staff().find(x=>key(x)===sel);if(!p){const m=match(I.value.trim());if(I.value.trim()&&m.length===1)p=m[0]}
+      if(!p){$('dNe').textContent='Please select your name from the list.';if(L.hidden)paint();return}me=key(p);dlgClose();cb(p)};
+    if(!sel)I.focus()})}
+
 const dutyOpts=k=>EFF.map((r,i)=>[r,i]).filter(([r])=>key(r)===k).map(([r,i])=>`<option value="${i}">${esc(fmt(r.date))} ${esc(slot(r))} — ${esc(r.exam)}</option>`).join('');
 const staffOpts=()=>staff().map(p=>`<option value="${esc(key(p))}">${esc(p.name)}</option>`).join('');
 function needData(){if(!data.length){open('<h2>No data yet</h2><p>Duty data has not been uploaded yet.</p>');return true}}
@@ -505,7 +550,7 @@ function standbyBoard(){
     return `<div class="row" style="display:block"><b>${esc(dn(o.name))}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div>${o.query?`<div style="margin:4px 0"><b>Query:</b> ${esc(o.query)}</div>`:''}${o.date?`<div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(dn(p.name))}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div>`:''}<div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`};
   const M=$('md');
   open('<h2>🔒 Admin · DEC Requests</h2>'+(L.length?L.map(row).join(''):'<p style="color:var(--mu)">No standby requests yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">Only staff free at that time, plus the uploaded extra standby list, are shown.</p>');
-  M.querySelectorAll('[data-sd]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const o=standbys.find(x=>x.id==b.dataset.sd);if(!o||!confirm('Remove standby request of '+o.name+' ('+fmt(o.date)+' '+slot(o)+')?'))return;standbys=standbys.filter(x=>x.id!=o.id);cloud('standby/'+o.id,null);standbyBoard()});
+  M.querySelectorAll('[data-sd]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const o=standbys.find(x=>x.id==b.dataset.sd);if(!o)return;uiConfirm('Remove standby request of '+o.name+' ('+fmt(o.date)+' '+slot(o)+')?',()=>{standbys=standbys.filter(x=>x.id!=o.id);cloud('standby/'+o.id,null);standbyBoard()},'Remove')});
   M.querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;
     const o=standbys.find(x=>x.id==b.dataset.al),sel=M.querySelector('[data-sel="'+b.dataset.al+'"]'),p=o&&staff().concat(extras()).find(x=>key(x)===sel.value);
     if(!p){sel.focus();return}
@@ -567,7 +612,7 @@ function exchangeOpts(s,p){
     !EFF.some(x=>isOwner(x)&&!(x.date===s.date&&x.start===s.start&&x.end===s.end)&&ov(x,r)))}
 function exchangeForm(s,p){
   const opts=exchangeOpts(s,p);
-  if(!opts.length){alert('You have no duty that can be given in exchange (time clash for you or for '+nt(s.name)+'). A swap needs a duty in return.');return}
+  if(!opts.length){uiAlert('You have no duty that can be given in exchange (time clash for you or for '+nt(s.name)+'). A swap needs a duty in return.');return}
   const lab=r=>[fmt(r.date),slot(r),r.exam,r.venue].filter(Boolean).join(' · ');
   open(`<h2>🔄 Swap duties</h2><p style="color:var(--mu);font-size:.92rem">You take <b>${esc(dn(s.name))}</b>'s duty:<br><b>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue].filter(Boolean).join(' · '))}</b></p><label>Duty you give in return *</label><select id="xg"><option value="">Select your duty</option>${opts.map((r,i)=>`<option value="${i}">${esc(lab(r))}</option>`).join('')}</select><p id="xe" style="color:var(--dg);margin:0 0 8px"></p><button class="b b2" id="xok" style="width:100%">Confirm swap</button><button class="x" id="xno" style="width:100%;margin-top:8px">Back</button>`);
   $('cl').remove();$('xno').onclick=board;
@@ -593,24 +638,25 @@ function board(){
   M.querySelectorAll('[data-wa]').forEach(a=>a.addEventListener('click',e=>{
     const s=swaps.find(x=>x.id==a.dataset.wa),p=staff().find(x=>key(x)===me);
     if(!s)return;
-    if(!p){e.preventDefault();const f=$('rf'+s.id);f.hidden=false;f.querySelector('select').focus();alert('Select your name first, then tap WhatsApp again.');return}
-    const id='wa_'+key(p).replace(/[^\w]/g,'_');
-    if(!(s.replies&&s.replies[id])){const rep={name:p.name,at:Date.now(),via:'WhatsApp'};(s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep)}
-    setTimeout(board,400)}));
+    const rec=p=>{const id='wa_'+key(p).replace(/[^\w]/g,'_');
+      if(!(s.replies&&s.replies[id])){const rep={name:p.name,at:Date.now(),via:'WhatsApp'};(s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep)}};
+    if(!p){e.preventDefault();askName('Select your name to continue to WhatsApp.',q=>{rec(q);window.open(a.href,'_blank','noopener');setTimeout(board,400)});return}
+    rec(p);setTimeout(board,400)}));
   M.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.ap);if(!s)return;s.approved=true;sv('swaps2',swaps);cloud('swaps/'+s.id+'/approved',true);board()});
   M.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{
     const s=swaps.find(x=>x.id==b.dataset.tk),p=staff().find(x=>key(x)===me);if(!s)return;
-    if(!p){const f=$('rf'+s.id);f.hidden=false;f.querySelector('select').focus();alert("Select your name first, then tap I'll Take It again.");return}
-    if(key(p)===s.k){alert('You cannot take your own swap.');return}
-    if(takerOf(s)){alert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
-    exchangeForm(s,p)});
-  M.querySelectorAll('[data-un]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.un);if(!s||!confirm('Undo this take-over? The duty returns to '+nt(s.name)+'.'))return;
-    delete s.status;delete s.takenBy;delete s.takenAt;delete s.takenK;delete s.giveBack;sv('swaps2',swaps);['status','takenBy','takenAt','takenK','giveBack'].forEach(f=>cloud('swaps/'+s.id+'/'+f,null));rebuild();render();board()});
+    const go=p=>{if(key(p)===s.k){uiAlert('You cannot take your own swap.');return}
+      if(takerOf(s)){uiAlert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
+      exchangeForm(s,p)};
+    if(!p){askName('Select your name to take this swap.',go);return}
+    go(p)});
+  M.querySelectorAll('[data-un]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.un);if(!s)return;uiConfirm('Undo this take-over? The duty returns to '+nt(s.name)+'.',()=>{
+    delete s.status;delete s.takenBy;delete s.takenAt;delete s.takenK;delete s.giveBack;sv('swaps2',swaps);['status','takenBy','takenAt','takenK','giveBack'].forEach(f=>cloud('swaps/'+s.id+'/'+f,null));rebuild();render();board()},'Undo')});
   M.querySelectorAll('[data-ps]').forEach(b=>b.onclick=()=>{const f=b.closest('.rf'),sel=f.querySelector('select'),ta=f.querySelector('textarea'),t=ta.value.trim();
     const alt=f.querySelector('.alt'),ar=alt&&alt.value!==''?EFF[+alt.value]:null;
     if(!sel.value){sel.focus();return}if(!t&&!ar){ta.focus();return}
     const s=swaps.find(x=>x.id==b.dataset.ps),p=staff().find(x=>key(x)===sel.value);if(!s||!p)return;me=sel.value;
-    const id='r'+Date.now()+Math.floor(Math.random()*1000),rep={name:p.name,msg:t.slice(0,500),at:Date.now(),via:'App'};if(ar){if(takerOf(s)){alert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
+    const id='r'+Date.now()+Math.floor(Math.random()*1000),rep={name:p.name,msg:t.slice(0,500),at:Date.now(),via:'App'};if(ar){if(takerOf(s)){uiAlert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
       rep.offer=offerLbl(ar);rep.give={k:key(ar),name:ar.name,date:ar.date,start:ar.start,end:ar.end,exam:ar.exam||'',venue:ar.venue||'',role:ar.role||''}}
     (s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep);board()});
   M.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const[sid,rid]=b.dataset.dr.split('|'),s=swaps.find(x=>x.id==sid);if(!s||!s.replies)return;delete s.replies[rid];sv('swaps2',swaps);board();cloud('swaps/'+sid+'/replies/'+rid,null)});
@@ -634,9 +680,9 @@ function rosterAdmin(tab,q){
       h=L.slice(0,50).map(p=>`<div class="row" style="display:block"><b>${esc(p.name)}</b> <small>${data.filter(r=>key(r)===key(p)).length} duties</small><div style="font-size:.88rem;color:var(--mu)">${esc(p.phone||'No phone')}</div><div class="btns" style="margin-top:4px"><button class="x" data-se="${esc(key(p))}">Edit</button><button class="x" data-sr="${esc(key(p))}" style="color:var(--dg)">Remove</button></div></div>`).join('')}
     $('rl').innerHTML=(h||'<p style="color:var(--mu)">Nothing found.</p>')+(more?`<p style="font-size:.78rem;color:var(--mu)">${more} more — refine the search.</p>`:'');
     M.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>dutyForm(+b.dataset.ed,ret()));
-    M.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const r=data[+b.dataset.rm];if(!r||!confirm('Remove this duty for '+r.name+' on '+fmt(r.date)+' '+slot(r)+'?'))return;data.splice(+b.dataset.rm,1);saveRoster();rosterAdmin(...ret())});
+    M.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const r=data[+b.dataset.rm];if(!r)return;uiConfirm('Remove this duty for '+r.name+' on '+fmt(r.date)+' '+slot(r)+'?',()=>{data.splice(+b.dataset.rm,1);saveRoster();rosterAdmin(...ret())},'Remove')});
     M.querySelectorAll('[data-se]').forEach(b=>b.onclick=()=>staffForm(b.dataset.se,ret()));
-    M.querySelectorAll('[data-sr]').forEach(b=>b.onclick=()=>{const p=staff().find(x=>key(x)===b.dataset.sr);if(!p||!confirm('Remove '+p.name+' and all their duties?'))return;data=data.filter(r=>key(r)!==b.dataset.sr);saveRoster();rosterAdmin(...ret())})};
+    M.querySelectorAll('[data-sr]').forEach(b=>b.onclick=()=>{const p=staff().find(x=>key(x)===b.dataset.sr);if(!p)return;uiConfirm('Remove '+p.name+' and all their duties?',()=>{data=data.filter(r=>key(r)!==b.dataset.sr);saveRoster();rosterAdmin(...ret())},'Remove')})};
   list();$('rq').oninput=list;
   $('rtD').onclick=()=>rosterAdmin('d',$('rq').value);$('rtS').onclick=()=>rosterAdmin('s',$('rq').value);
   $('rAdd').onclick=()=>dutyForm(-1,ret())}
@@ -688,7 +734,7 @@ $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileRe
   if(/\.xlsx?$/i.test(f.name)){r.onload=()=>{try{$('csv').value=xlsxToCsv(new Uint8Array(r.result));$('load').click()}catch(err){$('msg').textContent='Could not read Excel file.'}};r.readAsArrayBuffer(f)}
   else{r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)}};
 $('sample').onclick=()=>{const d=parse(SAMPLE);setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
-$('clear').onclick=()=>{if(!confirm('Clear the roster and all posted swaps for everyone?'))return;swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'};
+$('clear').onclick=()=>uiConfirm('Clear the roster and all posted swaps for everyone?',()=>{swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'},'Clear all');
 $('q').addEventListener('input',()=>{showAll=/^all (fms|invigilators)/.test($('q').value.trim().toLowerCase())});
 ['q','d','t','r','s'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
 $('vC').onclick=()=>{view='c';$('vC').classList.add('on');$('vT').classList.remove('on');render()};
@@ -795,13 +841,13 @@ $('sbrFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const m=$
     sbrSave(list);m.textContent=`Loaded ${list.length} standby slots`+(fbOK?' and shared with all staff.':'.')}
   catch(err){m.textContent='Could not read this file.'}
   e.target.value=''};
-$('sbrClear').onclick=()=>{if(!confirm('Clear the standby roster?'))return;sbrSave([]);$('sbrMsg').textContent='Standby roster cleared.'};
+$('sbrClear').onclick=()=>uiConfirm('Clear the standby roster?',()=>{sbrSave([]);$('sbrMsg').textContent='Standby roster cleared.'},'Clear');
 function sbSave(list){pool=list;sv('sbpool',pool);cloud('standbyPool',pool.length?pool:null)}
 $('admSave').onclick=()=>{const n=ph($('admPh').value);if(n.length<10){$('admMsg').textContent='Enter number with country code, e.g. 923001234567';return}adminPh=n;try{localStorage.setItem('adminPh',n)}catch(e){}cloud('adminPhone',n);$('admMsg').textContent='Saved.'};
 $('lock').onclick=()=>{isAdmin=false;updPend();render();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
 const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
 const FBROOT='duty_lookup/';let fbDb=null,fbOK=false;
-function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=>alert('Cloud save failed: '+e.message))}
+function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=>uiAlert('Cloud save failed: '+e.message))}
 try{if(window.firebase){
   firebase.initializeApp(FBCFG);fbDb=firebase.database();
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
