@@ -21,9 +21,11 @@ body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-
 
 /* header */
 .bar{background:var(--nv);color:#fff;padding-bottom:26px;position:relative}
-#adminBtn{position:absolute;top:10px;right:14px;z-index:5;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;min-height:0;font-size:.85rem;font-weight:700;cursor:pointer}
-#adminBtn[hidden]{display:none}
-.bar .ttl{padding-right:92px}
+#adminBtn,#bInst{position:static;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;min-height:0;font-size:.85rem;font-weight:700;cursor:pointer}
+#adminBtn[hidden],#bInst[hidden]{display:none}
+.tr{position:absolute;top:10px;right:14px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+#bInst{background:var(--gold)!important;color:#1d1a0e!important;border-color:var(--gold)!important}
+.bar .ttl{padding-right:120px}
 .wrap{max-width:1040px;margin:0 auto;padding:26px 18px 0}
 main{max-width:1040px;margin:-14px auto 0;padding:0 18px 48px}
 .ttl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -225,7 +227,7 @@ input,select,textarea{font-size:16px}
  #prSheet tr.g1 td{border-top:2px solid #0b2e2a}
  #prSheet .c{text-align:center}
  #prSheet .ft{margin-top:14px;font-size:10.5px;color:#555;border-top:1px solid #ccc;padding-top:6px;display:flex;justify-content:space-between}
- #adminBtn,.bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst,.pick,td select{display:none!important}
+ #adminBtn,.tr,.bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst,.pick,td select{display:none!important}
  .bar{background:#fff;color:#000;border-bottom:2px solid #000}.sub{color:#333}.st{display:none}
  body{background:#fff}.box{break-inside:avoid}
 }
@@ -256,7 +258,7 @@ input,select,textarea{font-size:16px}
 </head>
 <body>
 <div id="pendBar" hidden><span id="pendTx"></span><b id="pendGo"></b></div>
-<header class="bar"><button id="adminBtn">🔒 Admin</button><div class="wrap">
+<header class="bar"><div class="tr"><button id="bInst">⬇ Install app</button><button id="adminBtn">🔒 Admin</button></div><div class="wrap">
     <div class="ttl"><img class="logo" src="icon-192.png?v=3" alt="EE Exams" width="48" height="48" onerror="this.hidden=true"><h1>EE Exams Duty Roster</h1><span id="st" class="st"></span></div>
     <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
@@ -264,7 +266,6 @@ input,select,textarea{font-size:16px}
       <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Post a swap request</small></span><span class="sm">🔄<br>Swap Duty</span></button>
       <button class="b1" id="bStandby"><span class="lg">🆘 Request DEC<br><small>For any query – Mr. Sharoze Sohail (DEC Member)</small></span><span class="sm">🆘<br>DEC</span></button>
       <button class="b1" id="bSbr"><span class="lg">🛡️ Standby Roster<br><small>Standby invigilators by slot</small></span><span class="sm">🛡️<br>Standby</span></button>
-      <button class="b1" id="bInst" hidden>Install app</button>
     </div>
 </div></header>
 <main>
@@ -440,15 +441,15 @@ function printSheet(title,meta,tbl,note){
 function printFM(k){
   const act=EFF.filter(r=>key(r)===k),given=HAND.filter(h=>h.fromK===k).map(h=>({id:k,name:h.from,date:h.date,start:h.start,end:h.end,exam:h.exam,venue:h.venue,role:h.role,_to:h.to}));
   const rs=act.concat(given,SBROWS().filter(r=>key(r)===k)).sort((a,b)=>when(a).localeCompare(when(b)));if(!rs.length)return;
-  printSheet(act.length||given.length?'Duty Roster':'Standby Roster',[['Faculty member',dn(rs[0].name)],['Total duties',act.length],['Standby slots',rs.filter(r=>r._sb).length],['Swapped duties',rs.filter(r=>r._from||r._to||r._open).length]],
+  printSheet(act.length||given.length?'Duty Roster':'Standby Roster',[[rs.some(r=>r._sb)?'Standby name':'Faculty member',dn(rs[0].name)],['Total duties',act.length],['Standby slots',rs.filter(r=>r._sb).length],['Swapped duties',rs.filter(r=>r._from||r._to||r._open).length]],
    `<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${rs.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')}</tbody></table>`+swapTable(SW.filter(x=>x.taker===rs[0].name||x.from===rs[0].name),'Swaps involving this FM'),
    handNote(k))}
 function printAll(){
   const rowsAll=getRows(),groups=groupRows(withGiven(rowsAll));if(!groups.length)return;
   const f=[];if(qv().trim())f.push('Name: '+qv().trim());if($('d').value)f.push('Date: '+fmtY($('d').value));if($('t').value)f.push('Time: '+$('t').value);if($('r').value)f.push('Role: '+$('r').value);
-  const n=rowsAll.length;
-  printSheet('Duty Roster',[['Faculty members',groups.length],['Duties',n],['Approved swaps applied',swapsFor(rowsAll).length],['Filter',f.length?f.join(' · '):'All faculty members, all duties']],
-   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${r.phone?`<br><small>${phl(r.phone)}</small>`:''}${rs.filter(x=>!x._to).length>1?`<br><small>${rs.filter(x=>!x._to).length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')).join('')}</tbody></table>`+swapLogHtml(rowsAll),
+  const n=rowsAll.length,sbo=n>0&&rowsAll.every(r=>r._sb),mix=!sbo&&rowsAll.some(r=>r._sb);
+  printSheet(sbo?'Standby Roster':'Duty Roster',[[sbo?'Standby invigilators':mix?'Invigilators':'Faculty members',groups.length],[sbo?'Standby slots':'Duties',n],['Approved swaps applied',swapsFor(rowsAll).length],['Filter',f.length?f.join(' · '):'All faculty members, all duties']],
+   `<table><thead><tr><th class="c">Sr</th><th>${sbo?'Standby name':mix?'Name':'Faculty member'}</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${r.phone?`<br><small>${phl(r.phone)}</small>`:''}${rs.filter(x=>!x._to).length>1?`<br><small>${rs.filter(x=>!x._to).length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')).join('')}</tbody></table>`+swapLogHtml(rowsAll),
    groups.length+' faculty members, '+n+' duties')}
 window.addEventListener('afterprint',()=>document.body.classList.remove('pr1'));
 listEl.addEventListener('click',e=>{const ab=e.target.closest('[data-ad]');if(ab){if(isAdmin)dutyForm(-1,null,ab.dataset.ad);return}const pb=e.target.closest('[data-pr]');if(pb){printFM(pb.dataset.pr);return}const m=e.target.closest('[data-more]');if(m){const w=m.previousElementSibling;w.hidden=!w.hidden;m.textContent=w.hidden?`Show ${m.dataset.more} more ${m.dataset.more>1?'duties':'duty'} ▾`:'Show less ▴';return}const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
@@ -764,7 +765,7 @@ function sbrPrint(){
   const q=sbrQ.trim().toLowerCase(),hit=n=>!!q&&n.toLowerCase().includes(q);
   const L=sbr.slice().sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).filter(x=>(!sbrD||x.date===sbrD)&&(!q||sbrNames(x).some(hit)));
   if(!L.length)return;
-  const meta=[['Slots',L.length]];if(sbrQ.trim())meta.unshift(['Name',sbrQ.trim()]);if(sbrD)meta.push(['Day',fmtY(sbrD)]);
+  const meta=[['Slots',L.length]];if(sbrQ.trim())meta.unshift(['Standby name',sbrQ.trim()]);if(sbrD)meta.push(['Day',fmtY(sbrD)]);
   const cell=(x,i)=>{const n=sbrNames(x)[i];return n?(hit(n)?'<b>'+esc(n)+'</b>':esc(n)):''};
   printSheet('Standby Roster',meta,`<table class="z"><thead><tr><th class="c">#</th><th>Date</th><th>Time</th><th>Standby 1</th><th>Standby 2</th><th>Standby 3</th><th>Remarks</th></tr></thead><tbody>${L.map((x,i)=>`<tr><td class="c">${i+1}</td><td>${esc(fmtY(x.date))}</td><td>${esc(x.start+'–'+x.end)}</td><td>${cell(x,0)}</td><td>${cell(x,1)}</td><td>${cell(x,2)}</td><td>${esc(x.remarks||'')}</td></tr>`).join('')}</tbody></table>`,'')}
 function sbrPaint(){
@@ -813,8 +814,16 @@ try{if(window.firebase){
   fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);updPend();render();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps')&&![...$('md').querySelectorAll('textarea')].some(t=>t.value))board()},e=>console.warn(e));
 }}catch(e){console.warn('Firebase unavailable, using local mode',e)}
-let dip;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('bInst').hidden=false});
-$('bInst').onclick=async()=>{if(!dip)return;dip.prompt();await dip.userChoice;dip=null;$('bInst').hidden=true};
+let dip;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e});
+const isStd=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+if(isStd())$('bInst').hidden=true;
+window.addEventListener('appinstalled',()=>{$('bInst').hidden=true});
+$('bInst').onclick=async()=>{
+  if(dip){dip.prompt();await dip.userChoice;dip=null;return}
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  open('<h2>⬇ Install app</h2>'+(ios
+    ?'<p>On iPhone/iPad (Safari): tap the <b>Share</b> button, then <b>Add to Home Screen</b>.</p>'
+    :'<p>Open your browser menu (⋮) and tap <b>Install app</b> or <b>Add to Home screen</b>.</p><p style="color:var(--mu);font-size:.9rem">On desktop Chrome/Edge, use the install icon at the right end of the address bar.</p>'))};
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});
 fillFilters();render();
 </script>
