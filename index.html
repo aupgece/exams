@@ -284,6 +284,7 @@ input,select,textarea{font-size:16px}
     <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
+      <button class="b1" id="bDone"><span class="lg">✅ Approved Swapped<br><small>Swaps taken &amp; approved by DEC</small></span><span class="sm">✅<br>Approved</span></button>
       <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Post a swap request</small></span><span class="sm">🔄<br>Swap Duty</span></button>
       <button class="b1" id="bStandby"><span class="lg">🆘 Request DEC<br><small>For any query – Mr. Sharoze Sohail (DEC Member)</small></span><span class="sm">🆘<br>DEC</span></button>
       <button class="b1" id="bSbr"><span class="lg">🛡️ Standby Roster<br><small>Standby invigilators by slot</small></span><span class="sm">🛡️<br>Standby</span></button>
@@ -352,10 +353,13 @@ const offerLbl=r=>[fmt(r.date),slot(r),r.exam].filter(Boolean).join(' · ');
 const replyGive=v=>{if(v.give)return v.give;if(!v.offer)return null;
   const r=data.find(r=>r.name===v.name&&offerLbl(r)===v.offer);
   return r?{k:key(r),name:r.name,date:r.date,start:r.start,end:r.end,exam:r.exam||'',venue:r.venue||'',role:r.role||''}:null};
-const takerOf=x=>{if(!x||x.approved===false)return null;
+const takerRaw=x=>{if(!x||x.approved===false)return null;
   if(x.status==='filled'&&x.takenBy)return{name:x.takenBy,k:x.takenK||'',at:x.takenAt||0,give:x.giveBack||null};
   const c=Object.values(x.replies||{}).filter(v=>v&&v.name&&v.name!==x.name).map(v=>({v,g:replyGive(v)})).filter(o=>o.g).sort((a,b)=>(a.v.at||0)-(b.v.at||0))[0];
   return c?{name:c.v.name,k:c.g.k||'',at:c.v.at||0,give:c.g,via:'reply'}:null};
+const takerOf=x=>x&&x.takeApproved===false?null:takerRaw(x);
+const takePend=x=>x&&x.approved!==false&&x.takeApproved===false?takerRaw(x):null;
+const needsAdm=x=>x.approved===false||!!takePend(x);
 const nD=d=>{const x=pd(d);return x?x.getTime():String(d||'').trim()},nT=t=>String(t||'').trim().replace(/^(\d):/,'0$1:');
 const sameSlot=(r,x)=>nD(r.date)===nD(x.date)&&nT(r.start)===nT(x.start)&&nT(r.end)===nT(x.end);
 const ownRow=(r,x)=>key(r)===x.k||r.name===x.name||String(r.name).trim().toLowerCase()===String(x.name||'').trim().toLowerCase();
@@ -376,7 +380,7 @@ function rebuild(){
         HAND.push({from:gfrom,fromK:gfromK,to:from,toK:fromK,date:gr.date,start:gr.start,end:gr.end,exam:gr.exam,venue:gr.venue,role:gr.role||''})}}});
   swaps.filter(x=>!takerOf(x)).forEach(x=>{
     const row=findRow(base,x);if(row&&!row._from&&!row._open){const rp=Object.values(x.replies||{}).filter(v=>v&&v.name&&v.name!==x.name).sort((p,q)=>(p.at||0)-(q.at||0))[0];
-      row._open=x.approved===false?'Swap requested (awaiting DEC approval)':rp?'Swap approved · reply from '+dn(rp.name)+' (exchange not confirmed yet)':'Swap open (approved, no taker yet)'}});
+      row._open=x.approved===false?'Swap requested (awaiting DEC approval)':takePend(x)?'Swap taken by '+dn(takePend(x).name)+' (awaiting DEC approval)':rp?'Swap approved · reply from '+dn(rp.name)+' (exchange not confirmed yet)':'Swap open (approved, no taker yet)'}});
   EFF=base}
 const swTxt=r=>r._from?'Taken from '+dn(r._from):r._to?'Given to '+dn(r._to):r._open||'';
 const swCell=r=>r._from?`<b style="color:#15803d">⇄ Taken from ${esc(dn(r._from))}</b>`:r._to?`<b style="color:#b42318">⇄ Given to ${esc(dn(r._to))}</b>`:r._open?`<b style="color:#b45309">⏳ ${esc(r._open)}</b>`:'—';
@@ -522,6 +526,8 @@ function post(i,note,quiet){const r=data[i];
 const NTFY_TOPIC='ece-swap-bpzp5ysiw';
 function notifyAdmin(o){if(!NTFY_TOPIC)return;
   try{fetch('https://ntfy.sh/'+NTFY_TOPIC,{method:'POST',body:(o.type==='standby'?'DEC request: ':'New swap request awaiting approval: ')+o.name+', '+fmt(o.date)+(o.start?' '+[o.start,o.end].filter(Boolean).join('-'):'')+(o.query?' – '+o.query:''),headers:{Title:o.type==='standby'?'DEC request':'Swap request pending',Priority:'high',Tags:'bell',Click:location.origin+location.pathname}}).catch(()=>{})}catch(e){}}
+function notifyTake(s,p,g){if(!NTFY_TOPIC)return;
+  try{fetch('https://ntfy.sh/'+NTFY_TOPIC,{method:'POST',body:'Swap taken, awaiting your approval: '+p.name+' took '+s.name+"'s duty on "+fmt(s.date)+(s.start?' '+[s.start,s.end].filter(Boolean).join('-'):'')+(g?' and gave '+fmt(g.date)+' '+[g.start,g.end].filter(Boolean).join('-'):''),headers:{Title:'Swap taken - approval needed',Priority:'high',Tags:'bell',Click:location.origin+location.pathname}}).catch(()=>{})}catch(e){}}
 // Admin WhatsApp number (digits only, with country code, e.g. 923001234567). Leave blank to pick the contact in WhatsApp.
 const ADMIN_PHONE='';
 let adminPh=ADMIN_PHONE;try{adminPh=localStorage.getItem('adminPh')||ADMIN_PHONE}catch(e){}
@@ -593,46 +599,54 @@ const xRow=(from,to,d,n)=>`<div class="xr"><div class="xw"><span class="xn">${n}
 function xchg(s,tk){const g=tk.give,own={date:s.date,start:s.start,end:s.end,exam:s.exam,venue:s.venue,role:s.role};
   return `<div class="xc"><div class="xm">🔄 <b>${esc(dn(tk.name))}</b> took <b>${esc(dn(s.name))}</b>'s duty${g?' and gave his/her own duty in return. The two exchanged duties.':'. No duty was given in return.'}</div>${xRow(s.name,tk.name,own,1)}${g?xRow(tk.name,s.name,g,2):''}<div class="xt">Swapped on ${esc(rt(tk.at))} · the roster is updated</div></div>`}
 function swapRow(s){
-  const pend=s.approved===false,tk=takerOf(s),dp=dparts(s.date);
+  const pend=s.approved===false,tp=takePend(s),tk=takerOf(s),dp=dparts(s.date);
   const n=ph(s.phone),reps=Object.entries(s.replies||{}).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>a.at-b.at);
   const wm=`Hi ${nt(s.name)}, I saw your swap request for ${[fmt(s.date),[s.start,s.end].filter(Boolean).join('–')].filter(Boolean).join(', ')}${s.exam?' ('+s.exam+')':''}. I can help — let me know!`;
   const op=staff().map(p=>`<option value="${esc(key(p))}"${key(p)===me?' selected':''}>${esc(p.name)}</option>`).join('');
-  const cls=pend?'pend':tk?'done':'open',lbl=pend?'⏳ Pending DEC approval':tk?'✓ Swapped':'Open';
+  const cls=pend||tp?'pend':tk?'done':'open',lbl=pend?'⏳ Pending DEC approval':tp?'⏳ Taken · awaiting DEC approval':tk?'✓ Swapped':'Open';
   const duty=`<div class="sd"><div class="dc">${dp?`<small>${esc(dp.w)}</small><b>${dp.d}</b><small>${esc(dp.m)}</small>`:'<b>📅</b>'}</div><div class="di"><div class="dl">Wants to swap this duty</div><div class="dt">🕒 ${esc([s.start,s.end].filter(Boolean).join('–')||'—')}</div><div class="dx">${esc([s.exam,s.venue,s.role].filter(Boolean).join(' · '))}</div></div></div>`;
-  const act=`<div class="act sa">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${pend||tk?'':`<button class="b b2" data-tk="${s.id}">🔄 Take &amp; give alternate duty</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin&&s.status==='filled'&&s.takenBy?`<button class="link dg" data-un="${s.id}">Undo take</button>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>`;
+  const act=`<div class="act sa">${pend?(isAdmin?`<button class="b b2" data-ap="${s.id}">✓ Approve</button>`:''):`<button class="b wa" data-rp="${s.id}">Reply</button>`}${tp&&isAdmin?`<button class="b b2" data-at="${s.id}">✓ Approve swap</button><button class="link dg" data-xt="${s.id}">Reject</button>`:''}${pend||tk||tp?'':`<button class="b b2" data-tk="${s.id}">🔄 Take &amp; give alternate duty</button>`}${n&&!pend?`<a class="b x" data-wa="${s.id}" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(wm)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>`:''}${isAdmin&&s.status==='filled'&&s.takenBy?`<button class="link dg" data-un="${s.id}">Undo take</button>`:''}${isAdmin?`<button class="link dg" data-r="${s.id}">Remove</button>`:''}</div>`;
   const head=`<div class="sh"><div class="av">${esc(initials(dn(s.name)))}</div><div class="sn"><b>${esc(s.name)}</b><small>Posted ${esc(rt(s.id))}</small></div><span class="tag${tk?' tfl':''}">${lbl}</span></div>`;
-  const body=(tk?xchg(s,tk):duty)+(s.note?`<div class="sq">“${esc(s.note)}”</div>`:'');
+  const body=(tk||tp?xchg(s,tk||tp):duty)+(s.note?`<div class="sq">“${esc(s.note)}”</div>`:'');
   const tail=pend?'':`<div class="rp${reps.length?'':' none'}">${reps.length?`<b>💬 ${reps.length} ${reps.length>1?'replies':'reply'}</b>`+reps.map(x=>bubble(s,x)).join(''):'💬 No replies yet'}</div>
   <div class="rf" id="rf${s.id}" hidden><select aria-label="Your name"><option value="">Select your name</option>${op}</select><select class="alt" aria-label="Alternate duty you can give"><option value="">🔄 Alternate duty you can offer (optional)</option></select><textarea rows="2" maxlength="500" placeholder="Write your reply here…"></textarea><button class="b b2" data-ps="${s.id}">Post reply</button></div>`;
   return `<div class="sc ${cls}">${head}${body}${act}${tail}</div>`}
+const exClash=(s,p,r)=>{const isOwner=x=>s.k?key(x)===s.k:x.name===s.name,ov=(x,y)=>x.date===y.date&&x.start<y.end&&y.start<x.end;
+  return EFF.some(x=>x!==r&&key(x)===key(p)&&s.start&&s.end&&ov(x,s))||EFF.some(x=>isOwner(x)&&!(x.date===s.date&&x.start===s.start&&x.end===s.end)&&ov(x,r))};
 function exchangeOpts(s,p){
-  const isOwner=x=>s.k?key(x)===s.k:x.name===s.name,ov=(x,r)=>x.date===r.date&&x.start<r.end&&r.start<x.end;
-  return EFF.filter(r=>key(r)===key(p)&&!r._to).filter(r=>
-    !EFF.some(x=>x!==r&&key(x)===key(p)&&s.start&&s.end&&ov(x,s))&&
-    !EFF.some(x=>isOwner(x)&&!(x.date===s.date&&x.start===s.start&&x.end===s.end)&&ov(x,r)))}
+  const pn=String(p.name||'').trim().toLowerCase();
+  const committed=new Set();
+  swaps.forEach(x=>{if(x===s||x.approved===false)return;const t=takerRaw(x);if(t&&t.give)committed.add(t.give.k+'|'+nD(t.give.date)+'|'+nT(t.give.start)+'|'+nT(t.give.end))});
+  return EFF.filter(r=>!r._to&&(key(r)===key(p)||String(r.name||'').trim().toLowerCase()===pn)&&!committed.has(key(r)+'|'+nD(r.date)+'|'+nT(r.start)+'|'+nT(r.end)))
+   .sort((a,b)=>String(when(a)).localeCompare(String(when(b))))}
 function exchangeForm(s,p){
   const opts=exchangeOpts(s,p);
-  if(!opts.length){uiAlert('You have no duty that can be given in exchange (time clash for you or for '+nt(s.name)+'). A swap needs a duty in return.');return}
-  const lab=r=>[fmt(r.date),slot(r),r.exam,r.venue].filter(Boolean).join(' · ');
+  if(!opts.length){uiAlert('You have no duty to give in return. A swap needs a duty in exchange.');return}
+  const lab=r=>[fmt(r.date),slot(r),r.exam,r.venue].filter(Boolean).join(' · ')+(exClash(s,p,r)?' ⚠ time clash':'');
   open(`<h2>🔄 Swap duties</h2><p style="color:var(--mu);font-size:.92rem">You take <b>${esc(dn(s.name))}</b>'s duty:<br><b>${esc([fmt(s.date),[s.start,s.end].filter(Boolean).join('–'),s.exam,s.venue].filter(Boolean).join(' · '))}</b></p><label>Duty you give in return *</label><select id="xg"><option value="">Select your duty</option>${opts.map((r,i)=>`<option value="${i}">${esc(lab(r))}</option>`).join('')}</select><p id="xe" style="color:var(--dg);margin:0 0 8px"></p><button class="b b2" id="xok" style="width:100%">Confirm swap</button><button class="x" id="xno" style="width:100%;margin-top:8px">Back</button>`);
   $('cl').remove();$('xno').onclick=board;
   $('xok').onclick=()=>{const v=$('xg').value;if(v===''){$('xe').textContent='Choose the duty you will give in return.';return}
     const r=opts[+v],gb={k:key(r),name:r.name,date:r.date,start:r.start,end:r.end,exam:r.exam||'',venue:r.venue||'',role:r.role||''};
-    s.status='filled';s.takenBy=p.name;s.takenAt=Date.now();s.takenK=key(p);s.giveBack=gb;sv('swaps2',swaps);
-    ['status','takenBy','takenAt','takenK','giveBack'].forEach(f=>cloud('swaps/'+s.id+'/'+f,s[f]));
-    rebuild();render();board()}}
-function updPend(){const n=swaps.filter(s=>s.approved===false).length,m=standbys.filter(x=>x.status!=='allocated').length;
+    s.status='filled';s.takenBy=p.name;s.takenAt=Date.now();s.takenK=key(p);s.giveBack=gb;s.takeApproved=false;sv('swaps2',swaps);
+    ['status','takenBy','takenAt','takenK','giveBack','takeApproved'].forEach(f=>cloud('swaps/'+s.id+'/'+f,s[f]));
+    notifyTake(s,p,gb);rebuild();render();board();uiAlert('Your swap has been sent to DEC. It will take effect once DEC approves it.',null,'Sent to DEC')}}
+function updPend(){const n=swaps.filter(needsAdm).length,m=standbys.filter(x=>x.status!=='allocated').length;
   $('pendBar').hidden=n+m<1;$('bBoard').classList.toggle('blink',isAdmin&&n>0);
   if(n+m&&isAdmin&&navigator.vibrate&&!updPend.v){updPend.v=1;try{navigator.vibrate([120,60,120])}catch(e){}}
   if(n+m){$('pendTx').textContent=[n?n+' swap request'+(n>1?'s':''):'',m?m+' standby request'+(m>1?'s':''):''].filter(Boolean).join(' · ')+' pending'+(n?' approval':'');$('pendGo').textContent=isAdmin?'Review ›':'Admin login ›'}}
+function approvedView(){
+  rebuild();const list=SW.slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  const ln=r=>esc([fmtY(r.date),[r.start,r.end].filter(Boolean).join('–'),r.exam,r.venue].filter(Boolean).join(' · '));
+  open('<h2>✅ Approved Swapped</h2><button class="b x" id="bback" style="width:100%;margin-bottom:8px">← Back to Posted Swaps</button>'+(list.length?list.map(x=>`<div class="xc"><div class="xm">🔄 <b>${esc(dn(x.taker))}</b> took <b>${esc(dn(x.from))}</b>'s duty${x.give?' and gave a duty in return.':'.'}</div><div style="font-size:.9rem;margin:6px 0"><b>${esc(dn(x.taker))}</b> now has:<br>${ln(x)}</div>${x.give?`<div style="font-size:.9rem;margin:6px 0"><b>${esc(dn(x.from))}</b> now has:<br>${ln(x.give)}</div>`:''}<div class="xt">Approved by DEC · ${esc(rt(x.at))}</div></div>`).join(''):'<p style="color:var(--mu)">No approved swaps yet. A swap appears here once it is taken by an FM and approved by DEC.</p>')+`<p style="font-size:.78rem;color:var(--mu)">${list.length} approved swap${list.length===1?'':'s'}.</p>`);
+  const b=$('bback');if(b)b.onclick=board}
 function board(){
   updPend();
-  const vis=(isAdmin?swaps:swaps.filter(s=>s.approved!==false)).slice().sort((a,b)=>(b.approved===false)-(a.approved===false));
-  open('<h2>📋 Posted Swaps</h2><button class="b b2" id="bpost" style="width:100%;margin-bottom:8px">➕ Post a swap request</button>'+(vis.length?vis.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">A swap is completed with <b>Take &amp; give alternate duty</b>: you choose one of your own duties to give in return.</p><p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
-  const M=$('md');$('bpost').onclick=()=>postForm();
+  const vis=(isAdmin?swaps:swaps.filter(s=>s.approved!==false)).slice().sort((a,b)=>needsAdm(b)-needsAdm(a));
+  open('<h2>📋 Posted Swaps</h2><button class="b b2" id="bpost" style="width:100%;margin-bottom:8px">➕ Post a swap request</button><button class="b x" id="bdone2" style="width:100%;margin-bottom:8px">✅ View Approved Swapped</button>'+(vis.length?vis.map(swapRow).join(''):'<p style="color:var(--mu)">No posted swaps yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">A swap is completed with <b>Take &amp; give alternate duty</b>: you choose one of your own duties to give in return. It takes effect once DEC approves it.</p><p style="font-size:.78rem;color:var(--mu)">'+(fbOK?'Posts and replies are shared with all staff.':'Posts are saved on this device only.')+(isAdmin?'':' Only the admin can remove posts.')+'</p>');
+  const M=$('md');$('bpost').onclick=()=>postForm();$('bdone2').onclick=approvedView;
   const fillAlt=f=>{const sel=f.querySelector('select'),alt=f.querySelector('.alt'),k=sel.value;
     const sw=swaps.find(x=>'rf'+x.id===f.id),pp=staff().find(x=>key(x)===k);
-    alt.innerHTML='<option value="">🔄 Alternate duty you can offer (optional)</option>'+(k&&sw&&pp?exchangeOpts(sw,pp).map(r=>`<option value="${EFF.indexOf(r)}">${esc([fmt(r.date),slot(r),r.exam].filter(Boolean).join(' · '))}</option>`).join(''):'')};
+    alt.innerHTML='<option value="">🔄 Alternate duty you can offer (optional)</option>'+(k&&sw&&pp?exchangeOpts(sw,pp).map(r=>`<option value="${EFF.indexOf(r)}">${esc([fmt(r.date),slot(r),r.exam].filter(Boolean).join(' · ')+(exClash(sw,pp,r)?' ⚠ time clash':''))}</option>`).join(''):'')};
   M.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{const f=$('rf'+b.dataset.rp);f.hidden=!f.hidden;if(!f.hidden){fillAlt(f);f.querySelector('textarea').focus()}});
   M.querySelectorAll('.rf select:not(.alt)').forEach(x=>x.onchange=()=>{me=x.value;fillAlt(x.closest('.rf'))});
   M.querySelectorAll('[data-wa]').forEach(a=>a.addEventListener('click',e=>{
@@ -646,19 +660,25 @@ function board(){
   M.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{
     const s=swaps.find(x=>x.id==b.dataset.tk),p=staff().find(x=>key(x)===me);if(!s)return;
     const go=p=>{if(key(p)===s.k){uiAlert('You cannot take your own swap.');return}
-      if(takerOf(s)){uiAlert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
+      if(takerRaw(s)){uiAlert('This duty has already been taken by '+dn(takerRaw(s).name)+'.');return}
       exchangeForm(s,p)};
     if(!p){askName('Select your name to take this swap.',go);return}
     go(p)});
   M.querySelectorAll('[data-un]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.un);if(!s)return;uiConfirm('Undo this take-over? The duty returns to '+nt(s.name)+'.',()=>{
-    delete s.status;delete s.takenBy;delete s.takenAt;delete s.takenK;delete s.giveBack;sv('swaps2',swaps);['status','takenBy','takenAt','takenK','giveBack'].forEach(f=>cloud('swaps/'+s.id+'/'+f,null));rebuild();render();board()},'Undo')});
+    delete s.status;delete s.takenBy;delete s.takenAt;delete s.takenK;delete s.giveBack;delete s.takeApproved;sv('swaps2',swaps);['status','takenBy','takenAt','takenK','giveBack','takeApproved'].forEach(f=>cloud('swaps/'+s.id+'/'+f,null));rebuild();render();board()},'Undo')});
+  M.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.at);if(!s)return;s.takeApproved=true;sv('swaps2',swaps);cloud('swaps/'+s.id+'/takeApproved',true);rebuild();render();board()});
+  M.querySelectorAll('[data-xt]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const s=swaps.find(x=>x.id==b.dataset.xt);if(!s)return;uiConfirm('Reject this swap? The duty stays with '+nt(s.name)+'.',()=>{
+    const t=takerRaw(s);
+    if(t&&t.via==='reply'){Object.entries(s.replies||{}).forEach(([id,v])=>{if(v&&v.name===t.name&&(v.give||v.offer)){delete s.replies[id];cloud('swaps/'+s.id+'/replies/'+id,null)}})}
+    else{['status','takenBy','takenAt','takenK','giveBack'].forEach(f=>{delete s[f];cloud('swaps/'+s.id+'/'+f,null)})}
+    delete s.takeApproved;cloud('swaps/'+s.id+'/takeApproved',null);sv('swaps2',swaps);rebuild();render();board()},'Reject')});
   M.querySelectorAll('[data-ps]').forEach(b=>b.onclick=()=>{const f=b.closest('.rf'),sel=f.querySelector('select'),ta=f.querySelector('textarea'),t=ta.value.trim();
     const alt=f.querySelector('.alt'),ar=alt&&alt.value!==''?EFF[+alt.value]:null;
     if(!sel.value){sel.focus();return}if(!t&&!ar){ta.focus();return}
     const s=swaps.find(x=>x.id==b.dataset.ps),p=staff().find(x=>key(x)===sel.value);if(!s||!p)return;me=sel.value;
-    const id='r'+Date.now()+Math.floor(Math.random()*1000),rep={name:p.name,msg:t.slice(0,500),at:Date.now(),via:'App'};if(ar){if(takerOf(s)){uiAlert('This duty has already been taken by '+dn(takerOf(s).name)+'.');return}
-      rep.offer=offerLbl(ar);rep.give={k:key(ar),name:ar.name,date:ar.date,start:ar.start,end:ar.end,exam:ar.exam||'',venue:ar.venue||'',role:ar.role||''}}
-    (s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep);board()});
+    const id='r'+Date.now()+Math.floor(Math.random()*1000),rep={name:p.name,msg:t.slice(0,500),at:Date.now(),via:'App'};if(ar){if(takerRaw(s)){uiAlert('This duty has already been taken by '+dn(takerRaw(s).name)+'.');return}
+      rep.offer=offerLbl(ar);rep.give={k:key(ar),name:ar.name,date:ar.date,start:ar.start,end:ar.end,exam:ar.exam||'',venue:ar.venue||'',role:ar.role||''};s.takeApproved=false;cloud('swaps/'+s.id+'/takeApproved',false)}
+    (s.replies=s.replies||{})[id]=rep;sv('swaps2',swaps);cloud('swaps/'+s.id+'/replies/'+id,rep);if(ar)notifyTake(s,p,rep.give);board();if(ar)uiAlert('Your reply with an alternate duty has been sent. The swap will take effect once DEC approves it.',null,'Sent to DEC')});
   M.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const[sid,rid]=b.dataset.dr.split('|'),s=swaps.find(x=>x.id==sid);if(!s||!s.replies)return;delete s.replies[rid];sv('swaps2',swaps);board();cloud('swaps/'+sid+'/replies/'+rid,null)});
   M.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;swaps=swaps.filter(s=>s.id!=b.dataset.r);sv('swaps2',swaps);rebuild();render();board();cloud('swaps/'+b.dataset.r,null)})}
 
@@ -747,7 +767,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navi
 let tm='auto';try{tm=localStorage.getItem('theme')||'auto'}catch(e){}
 function setTheme(m){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);try{localStorage.setItem('theme',m)}catch(e){}}
 $('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm]);setTheme(tm);
-$('pendBar').onclick=()=>isAdmin?(swaps.some(s=>s.approved===false)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;$('bRosAdm').onclick=()=>rosterAdmin();
+$('pendBar').onclick=()=>isAdmin?(swaps.some(needsAdm)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bDone').onclick=approvedView;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;$('bRosAdm').onclick=()=>rosterAdmin();
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
