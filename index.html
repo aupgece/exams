@@ -20,7 +20,10 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 
 /* header */
-.bar{background:var(--nv);color:#fff;padding-bottom:26px}
+.bar{background:var(--nv);color:#fff;padding-bottom:26px;position:relative}
+#adminBtn{position:absolute;top:10px;right:14px;z-index:5;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;min-height:0;font-size:.85rem;font-weight:700;cursor:pointer}
+#adminBtn[hidden]{display:none}
+.bar .ttl{padding-right:92px}
 .wrap{max-width:1040px;margin:0 auto;padding:26px 18px 0}
 main{max-width:1040px;margin:-14px auto 0;padding:0 18px 48px}
 .ttl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -222,7 +225,7 @@ input,select,textarea{font-size:16px}
  #prSheet tr.g1 td{border-top:2px solid #0b2e2a}
  #prSheet .c{text-align:center}
  #prSheet .ft{margin-top:14px;font-size:10.5px;color:#555;border-top:1px solid #ccc;padding-top:6px;display:flex;justify-content:space-between}
- .bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst,.pick,td select{display:none!important}
+ #adminBtn,.bar .btns,.filters,.tools,.fl,#adminPanel,.ac,.ov,#bInst,.pick,td select{display:none!important}
  .bar{background:#fff;color:#000;border-bottom:2px solid #000}.sub{color:#333}.st{display:none}
  body{background:#fff}.box{break-inside:avoid}
 }
@@ -230,13 +233,13 @@ input,select,textarea{font-size:16px}
 </head>
 <body>
 <div id="pendBar" hidden><span id="pendTx"></span><b id="pendGo"></b></div>
-<header class="bar"><div class="wrap">
+<header class="bar"><button id="adminBtn">🔒 Admin</button><div class="wrap">
     <div class="ttl"><img class="logo" src="icon-192.png?v=3" alt="EE Exams" width="48" height="48" onerror="this.hidden=true"><h1>EE Exams Duty Roster</h1><span id="st" class="st"></span></div>
     <p class="sub">Examination duty roster and swap coordination</p>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
       <button class="b2" id="bSwap"><span class="lg">🔄 Swap My Duty<br><small>Post a swap request</small></span><span class="sm">🔄<br>Swap Duty</span></button>
-      <button class="b1" id="bStandby"><span class="lg">🆘 Request Standby Invigilator<br><small>Ask Mr. Sharoze Sohail (DEC Member)</small></span><span class="sm">🆘<br>Standby</span></button>
+      <button class="b1" id="bStandby"><span class="lg">🆘 Request DEC<br><small>For any query – Mr. Sharoze Sohail (DEC Member)</small></span><span class="sm">🆘<br>DEC</span></button>
       <button class="b1" id="bInst" hidden>Install app</button>
     </div>
 </div></header>
@@ -258,14 +261,16 @@ input,select,textarea{font-size:16px}
     </div>
   </div>
   <div id="list"></div>
-  <div class="fl"><button class="link" id="bTheme">Theme: Auto</button><button class="link" id="adminBtn">🔒 Admin</button></div>
+  <div class="fl"><button class="link" id="bTheme">Theme: Auto</button></div>
   <section id="adminPanel" hidden=""><div style="display:flex;justify-content:space-between;align-items:center"><b>Admin: upload duty data</b><button class="link" id="lock">Lock</button></div>
     <p>Upload a CSV or the Excel duty roster (.xlsx). CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
     <input type="file" id="file" accept=".csv,text/csv,.xlsx,.xls">
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
     <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
     <p id="msg"></p>
-    <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bSbAdm">🆘 Standby requests</button></div>
+    <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bSbAdm">🆘 DEC requests</button></div>
+    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Additional standby invigilators</b> <small>(upload Excel or PDF with names and mobile numbers; replaces the previous extra list)</small>
+    <input type="file" id="sbFile" accept=".xlsx,.xls,.csv,.pdf,application/pdf" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbClear">Clear extra list</button></div><p id="sbMsg"></p></div>
     <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
     <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
   </section>
@@ -290,6 +295,8 @@ const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const nr=a=>(a.forEach(r=>{if(r&&r.role)r.role=String(r.role).replace(/^(invigilator)\s*\d+$/i,'$1')}),a);
 let data=nr(ld('duty2')),swaps=ld('swaps2'),isAdmin=false;
 let standbys=[];
+let pool=ld('sbpool');
+const extras=()=>{const have=new Set(staff().map(x=>String(x.name).trim().toLowerCase()));return pool.filter(x=>x&&x.name&&!have.has(String(x.name).trim().toLowerCase())).map(x=>({id:'X:'+x.name,name:x.name,phone:x.phone||''}))};
 let EFF=[],HAND=[],SW=[];
 // Effective roster = base roster with every approved + taken swap applied
 // A swap counts as taken when another FM presses Take & give alternate duty, OR replies offering an alternate duty of their own
@@ -357,6 +364,8 @@ function free(duty){const busy=new Set(EFF.filter(x=>x.date===duty.date&&x.start
 function acts(p,msg){const n=ph(p.phone),cp=`<button class="b x cp" data-m="${esc(msg)}">Copy message</button>`;return n?`<span class="act"><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="b call" href="tel:+${n}">Call</a>${cp}</span>`:`<span class="act"><small>No phone</small>${cp}</span>`}
 const nt=n=>String(n||'').replace(/^\s*(mr|mrs|ms)\.?\s+/i,'').trim();
 const dn=n=>String(n||'').replace(/^\s*(dm|di)\.?\s+/i,'').trim();
+const phl=p=>{const n=String(p||'').replace(/\D/g,'');return `<a href="tel:+${n}" style="color:inherit;font-weight:700;text-decoration:none">📞 ${esc(cell(p))}</a> <a href="https://wa.me/${n}" target="_blank" rel="noopener" style="color:#128c7e;font-weight:700;text-decoration:none">💬 WhatsApp</a>`};
+const cell=p=>{const d=String(p||'').replace(/\D/g,'');return d.length===12&&d.startsWith('92')?'0'+d.slice(2,5)+'-'+d.slice(5):String(p||'')};
 const swapMsg=(to,me,r)=>`Hi ${nt(to)}, this is ${nt(me)}. Could you please swap or cover my exam duty on ${fmt(r.date)}, ${slot(r)} (${r.exam}, ${r.venue})? Thank you!`;
 
 function fillFilters(){rebuild();
@@ -375,7 +384,7 @@ const ac=i=>`<div class="ac"><button class="link fs" data-i="${i}">🔄 Swap</bu
 const opt=(r,j)=>`<option value="${j}">${esc(longD(r.date).w)}, ${esc(longD(r.date).f)} · ${esc(slot(r))} · ${esc(r.exam)}</option>`;
 function ticket(r){const p=dparts(r.date);
   return `<div class="dy"><div class="dt">${p?`<b>${p.d}</b><span>${esc(p.m)}</span><small>${esc(p.w)}</small>`:`<span>${esc(r.date)}</span>`}</div>
-  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${ac(EFF.indexOf(r))}</div></div>`}
+  <div class="db"><div class="dh"><span class="tm">🕒 ${esc(slot(r))}</span>${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</div><div class="ex">${esc(r.exam)}</div><div class="vn">📍 ${esc(r.venue)}</div>${r.phone?`<div class="vn">${phl(r.phone)}</div>`:''}${r._from?`<div style="margin-top:4px"><span class="tag tfl">🔄 Swapped from ${esc(dn(r._from))}</span></div>`:''}${ac(EFF.indexOf(r))}</div></div>`}
 function getRows(){const q=qv().trim().toLowerCase(),d=$('d').value,t=$('t').value,ro=$('r').value;
   const rows=EFF.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.date===d)&&(!t||slot(r)===t)&&(!ro||r.role===ro));
   rows.sort($('s').value==='d'?(a,b)=>when(a).localeCompare(when(b))||a.name.localeCompare(b.name):(a,b)=>a.name.localeCompare(b.name)||when(a).localeCompare(when(b)));return rows}
@@ -392,7 +401,7 @@ function render(){
   if(!by.size){const ql=q.toLowerCase(),hs=q?HAND.filter(x=>x.from.toLowerCase().includes(ql)):[];
     L.innerHTML='<div class="box empty"><h3>No matching duties</h3><div>Try clearing a filter or check the spelling.</div>'+(hs.length?'<div style="margin-top:10px;text-align:left">'+hs.map(x=>'🔄 '+esc(dn(x.from))+': '+esc(fmt(x.date))+' '+esc(x.start+'–'+x.end)+' was handed over to <b>'+esc(dn(x.to))+'</b> (approved swap)').join('<br>')+'</div>':'')+'</div>';return}
   const cnt=n=>n>1?`${n} duties`:'1 duty';
-  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(dn(r.name))}</b>${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}${r._from?`<br><span class="tag tfl">🔄 from ${esc(dn(r._from))}</span>`:''}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(EFF.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
+  if(view==='t')L.innerHTML='<div class="tw"><table><thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th></th></tr></thead><tbody>'+groups.map(rs=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}><td class="nm" data-l="Name">${j===0?`<b>${esc(dn(r.name))}</b>${r.phone?`<br><small>${phl(r.phone)}</small>`:''}${rs.length>1?` <span class="n">· ${rs.length} duties</span> <button class="link fs" data-pr="${esc(key(r))}">🖨 Print</button>`:''}${isAdmin?` <button class="link fs" data-ad="${esc(key(r))}">➕ Add duty</button>`:''}`:''}</td><td data-l="Date"><b>${esc(fmt(r.date))}</b></td><td data-l="Time">${esc(slot(r))}</td><td data-l="Exam">${esc(r.exam)}${r._from?`<br><span class="tag tfl">🔄 from ${esc(dn(r._from))}</span>`:''}</td><td data-l="Venue">${esc(r.venue)}</td><td data-l="Role">${r.role?`<span class="tag">${esc(r.role)}</span>`:''}</td><td>${ac(EFF.indexOf(r))}</td></tr>`).join('')).join('')+'</tbody></table></div>';
   else L.innerHTML='<div class="grid">'+groups.map((rs,gi)=>`<div class="box pc" data-g="${gi}"><div class="fm"><div class="who"><div class="name">${esc(dn(rs[0].name))}</div></div><span class="tag" title="${cnt(rs.length)}">${cnt(rs.length)}</span>${rs.length>1?`<button class="link fs" data-pr="${esc(key(rs[0]))}">🖨 Print</button>`:''}</div>`+
     `<div class="tkw">${rs.slice(0,3).map(ticket).join('')}${rs.length>3?`<div class="more" hidden>${rs.slice(3).map(ticket).join('')}</div><button class="link fs mb" data-more="${rs.length-3}">Show ${rs.length-3} more ${rs.length-3>1?'duties':'duty'} ▾</button>`:''}</div>${HAND.filter(h=>h.fromK===key(rs[0])).map(h=>`<div class="n" style="margin-top:8px">🔄 ${esc(fmt(h.date))} ${esc(h.start+'–'+h.end)} handed over to ${esc(dn(h.to))}</div>`).join('')}${isAdmin?`<button class="link fs" data-ad="${esc(key(rs[0]))}" style="margin-top:10px;width:100%">➕ Add duty</button>`:''}</div>`).join('')+'</div>';
 }
@@ -414,7 +423,7 @@ function printAll(){
   const f=[];if(qv().trim())f.push('Name: '+qv().trim());if($('d').value)f.push('Date: '+fmtY($('d').value));if($('t').value)f.push('Time: '+$('t').value);if($('r').value)f.push('Role: '+$('r').value);
   const n=rowsAll.length;
   printSheet('Duty Roster',[['Faculty members',groups.length],['Duties',n],['Approved swaps applied',swapsFor(rowsAll).length],['Filter',f.length?f.join(' · '):'All faculty members, all duties']],
-   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${rs.filter(x=>!x._to).length>1?`<br><small>${rs.filter(x=>!x._to).length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')).join('')}</tbody></table>`+swapLogHtml(rowsAll),
+   `<table><thead><tr><th class="c">Sr</th><th>Faculty member</th><th>Date</th><th>Time</th><th>Exam</th><th>Venue</th><th>Role</th><th>Swap status</th></tr></thead><tbody>${groups.map((rs,gi)=>rs.map((r,j)=>`<tr${j===0?' class="g1"':''}>${j===0?`<td class="c" rowspan="${rs.length}">${gi+1}</td><td rowspan="${rs.length}"><b>${esc(dn(r.name))}</b>${r.phone?`<br><small>${phl(r.phone)}</small>`:''}${rs.filter(x=>!x._to).length>1?`<br><small>${rs.filter(x=>!x._to).length} duties</small>`:''}</td>`:''}<td>${esc(fmtY(r.date))}</td><td>${esc(slot(r))}</td><td>${esc(r.exam)}</td><td>${esc(r.venue)}</td><td>${esc(r.role||'')}</td><td>${swCell(r)}</td></tr>`).join('')).join('')}</tbody></table>`+swapLogHtml(rowsAll),
    groups.length+' faculty members, '+n+' duties')}
 window.addEventListener('afterprint',()=>document.body.classList.remove('pr1'));
 listEl.addEventListener('click',e=>{const ab=e.target.closest('[data-ad]');if(ab){if(isAdmin)dutyForm(-1,null,ab.dataset.ad);return}const pb=e.target.closest('[data-pr]');if(pb){printFM(pb.dataset.pr);return}const m=e.target.closest('[data-more]');if(m){const w=m.previousElementSibling;w.hidden=!w.hidden;m.textContent=w.hidden?`Show ${m.dataset.more} more ${m.dataset.more>1?'duties':'duty'} ▾`:'Show less ▴';return}const b=e.target.closest('[data-i],[data-c]');if(!b)return;if(b.dataset.i!==undefined)postForm(+b.dataset.i);else ics(+b.dataset.c)});
@@ -441,35 +450,38 @@ function post(i,note,quiet){const r=data[i];
   swaps.unshift(s);sv('swaps2',swaps);if(!quiet)board();cloud('swaps/'+s.id,s)}
 const NTFY_TOPIC='ece-swap-bpzp5ysiw';
 function notifyAdmin(o){if(!NTFY_TOPIC)return;
-  try{fetch('https://ntfy.sh/'+NTFY_TOPIC,{method:'POST',body:(o.type==='standby'?'Standby invigilator requested: ':'New swap request awaiting approval: ')+o.name+', '+fmt(o.date)+(o.start?' '+[o.start,o.end].filter(Boolean).join('-'):''),headers:{Title:o.type==='standby'?'Standby request':'Swap request pending',Priority:'high',Tags:'bell',Click:location.origin+location.pathname}}).catch(()=>{})}catch(e){}}
+  try{fetch('https://ntfy.sh/'+NTFY_TOPIC,{method:'POST',body:(o.type==='standby'?'DEC request: ':'New swap request awaiting approval: ')+o.name+', '+fmt(o.date)+(o.start?' '+[o.start,o.end].filter(Boolean).join('-'):'')+(o.query?' – '+o.query:''),headers:{Title:o.type==='standby'?'DEC request':'Swap request pending',Priority:'high',Tags:'bell',Click:location.origin+location.pathname}}).catch(()=>{})}catch(e){}}
 // Admin WhatsApp number (digits only, with country code, e.g. 923001234567). Leave blank to pick the contact in WhatsApp.
 const ADMIN_PHONE='';
 let adminPh=ADMIN_PHONE;try{adminPh=localStorage.getItem('adminPh')||ADMIN_PHONE}catch(e){}
 const adminMsg=o=>`Hello Admin,\n*${nt(o.name)}*${o.role?' ('+o.role+')':''} has requested a duty swap, pending your approval.\n\n${fmt(o.date)}${o.start?' · '+[o.start,o.end].filter(Boolean).join('–'):''}${o.exam?' · '+o.exam:''}${o.venue?' · '+o.venue:''}\nMobile: ${o.phone}${o.note?'\nNote: '+o.note:''}\n\nApprove in app: ${location.origin+location.pathname}\nThank you.`;
 const adminLink=o=>'https://wa.me/'+ph(adminPh)+'?text='+encodeURIComponent(adminMsg(o));
-const standbyAdminMsg=o=>`Hello Admin,\n*${nt(o.name)}*${o.role?' ('+o.role+')':''} needs a standby invigilator for the duty below.\n\n${fmt(o.date)}${o.start?' · '+[o.start,o.end].filter(Boolean).join('–'):''}${o.exam?' · '+o.exam:''}${o.venue?' · '+o.venue:''}\nMobile: ${o.phone}\n\nThank you.`;
+const standbyAdminMsg=o=>`Hello Admin,\n*${nt(o.name)}*${o.role?' ('+o.role+')':''} has sent a request to DEC.\n\n${o.query?'Query: '+o.query+'\n\n':''}${o.date?fmt(o.date)+(o.start?' · '+[o.start,o.end].filter(Boolean).join('–'):'')+(o.exam?' · '+o.exam:'')+(o.venue?' · '+o.venue:'')+'\n':''}Mobile: ${o.phone}\n\nThank you.`;
 function standbyFlow(){if(needData())return;
-  open(`<h2>🆘 Request standby invigilator</h2><p style="color:var(--mu)">Your request goes to Mr. Sharoze Sohail (DEC Member).</p><label>1. Who are you?</label><select id="sy1"><option value="">Select your name</option>${staffOpts()}</select><div id="sy2"></div><div id="sy3"></div>`);
+  open(`<h2>🆘 Request DEC</h2><p style="color:var(--mu)">Your request goes to Mr. Sharoze Sohail (DEC Member).</p><label>1. Who are you?</label><select id="sy1"><option value="">Select your name</option>${staffOpts()}</select><div id="sy2"></div><div id="sy3"></div>`);
   $('sy1').onchange=()=>{const k=$('sy1').value;$('sy3').innerHTML='';
-    $('sy2').innerHTML=k?`<label>2. Which duty needs a standby?</label><select id="sy2s"><option value="">Select duty</option>${dutyOpts(k)}</select>`:'';
-    if(k)$('sy2s').onchange=()=>{const v=$('sy2s').value;if(v==='')return;
-      const r=EFF[+v],o={id:Date.now(),type:'standby',k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,role:r.role||''};
-      const dup=standbys.some(x=>x.name===o.name&&x.date===o.date&&x.start===o.start&&x.end===o.end);
+    $('sy2').innerHTML=k?`<label>2. Your query *</label><textarea id="sq" rows="3" maxlength="500" style="width:100%" placeholder="Write your query or request for DEC (e.g. need a standby invigilator, duty clash, room issue…)"></textarea><label>3. Related duty (optional)</label><select id="sy2s"><option value="">No specific duty</option>${dutyOpts(k)}</select><p id="sqm" style="color:var(--dg);margin:4px 0"></p><button class="b b2" id="sqGo" style="width:100%">Send request</button>`:'';
+    if(k)$('sqGo').onclick=()=>{const q=$('sq').value.trim(),v=$('sy2s').value;
+      if(!q){$('sqm').textContent='Please write your query.';$('sq').focus();return}
+      const r=v===''?null:EFF[+v],p=staff().find(x=>key(x)===k)||{};
+      const o=r?{id:Date.now(),type:'standby',k:key(r),name:r.name,phone:r.phone||'',date:r.date,start:r.start,end:r.end,exam:r.exam,venue:r.venue,role:r.role||'',query:q}
+               :{id:Date.now(),type:'standby',k:k,name:p.name||'',phone:p.phone||'',date:'',start:'',end:'',exam:'',venue:'',role:'',query:q};
+      const dup=standbys.some(x=>x.name===o.name&&x.date===o.date&&x.start===o.start&&x.end===o.end&&(x.query||'')===q);
       if(!dup){standbys.unshift(o);cloud('standby/'+o.id,o);notifyAdmin(o)}
-      open(`<h2>✅ Standby request ${dup?'already sent':'sent'}</h2><p style="color:var(--mu);font-size:.92rem">Tap below to message the admin, then press <b>Send</b>.</p><div style="background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:.85rem;white-space:pre-wrap;line-height:1.45">${esc(standbyAdminMsg(o).replace(/\*/g,''))}</div><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${ph(adminPh)}?text=${encodeURIComponent(standbyAdminMsg(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}}}
+      open(`<h2>✅ Request ${dup?'already sent':'sent'}</h2><p style="color:var(--mu);font-size:.92rem">Tap below to message the admin, then press <b>Send</b>.</p><div style="background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:.85rem;white-space:pre-wrap;line-height:1.45">${esc(standbyAdminMsg(o).replace(/\*/g,''))}</div><a class="b wa" target="_blank" rel="noopener" href="https://wa.me/${ph(adminPh)}?text=${encodeURIComponent(standbyAdminMsg(o))}" style="width:100%">💬 Notify admin on WhatsApp</a>`)}}}
 const standbyAllocMsg=(p,o)=>`Hi ${nt(p.name)}, you have been allocated as standby invigilator on ${fmt(o.date)}, ${slot(o)} (${o.exam}, ${o.venue}) in place of ${nt(o.name)}. Please confirm. Thank you!`;
 function standbyBoard(){
   updPend();
   const L=standbys.slice().sort((a,b)=>((b.status!=='allocated')-(a.status!=='allocated'))||b.id-a.id);
   const row=o=>{const when=[fmt(o.date),[o.start,o.end].filter(Boolean).join('–'),o.exam,o.venue].filter(Boolean).map(esc).join(' · ');
-    if(o.status==='allocated'&&o.standby)return `<div class="row" style="display:block"><b>${esc(dn(o.name))}</b> <small>${esc(o.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin:6px 0">✅ Standby: <b>${esc(dn(o.standby.name))}</b></div>${acts(o.standby,standbyAllocMsg(o.standby,o))}<div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`;
-    const fr=free(o).filter(p=>key(p)!==o.k);
-    return `<div class="row" style="display:block"><b>${esc(dn(o.name))}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div><div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(dn(p.name))}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div><div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`};
+    if(o.status==='allocated'&&o.standby)return `<div class="row" style="display:block"><b>${esc(dn(o.name))}</b> <small>${esc(o.role||'')}</small><div style="font-size:.88rem;color:var(--mu)">${when}</div>${o.query?`<div style="margin:4px 0"><b>Query:</b> ${esc(o.query)}</div>`:''}<div style="margin:6px 0">✅ Standby: <b>${esc(dn(o.standby.name))}</b></div>${acts(o.standby,standbyAllocMsg(o.standby,o))}<div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`;
+    const fr=free(o).filter(p=>key(p)!==o.k).concat(extras());
+    return `<div class="row" style="display:block"><b>${esc(dn(o.name))}</b> <small>${esc(o.role||'')}</small> <span style="color:var(--gold);font-weight:800">● Pending</span><div style="font-size:.88rem;color:var(--mu)">${when}</div>${o.query?`<div style="margin:4px 0"><b>Query:</b> ${esc(o.query)}</div>`:''}${o.date?`<div style="margin-top:6px"><select data-sel="${o.id}"><option value="">Select standby invigilator</option>${fr.map(p=>`<option value="${esc(key(p))}">${esc(dn(p.name))}</option>`).join('')}</select> <button class="b b2" data-al="${o.id}">Allocate</button></div>`:''}<div style="margin-top:6px"><button class="x" data-sd="${o.id}" style="color:var(--dg)">Remove</button></div></div>`};
   const M=$('md');
-  open('<h2>🆘 Standby Requests</h2>'+(L.length?L.map(row).join(''):'<p style="color:var(--mu)">No standby requests yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">Only staff free at that time are listed.</p>');
+  open('<h2>🔒 Admin · DEC Requests</h2>'+(L.length?L.map(row).join(''):'<p style="color:var(--mu)">No standby requests yet.</p>')+'<p style="font-size:.78rem;color:var(--mu)">Only staff free at that time, plus the uploaded extra standby list, are shown.</p>');
   M.querySelectorAll('[data-sd]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;const o=standbys.find(x=>x.id==b.dataset.sd);if(!o||!confirm('Remove standby request of '+o.name+' ('+fmt(o.date)+' '+slot(o)+')?'))return;standbys=standbys.filter(x=>x.id!=o.id);cloud('standby/'+o.id,null);standbyBoard()});
   M.querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>{if(!isAdmin)return;
-    const o=standbys.find(x=>x.id==b.dataset.al),sel=M.querySelector('[data-sel="'+b.dataset.al+'"]'),p=o&&staff().find(x=>key(x)===sel.value);
+    const o=standbys.find(x=>x.id==b.dataset.al),sel=M.querySelector('[data-sel="'+b.dataset.al+'"]'),p=o&&staff().concat(extras()).find(x=>key(x)===sel.value);
     if(!p){sel.focus();return}
     o.status='allocated';o.standby={name:p.name,phone:p.phone||'',k:key(p)};o.allocatedAt=Date.now();cloud('standby/'+o.id,o);standbyBoard()})}
 function sentScreen(o,dup){
@@ -633,6 +645,7 @@ function xlsxToCsv(buf){
   const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
   const M={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   const ph={};data.forEach(r=>{if(r.phone)ph[r.name]=r.phone});
+  const cp=v=>{let d=String(v||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('92'))return d;if(d.startsWith('0'))return '92'+d.slice(1);if(d.length===10)return '92'+d;return d};
   const out=['id,name,phone,date,start,end,exam,venue,role'];let date='',st='',en='';
   const person=n=>n&&!/^[–—-]$/.test(n)&&!/^(CE|MTS|BME)(\s*\+\s*(CE|MTS|BME))*$/i.test(n);
   rows.forEach(r=>{
@@ -641,9 +654,9 @@ function xlsxToCsv(buf){
     if(h){const y=h[3].length===2?'20'+h[3]:h[3];date=`${y}-${String(M[h[2].toLowerCase()]).padStart(2,'0')}-${h[1].padStart(2,'0')}`;st=h[4].padStart(5,'0');en=h[5].padStart(5,'0');return}
     if(!date||!/^\d+$/.test(c0))return;
     const room=String(r[1]).trim(),blk=String(r[2]).trim(),venue=blk?`${room} (${blk})`:room;
-    [[r[4],'Invigilator'],[r[5],'Invigilator']].forEach(([n,role])=>{
+    [[r[4],'Invigilator',r[7]],[r[5],'Invigilator',r[8]]].forEach(([n,role,c])=>{
       n=String(n).trim();if(!person(n))return;
-      out.push([n,n,ph[n]||'',date,st,en,'Mid-term Exam',venue,role].map(x=>String(x).replace(/,/g,' ')).join(','))})});
+      out.push([n,n,cp(c)||ph[n]||'',date,st,en,'Mid-term Exam',venue,role].map(x=>String(x).replace(/,/g,' ')).join(','))})});
   return out.join('\n')}
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   if(/\.xlsx?$/i.test(f.name)){r.onload=()=>{try{$('csv').value=xlsxToCsv(new Uint8Array(r.result));$('load').click()}catch(err){$('msg').textContent='Could not read Excel file.'}};r.readAsArrayBuffer(f)}
@@ -672,6 +685,37 @@ $('adminBtn').onclick=()=>{
     if(ok){isAdmin=true;updPend();render();close();$('adminPanel').hidden=false;$('admPh').value=adminPh;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
     else $('pe').textContent='Incorrect password.'};
   $('pg').onclick=go;$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('pw').focus()};
+
+// Extra standby invigilators (Excel / PDF): name + mobile
+const normPh=v=>{let d=String(v||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('92'))return d;if(d.startsWith('0'))return '92'+d.slice(1);if(d.length===10)return '92'+d;return d};
+const PH_RE=/(?:\+?92[-\s]?|0)?3\d{2}[-\s]?\d{7}/;
+const HDR_RE=/^(sr\.?|s\.?\s*no\.?|no\.?|name|names|contact|phone|mobile|cell|cell\s*no\.?|designation|department|remarks?|sno)$/i;
+function sbParse(rows,joined){const out=[];let skipped=0;
+  rows.forEach(cells=>{const txt=cells.map(c=>String(c).trim()).filter(Boolean);if(!txt.length)return;
+    const line=txt.join(' ');const m=line.match(PH_RE);if(!m){if(/[A-Za-z]{3}/.test(line)&&!txt.every(t=>HDR_RE.test(t)))skipped++;return}
+    let name;
+    if(joined)name=line.replace(PH_RE,' ').replace(/^\s*\d+\s*[.)\-]?\s+/,'').replace(/[|,;:]+/g,' ').replace(/\s+/g,' ').trim();
+    else name=(txt.find(t=>/[A-Za-z]{2}/.test(t)&&!PH_RE.test(t)&&!HDR_RE.test(t))||'').replace(/^\s*\d+\s*[.)]\s*/,'').trim();
+    if(name.length<3)return;
+    out.push({name,phone:normPh(m[0])})});
+  const seen=new Set();return {list:out.filter(x=>{const k=x.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true}),skipped}}
+function loadPdfJs(){return window.pdfjsLib?Promise.resolve():new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';sc.onload=()=>{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res()};sc.onerror=()=>rej(new Error('pdf.js'));document.head.appendChild(sc)})}
+async function pdfRows(buf){await loadPdfJs();const pdf=await pdfjsLib.getDocument({data:buf}).promise,rows=[];
+  for(let i=1;i<=pdf.numPages;i++){const tc=await (await pdf.getPage(i)).getTextContent(),L=[];
+    tc.items.forEach(t=>{if(!t.str.trim())return;const y=Math.round(t.transform[5]),x=t.transform[4];let l=L.find(l=>Math.abs(l.y-y)<=3);if(!l){l={y,t:[]};L.push(l)}l.t.push({x,s:t.str})});
+    L.sort((a,b)=>b.y-a.y).forEach(l=>rows.push([l.t.sort((a,b)=>a.x-b.x).map(t=>t.s).join(' ')]))}
+  return rows}
+function sbSave(list){pool=list;sv('sbpool',pool);cloud('standbyPool',pool.length?pool:null)}
+$('sbFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const m=$('sbMsg');m.textContent='Reading…';
+  try{const buf=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(f)});
+    let res;
+    if(/\.pdf$/i.test(f.name))res=sbParse(await pdfRows(new Uint8Array(buf)),true);
+    else{const wb=XLSX.read(new Uint8Array(buf),{type:'array'});let rows=[];wb.SheetNames.forEach(n=>rows=rows.concat(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:false})));res=sbParse(rows,false)}
+    if(!res.list.length){m.textContent='No names with mobile numbers found in this file.';return}
+    sbSave(res.list);m.textContent=`Loaded ${res.list.length} extra standby invigilators`+(res.skipped?` (${res.skipped} rows skipped: no mobile number)`:'')+(fbOK?' and shared with all staff.':'.')+' Preview: '+res.list.slice(0,3).map(x=>x.name+' '+x.phone).join('; ')+(res.list.length>3?'…':'')}
+  catch(err){m.textContent='Could not read this file.'}
+  e.target.value=''};
+$('sbClear').onclick=()=>{if(!confirm('Clear the extra standby list?'))return;sbSave([]);$('sbMsg').textContent='Extra list cleared.'};
 $('admSave').onclick=()=>{const n=ph($('admPh').value);if(n.length<10){$('admMsg').textContent='Enter number with country code, e.g. 923001234567';return}adminPh=n;try{localStorage.setItem('adminPh',n)}catch(e){}cloud('adminPhone',n);$('admMsg').textContent='Saved.'};
 $('lock').onclick=()=>{isAdmin=false;updPend();render();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
 const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
@@ -682,8 +726,9 @@ try{if(window.firebase){
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=nr(v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[]);sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
+  fbDb.ref(FBROOT+'standbyPool').on('value',x=>{const v=x.val();pool=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbpool',pool)},e=>console.warn(e));
   fbDb.ref(FBROOT+'standby').on('value',x=>{const v=x.val()||{};standbys=Object.values(v).sort((a,b)=>b.id-a.id);updPend();
-    if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Standby Requests')&&![...$('md').querySelectorAll('select')].some(t=>t.value))standbyBoard()},e=>console.warn(e));
+    if($('ov').classList.contains('on')&&$('md').innerHTML.includes('DEC Requests')&&![...$('md').querySelectorAll('select')].some(t=>t.value))standbyBoard()},e=>console.warn(e));
   fbDb.ref(FBROOT+'swaps').on('value',x=>{const v=x.val()||{};swaps=Object.values(v).sort((a,b)=>b.id-a.id);sv('swaps2',swaps);updPend();render();
     if($('ov').classList.contains('on')&&$('md').innerHTML.includes('Posted Swaps')&&![...$('md').querySelectorAll('textarea')].some(t=>t.value))board()},e=>console.warn(e));
 }}catch(e){console.warn('Firebase unavailable, using local mode',e)}
