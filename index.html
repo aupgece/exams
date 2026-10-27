@@ -328,6 +328,8 @@ input,select,textarea{font-size:16px}
     <input type="file" id="sbrFile" accept=".xlsx,.xls,.csv" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbrClear">Clear standby roster</button></div><p id="sbrMsg"></p></div>
         <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
     <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
+    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Change admin password</b> <small>(at least 8 characters; saved as a salted hash, never shown in the page)</small>
+    <div style="display:grid;gap:6px;margin-top:6px;max-width:360px"><input id="cpOld" type="password" autocomplete="current-password" placeholder="Current password" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><input id="cpNew" type="password" autocomplete="new-password" placeholder="New password" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><input id="cpNew2" type="password" autocomplete="new-password" placeholder="Confirm new password" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="cpSave">Change password</button></div><p id="cpMsg" style="margin:6px 0 0"></p></div>
   </section>
 </main>
 <div class="ov" id="ov"><div class="md" id="md"></div></div>
@@ -886,14 +888,54 @@ function decEdit(){
 $('bDec').onclick=decView;
 $('pendBar').onclick=()=>isAdmin?(swaps.some(needsAdm)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bDone').onclick=approvedView;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;$('bRosAdm').onclick=()=>rosterAdmin();
 
-const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
-async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-$('adminBtn').onclick=()=>{
-  open('<h2>🔒 Admin access</h2><label>Password</label><input id="pw" type="password" autocomplete="off"><p id="pe" style="color:var(--dg);margin:0 0 8px"></p><button class="b2" id="pg">Unlock</button>');
-  const go=async()=>{let ok=false;try{ok=(await sha($('pw').value))===PH}catch(e){}
-    if(ok){isAdmin=true;updPend();render();close();$('adminPanel').hidden=false;$('admPh').value=adminPh;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
-    else $('pe').textContent='Incorrect password.'};
+/* ===== Admin password: stored as a salted PBKDF2 record in the database, never in this HTML ===== */
+const b2h=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const h2b=h=>new Uint8Array(h.match(/../g).map(x=>parseInt(x,16)));
+async function kdf(pw,saltHex,it){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);
+  return b2h(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:h2b(saltHex),iterations:it},k,256))}
+async function mkRec(pw){const salt=b2h(crypto.getRandomValues(new Uint8Array(16))),it=200000;return{s:salt,i:it,h:await kdf(pw,salt,it)}}
+const sameH=(a,b)=>{a=String(a);b=String(b);if(a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0};
+const okRec=v=>v&&v.h&&v.s&&v.i;
+async function getAuth(){
+  if(fbDb){try{const x=await Promise.race([fbDb.ref(FBROOT+'adminAuth').once('value'),new Promise((_,r)=>setTimeout(r,7000))]);
+    const v=x.val();if(okRec(v)){sv('adminAuth',v);return v}try{localStorage.removeItem('adminAuth')}catch(e){}return null}catch(e){}}
+  const l=ld('adminAuth');return okRec(l)?l:null}
+async function checkPw(rec,pw){try{return sameH(await kdf(pw,rec.s,rec.i),rec.h)}catch(e){return false}}
+let authFails=0,authLockUntil=0;
+const lockLeft=()=>Math.max(0,Math.ceil((authLockUntil-Date.now())/1000));
+function badTry(){authFails++;if(authFails>=5){authLockUntil=Date.now()+30000*Math.min(authFails-4,10)}}
+function enterAdmin(){isAdmin=true;updPend();render();close();$('adminPanel').hidden=false;$('admPh').value=adminPh;$('adminBtn').hidden=true;$('adminPanel').scrollIntoView({behavior:'smooth'})}
+const PWI='width:100%;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit;margin-bottom:8px;box-sizing:border-box';
+function setupPw(){
+  open(`<h2>🔐 Create admin password</h2><p style="color:var(--mu);font-size:.9rem">No admin password has been set yet. Choose one now (at least 8 characters). It is stored only as a salted hash in the database, never in the page.</p><label>New password</label><input id="sp1" type="password" autocomplete="new-password" style="${PWI}"><label>Confirm password</label><input id="sp2" type="password" autocomplete="new-password" style="${PWI}"><p id="spe" style="color:var(--dg);margin:0 0 8px"></p><button class="b2" id="spg" style="width:100%">Save &amp; sign in</button>`);
+  const go=async()=>{const a=$('sp1').value,b=$('sp2').value,e=$('spe');
+    if(a.length<8){e.textContent='Use at least 8 characters.';return}if(a!==b){e.textContent='Passwords do not match.';return}
+    if(fbDb&&!fbOK){e.textContent='Connect to the internet to set the password.';return}
+    $('spg').disabled=true;e.textContent='Saving…';
+    try{const rec=await mkRec(a);
+      if(fbDb){const r=await fbDb.ref(FBROOT+'adminAuth').transaction(cur=>okRec(cur)?undefined:rec);
+        if(!r.committed){e.textContent='A password was already set by someone else. Close this and log in.';$('spg').disabled=false;return}}
+      sv('adminAuth',rec);enterAdmin()}
+    catch(err){e.textContent='Could not save: '+(err&&err.message||err);$('spg').disabled=false}};
+  $('spg').onclick=go;$('sp2').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('sp1').focus()}
+$('adminBtn').onclick=async()=>{
+  open('<h2>🔐 Admin access</h2><p style="color:var(--mu)">Checking…</p>');
+  const rec=await getAuth();if(!rec){setupPw();return}
+  open('<h2>🔐 Admin access</h2><label>Password</label><input id="pw" type="password" autocomplete="current-password" style="'+PWI+'"><p id="pe" style="color:var(--dg);margin:0 0 8px"></p><button class="b2" id="pg">Unlock</button>');
+  const go=async()=>{const e=$('pe');if(lockLeft()){e.textContent='Too many attempts. Try again in '+lockLeft()+' s.';return}
+    $('pg').disabled=true;const r=await getAuth()||rec;const ok=await checkPw(r,$('pw').value);$('pg').disabled=false;
+    if(ok){authFails=0;enterAdmin()}else{badTry();e.textContent=lockLeft()?'Too many attempts. Try again in '+lockLeft()+' s.':'Incorrect password.'}};
   $('pg').onclick=go;$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('pw').focus()};
+$('cpSave').onclick=async()=>{const m=$('cpMsg'),o=$('cpOld').value,n=$('cpNew').value,n2=$('cpNew2').value;m.style.color='var(--dg)';
+  if(!isAdmin)return;if(lockLeft()){m.textContent='Too many attempts. Try again in '+lockLeft()+' s.';return}
+  if(n.length<8){m.textContent='New password must be at least 8 characters.';return}if(n!==n2){m.textContent='New passwords do not match.';return}
+  if(n===o){m.textContent='New password must be different from the current one.';return}
+  if(fbDb&&!fbOK){m.textContent='Connect to the internet to change the password.';return}
+  $('cpSave').disabled=true;m.textContent='Checking…';
+  try{const rec=await getAuth();if(!rec||!(await checkPw(rec,o))){badTry();m.textContent='Current password is incorrect.';return}
+    authFails=0;const nr2=await mkRec(n);if(fbDb)await fbDb.ref(FBROOT+'adminAuth').set(nr2);sv('adminAuth',nr2);
+    $('cpOld').value=$('cpNew').value=$('cpNew2').value='';m.style.color='var(--ti)';m.textContent='✅ Password changed.'}
+  catch(err){m.textContent='Could not change password: '+(err&&err.message||err)}finally{$('cpSave').disabled=false}};
 
 // Extra standby invigilators (Excel / PDF): name + mobile
 const normPh=v=>{let d=String(v||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('92'))return d;if(d.startsWith('0'))return '92'+d.slice(1);if(d.length===10)return '92'+d;return d};
@@ -1027,7 +1069,7 @@ $('bSbrEd').onclick=sbrEdit;
 $('sbrClear').onclick=()=>uiConfirm('Clear the standby roster?',()=>{sbrSave([]);$('sbrMsg').textContent='Standby roster cleared.'},'Clear');
 function sbSave(list){pool=list;sv('sbpool',pool);cloud('standbyPool',pool.length?pool:null)}
 $('admSave').onclick=()=>{const n=ph($('admPh').value);if(n.length<10){$('admMsg').textContent='Enter number with country code, e.g. 923001234567';return}adminPh=n;try{localStorage.setItem('adminPh',n)}catch(e){}cloud('adminPhone',n);$('admMsg').textContent='Saved.'};
-$('lock').onclick=()=>{isAdmin=false;updPend();render();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
+$('lock').onclick=()=>{isAdmin=false;['cpOld','cpNew','cpNew2'].forEach(i=>{if($(i))$(i).value=''});if($('cpMsg'))$('cpMsg').textContent='';updPend();render();$('adminPanel').hidden=true;$('adminBtn').hidden=false;$('msg').textContent=''};
 const FBCFG={apiKey:"AIzaSyAW6Z6c1N5QVpB7iCWXhyjxHQImeCYRgxs",authDomain:"auecepco.firebaseapp.com",databaseURL:"https://auecepco-default-rtdb.firebaseio.com",projectId:"auecepco",storageBucket:"auecepco.firebasestorage.app",messagingSenderId:"314187695897",appId:"1:314187695897:web:2718ba7cbe8bdf10bea788"};
 const FBROOT='duty_lookup/';let fbDb=null,fbOK=false;
 function cloud(path,val){if(!fbDb)return;fbDb.ref(FBROOT+path).set(val).catch(e=>uiAlert('Cloud save failed: '+e.message))}
