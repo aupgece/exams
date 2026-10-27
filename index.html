@@ -43,8 +43,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .b3{background:var(--gb);color:#fff}
 .bar .btns button{flex-direction:column;align-items:flex-start;text-align:left;padding:12px 14px;min-height:64px;border-radius:12px;gap:2px}
 .bar .btns small{font-weight:400;font-size:.8rem;opacity:.85}
+@media (min-width:641px){.bar .btns{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+ .bar .btns button{min-width:0;min-height:84px;padding:14px 14px;justify-content:center}
+ .bar .btns .lg{font-size:.95rem;line-height:1.3;overflow-wrap:break-word}
+ .bar .btns small{display:block;margin-top:3px;line-height:1.3}}
+@media (min-width:641px) and (max-width:900px){.bar .btns{gap:8px}.bar .btns button{padding:10px 9px}.bar .btns .lg{font-size:.85rem}.bar .btns small{font-size:.72rem}}
 .bar .b1{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.22)}
 .bar .b2{background:var(--gold);color:#1d1a0e}
+.decb{margin-top:10px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 14px;min-height:0;font-size:.82rem;font-weight:700;cursor:pointer}.decb:hover{background:rgba(255,255,255,.22)}
 .bar .b3{background:#fff;color:#0b2e2a}
 
 /* filters + tools */
@@ -283,6 +289,7 @@ input,select,textarea{font-size:16px}
 <header class="bar"><div class="tr"><button id="bInst">⬇ Install app</button><button id="adminBtn">🔒 Admin</button></div><div class="wrap">
     <div class="ttl"><img class="logo" src="icon-192.png?v=3" alt="EE Exams" width="48" height="48" onerror="this.hidden=true"><h1>EE Exams Duty Roster</h1><span id="st" class="st"></span></div>
     <p class="sub">Examination duty roster and swap coordination</p>
+    <button class="decb" id="bDec" type="button">📞 DEC members</button>
     <div class="btns">
       <button class="b1" id="bBoard"><span class="lg">📋 See Posted Swaps<br><small>Requests from other staff</small></span><span class="sm">📋<br>Posted</span></button>
       <button class="b1" id="bDone"><span class="lg">✅ Approved Swapped<br><small>Swaps taken &amp; approved by DEC</small></span><span class="sm">✅<br>Approved</span></button>
@@ -819,7 +826,7 @@ function apCss(a){const P=PAL[a.pal]||PAL.teal;
  const R={sharp:'3px',normal:'',round:'22px'}[a.round];if(R)c+=`.box,.dy,.sc,.filters,.xc,.md,.bar .btns button,.dc{border-radius:${R}!important}`;
  if(a.dens==='compact')c+=`.db{padding:6px 10px}.sc{padding:8px}.box{padding:11px}.dt{padding:6px 4px}.filters{padding:10px;gap:8px}`;
  if(a.dens==='roomy')c+=`.db{padding:14px 16px}.sc{padding:16px}.box{padding:20px}.dt{padding:14px 4px}.filters{padding:18px;gap:16px}`;
- if(a.btns==='stack')c+=`@media (min-width:641px){.bar .btns{grid-template-columns:1fr}}`;
+ if(a.btns==='stack')c+=`@media (min-width:641px){.bar .btns{grid-template-columns:1fr;grid-auto-flow:row;grid-auto-columns:auto}}`;
  return c}
 function applyAP(a){a=a||AP;$('apStyle').textContent=apCss(a);
  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=(PAL[a.pal]||PAL.teal).nv;
@@ -851,6 +858,32 @@ function themeAdmin(){
  draw()}
 applyAP();applyView();
 $('bThemeAdm').onclick=themeAdmin;
+/* ===== DEC members & contacts ===== */
+const DECDEF=[{name:'Dr. Sher Ali',role:'DEC Head',phone:''},{name:'Sharoze Sohail',role:'Member',phone:''},{name:'Mr. Mukhtar Ahmad',role:'Member',phone:''},{name:'Coordinator Office',role:'',phone:''}];
+let decList=(()=>{const o=ld('decc');return Array.isArray(o.l)&&o.l.length?o.l:DECDEF})(),decEditing=false;
+const decNum=p=>{let d=ph(p);if(d.startsWith('00'))d=d.slice(2);else if(d.startsWith('0'))d='92'+d.slice(1);return d};
+function decView(){decEditing=false;
+  const rows=decList.map((x,i)=>{const n=decNum(x.phone);
+    return `<div class="xc" style="margin:8px 0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>${i+1}. ${esc(x.name)}</b>${x.role?`<span class="tag">${esc(x.role)}</span>`:''}</div>${n?`<div style="margin-top:6px"><a href="tel:+${n}" style="color:inherit;font-weight:700;text-decoration:none">📞 ${esc(cell(n))}</a> &nbsp; <a href="https://wa.me/${n}" target="_blank" rel="noopener" style="color:#128c7e;font-weight:700;text-decoration:none">💬 WhatsApp</a></div>`:'<div class="vn" style="margin-top:4px">No contact number added yet</div>'}</div>`}).join('');
+  open('<h2>📞 DEC Members</h2>'+(rows||'<p style="color:var(--mu)">No members added.</p>')+(isAdmin?'<button class="b b2" id="decEd" style="width:100%;margin-top:6px">✏️ Edit members &amp; numbers</button>':''));
+  const b=$('decEd');if(b)b.onclick=decEdit}
+function decEdit(){
+  if(!isAdmin)return;decEditing=true;let L=decList.map(x=>Object.assign({},x));
+  const IS='width:100%;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit;margin-bottom:6px;box-sizing:border-box';
+  const draw=()=>{open(`<h2>✏️ Edit DEC members</h2><p style="color:var(--mu);font-size:.88rem;margin:0 0 6px">Change names, roles and cell numbers, add new members or remove them. Press <b>Save for everyone</b> to apply.</p>`+
+    L.map((x,i)=>`<div class="xc" style="margin:8px 0"><input data-f="name" data-i="${i}" value="${esc(x.name)}" placeholder="Name *" style="${IS}"><input data-f="role" data-i="${i}" value="${esc(x.role||'')}" placeholder="Role (e.g. DEC Head, Member)" style="${IS}"><input data-f="phone" data-i="${i}" type="tel" value="${esc(x.phone||'')}" placeholder="Cell no. e.g. 0300 1234567" style="${IS}"><div style="display:flex;gap:14px"><button class="link" data-up="${i}"${i?'':' disabled'}>↑ Move up</button><button class="link dg" data-del="${i}">Remove</button></div></div>`).join('')+
+    `<button class="b x" id="decAdd" style="width:100%">➕ Add member</button><button class="b b2" id="decSave" style="width:100%;margin-top:10px">✅ Save for everyone</button><button class="x" id="decNo" style="width:100%;margin-top:8px">Cancel</button>`);
+    const M=$('md');
+    M.querySelectorAll('input[data-f]').forEach(inp=>inp.oninput=()=>{L[+inp.dataset.i][inp.dataset.f]=inp.value});
+    M.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{L.splice(+b.dataset.del,1);draw()});
+    M.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const i=+b.dataset.up;if(i>0){[L[i-1],L[i]]=[L[i],L[i-1]];draw()}});
+    $('decAdd').onclick=()=>{L.push({name:'',role:'Member',phone:''});draw();const f=M.querySelectorAll('input[data-f="name"]');if(f.length)f[f.length-1].focus()};
+    $('decNo').onclick=decView;
+    $('decSave').onclick=()=>{const out=L.map(x=>({name:String(x.name||'').trim(),role:String(x.role||'').trim(),phone:String(x.phone||'').trim()})).filter(x=>x.name);
+      if(!out.length){uiAlert('Add at least one member before saving.');return}
+      decList=out;sv('decc',{l:decList});cloud('decContacts',{l:decList});decView();$('msg').textContent='DEC members saved for everyone.'}};
+  draw()}
+$('bDec').onclick=decView;
 $('pendBar').onclick=()=>isAdmin?(swaps.some(needsAdm)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bDone').onclick=approvedView;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;$('bRosAdm').onclick=()=>rosterAdmin();
 
 const PH="79cb95f0bf67e550079a7cacb552be941f587d9c8c7965354b6e4f08b439eeba";
@@ -1003,6 +1036,7 @@ try{if(window.firebase){
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=nr(v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[]);sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'appearance').on('value',x=>{const v=x.val();if(v&&typeof v==='object'){AP=Object.assign({},APDEF,v);sv('appearance',AP);if(!$('md').querySelector('#apSave')){applyAP();applyView()}}},e=>console.warn(e));
+  fbDb.ref(FBROOT+'decContacts').on('value',x=>{const v=x.val();if(v&&v.l){const l=(Array.isArray(v.l)?v.l:Object.values(v.l)).filter(Boolean);if(l.length){decList=l;sv('decc',{l:decList});if(!decEditing&&$('ov').classList.contains('on')&&$('md').innerHTML.includes('DEC Members'))decView()}}},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
   fbDb.ref(FBROOT+'standbyPool').on('value',x=>{const v=x.val();pool=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbpool',pool)},e=>console.warn(e));
   fbDb.ref(FBROOT+'standbyRoster').on('value',x=>{const v=x.val();sbr=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbr',sbr);fillFilters();render()},e=>console.warn(e));
