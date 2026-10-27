@@ -28,6 +28,7 @@ body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-
 .bar .ttl{padding-right:120px}
 .wrap{max-width:1040px;margin:0 auto;padding:26px 18px 0}
 main{max-width:1040px;margin:-14px auto 0;padding:0 18px 48px}
+#tick:not([hidden])+main{margin-top:14px}
 .ttl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .logo{width:48px;height:48px;border-radius:12px;flex:none}
 h1{margin:0;font-size:2rem;font-weight:800;letter-spacing:-.02em}
@@ -51,6 +52,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .bar .b1{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.22)}
 .bar .b2{background:var(--gold);color:#1d1a0e}
 .decb{margin-top:10px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 14px;min-height:0;font-size:.82rem;font-weight:700;cursor:pointer}.decb:hover{background:rgba(255,255,255,.22)}
+#tick{background:var(--soft);color:var(--ti);border-bottom:1px solid var(--bd);overflow:hidden;white-space:nowrap;font-weight:700;font-size:.98rem}
+#tick .tk{display:inline-flex;padding:10px 0;animation:tkm var(--tkd,30s) linear infinite;will-change:transform}
+#tick:hover .tk,#tick:focus-within .tk{animation-play-state:paused}
+#tick .ti{padding-right:64px}#tick .lb{background:var(--pb);color:#fff;border-radius:6px;padding:2px 9px;margin-right:10px;font-size:.82rem;letter-spacing:.03em}
+@keyframes tkm{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){#tick{white-space:normal;text-align:center}#tick .tk{animation:none;display:block;padding:10px 14px}#tick .ts~.ts{display:none}#tick .ti{padding-right:16px}}
 .bar .b3{background:#fff;color:#0b2e2a}
 
 /* filters + tools */
@@ -298,6 +305,7 @@ input,select,textarea{font-size:16px}
       <button class="b1" id="bSbr"><span class="lg">🛡️ Standby Roster<br><small>Standby invigilators by slot</small></span><span class="sm">🛡️<br>Standby</span></button>
     </div>
 </div></header>
+<div id="tick" role="status" aria-label="Announcement" hidden><div class="tk" id="tk"></div></div>
 <main>
   <div class="filters">
     <label class="f"><span>Name</span><input id="q" type="search" list="nl" autocomplete="off" placeholder="Type or pick a name..." autofocus aria-label="Search by name"><datalist id="nl"></datalist></label>
@@ -328,7 +336,16 @@ input,select,textarea{font-size:16px}
     <input type="file" id="sbrFile" accept=".xlsx,.xls,.csv" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbrClear">Clear standby roster</button></div><p id="sbrMsg"></p></div>
         <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
     <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
-    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Change admin password</b> <small>(at least 8 characters; saved as a salted hash, never shown in the page)</small>
+    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Scrolling announcement</b> <small>(runs across the top of the page for everyone)</small>
+    <div style="display:grid;gap:6px;margin-top:6px;max-width:520px">
+    <select id="anTpl" style="min-height:42px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);padding:0 8px"></select>
+    <input id="anLabel" maxlength="30" placeholder="Label (e.g. Announcement, Notice, Reminder) &ndash; leave empty for none" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)">
+    <input id="anTitle" maxlength="200" placeholder="Message, e.g. Midterm Examinations" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)">
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><label style="flex:1;min-width:150px;font-size:.85rem">Start date (optional)<input id="anFrom" type="date" style="width:100%;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);box-sizing:border-box"></label><label style="flex:1;min-width:150px;font-size:.85rem">End date (optional)<input id="anTo" type="date" style="width:100%;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);box-sizing:border-box"></label></div>
+    <input id="anExtra" maxlength="300" placeholder="More details (optional), e.g. reporting time, instructions" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><label style="font-size:.9rem">Speed <select id="anSpeed" style="min-height:38px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);padding:0 8px"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select></label><label style="font-size:.9rem"><input type="checkbox" id="anOn"> Show announcement</label></div>
+    <button class="b2" id="anSave">Save for everyone</button></div><div style="margin-top:8px;padding:10px 12px;border-radius:8px;background:var(--soft);color:var(--ti);font-weight:700;font-size:.92rem;overflow-wrap:anywhere"><small style="display:block;font-weight:400;color:var(--mu)">Preview of what will scroll</small><span id="anPrev"></span></div><p style="margin:6px 0 0;font-size:.82rem;color:var(--mu)">Tip: pick a <b>Quick wording</b> to fill in a full announcement, then edit it. Write <code>{start}</code>, <code>{end}</code>, <code>{dates}</code> or <code>{days}</code> (number of days) in your text to place the dates inside the sentence; otherwise the dates are added in brackets after the message.</p><p id="anMsg" style="margin:6px 0 0"></p></div>
+    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:10px"><b>Change admin password</b> <small>(at least 8 characters; saved as a salted hash, never shown in the page)</small>
     <div style="display:grid;gap:6px;margin-top:6px;max-width:360px"><input id="cpOld" type="password" autocomplete="current-password" placeholder="Current password" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><input id="cpNew" type="password" autocomplete="new-password" placeholder="New password" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><input id="cpNew2" type="password" autocomplete="new-password" placeholder="Confirm new password" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="cpSave">Change password</button></div><p id="cpMsg" style="margin:6px 0 0"></p></div>
   </section>
 </main>
@@ -886,6 +903,58 @@ function decEdit(){
       decList=out;sv('decc',{l:decList});cloud('decContacts',{l:decList});decView();$('msg').textContent='DEC members saved for everyone.'}};
   draw()}
 $('bDec').onclick=decView;
+/* ===== Scrolling announcement ticker ===== */
+const ANDEF={on:true,label:'Announcement',title:'Midterm Examinations',from:'',to:'',extra:'',speed:'normal'};
+const ANTPL=[
+['Announcement','Midterm Examinations will be held from {start} to {end}.','Please check the datesheet and your duty roster. Invigilators must report 30 minutes before the start of each paper.'],
+['Announcement','Final Examinations will be held from {start} to {end}.','All invigilators are requested to check their duties and report any clash to the DEC well in advance.'],
+['Announcement','Supplementary / Re-sit Examinations will be held from {start} to {end}.','Please check your duty roster for the revised schedule.'],
+['Notice','The datesheet for the examinations has been issued.','Check your duties and inform the DEC of any clash as early as possible.'],
+['Notice','The duty roster has been updated.','Please re-check your duties. Duty swaps are valid only after approval by the DEC.'],
+['Reminder','Duty swap requests close on {end}.','Post your request and ask another staff member to accept it, so that the DEC can approve it in time.'],
+['Reminder','Invigilators must report 30 minutes before the start of each paper.','Please carry your university ID card and follow the seating plan and instructions of the Controller of Examinations.'],
+['Notice','Standby staff must remain available from {start} to {end}.','You may be called at short notice. Please keep your phone on.'],
+['Important','Examinations scheduled for {start} stand postponed.','The revised datesheet will be announced shortly. Please check this page for updates.'],
+['Important','There is a change of venue for the examinations on {start}.','Please check the duty details before reporting.'],
+['Holiday','The university will remain closed from {start} to {end}.','Examinations will resume as per the revised schedule.'],
+['Notice','The examinations conclude on {end}.','Thank you for your cooperation and support.']];
+let ann=(()=>{const o=ld('announce2');return o&&!Array.isArray(o)&&'title' in o?Object.assign({},ANDEF,o):Object.assign({},ANDEF)})();
+const anD=v=>{if(!v)return '';const d=new Date(v+'T00:00:00');return isNaN(d)?'':d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})};
+function anText(a){a=a||ann;const f=anD(a.from),t=anD(a.to);
+  const n=a.from&&a.to?Math.round((new Date(a.to+'T00:00:00')-new Date(a.from+'T00:00:00'))/864e5)+1:0;
+  const tok=v=>String(v||'').replace(/\{start\}/g,f||'TBA').replace(/\{end\}/g,t||'TBA').replace(/\{dates\}/g,f&&t?f+' \u2013 '+t:f||t||'TBA').replace(/\{days\}/g,n>0?n+(n===1?' day':' days'):'TBA');
+  const title=String(a.title||'').trim(),extra=String(a.extra||'').trim(),hasTok=/\{(start|end|dates|days)\}/.test(title+' '+extra);
+  const r=hasTok?'':(f&&t?`(${f} \u2013 ${t})`:f?`(from ${f})`:t?`(until ${t})`:'');
+  return tok([title,r].filter(Boolean).join(' ')+(extra?'  \u2022  '+extra:''))}
+const IMPDATES=[
+['2026-10-31','2026-11-08','31 Oct \u2013 8 Nov','Mid-semester theory exams (incl. Sat)'],
+['2026-11-17','2026-11-17','17 Nov','Last date to post internal results'],
+['2026-11-18','2026-11-18','18 Nov','ECE: deposit marked answer scripts to Exams Dept']];
+function renderTick(){const bx=$('tick'),tk=$('tk');
+  const td=new Date().toLocaleDateString('en-CA'),ds=IMPDATES.filter(x=>x[1]>=td);
+  const showAnn=ann.on&&String(ann.title||'').trim();
+  if(!showAnn&&!ds.length){bx.hidden=true;tk.innerHTML='';return}
+  const aHtml=showAnn?'<span class="ti">'+(String(ann.label||'').trim()?'<span class="lb">\ud83d\udce2 '+esc(String(ann.label).trim())+'</span>':'')+esc(anText())+'</span>':'';
+  const dHtml=ds.map(x=>'<span class="ti"><span class="lb">\ud83d\udcc5 '+esc(x[2])+'</span>'+esc(x[3])+'</span>').join('');
+  const one='<span class="ts">'+aHtml+dHtml+'</span>';
+  bx.hidden=false;tk.innerHTML=one;tk.style.setProperty('--tkd','30s');
+  const w=tk.firstElementChild.getBoundingClientRect().width||300,vw=Math.max(bx.clientWidth,window.innerWidth||0);
+  const k=Math.max(1,Math.ceil(vw/w));tk.innerHTML=one.repeat(k*2);
+  const px={slow:45,normal:75,fast:120}[ann.speed]||75;tk.style.setProperty('--tkd',Math.max(8,Math.round(w*k/px))+'s')}
+const annForm=()=>({on:$('anOn').checked,label:$('anLabel').value.trim(),title:$('anTitle').value.trim(),from:$('anFrom').value,to:$('anTo').value,extra:$('anExtra').value.trim(),speed:$('anSpeed').value});
+function prevAnn(){const a=annForm();$('anPrev').textContent=(a.label?'\ud83d\udce2 '+a.label+'  ':'')+(anText(a)||'(nothing to show)')}
+function fillAnn(){if(!$('anTitle'))return;$('anLabel').value=ann.label==null?'Announcement':ann.label;$('anTitle').value=ann.title||'';$('anFrom').value=ann.from||'';$('anTo').value=ann.to||'';$('anExtra').value=ann.extra||'';$('anSpeed').value=ann.speed||'normal';$('anOn').checked=!!ann.on;prevAnn()}
+fillAnn();renderTick();
+$('anTpl').innerHTML='<option value="">Quick wording\u2026</option>'+ANTPL.map((x,i)=>`<option value="${i}">${esc(x[0]+': '+x[1].replace(/\{.*?\}/g,'\u2026'))}</option>`).join('');
+['anLabel','anTitle','anFrom','anTo','anExtra'].forEach(i=>{$(i).addEventListener('input',prevAnn);$(i).addEventListener('change',prevAnn)});
+$('anTpl').onchange=()=>{const t=ANTPL[+$('anTpl').value];if(t){$('anLabel').value=t[0];$('anTitle').value=t[1];$('anExtra').value=t[2];prevAnn();
+  if(/\{(start|end|dates|days)\}/.test(t[1]+t[2])&&!($('anFrom').value&&$('anTo').value)){const m=$('anMsg');m.style.color='var(--ti)';m.textContent='Now choose the start and end dates.';$(!$('anFrom').value?'anFrom':'anTo').focus()}}$('anTpl').value=''};
+let tkT;window.addEventListener('resize',()=>{clearTimeout(tkT);tkT=setTimeout(renderTick,250)});
+$('anSave').onclick=()=>{if(!isAdmin)return;const f=$('anFrom').value,t=$('anTo').value,m=$('anMsg');
+  if(f&&t&&t<f){m.style.color='var(--dg)';m.textContent='End date must not be before the start date.';return}
+  const na=annForm();if(/\{(start|end|dates|days)\}/.test(na.title+' '+na.extra)&&!(f&&t)){m.style.color='var(--dg)';m.textContent='This wording uses dates. Please choose both the start and end dates first.';return}
+  ann=na;
+  sv('announce2',ann);cloud('announce',ann);renderTick();m.style.color='var(--ti)';m.textContent='\u2705 Saved for everyone.'};
 $('pendBar').onclick=()=>isAdmin?(swaps.some(needsAdm)?board():standbyBoard()):$('adminBtn').click();$('bBoard').onclick=board;$('bDone').onclick=approvedView;$('bSwap').onclick=()=>postForm();$('bStandby').onclick=standbyFlow;$('bSbAdm').onclick=standbyBoard;$('bRosAdm').onclick=()=>rosterAdmin();
 
 /* ===== Admin password: stored as a salted PBKDF2 record in the database, never in this HTML ===== */
@@ -1078,6 +1147,7 @@ try{if(window.firebase){
   fbDb.ref('.info/connected').on('value',x=>{fbOK=!!x.val();$('st').textContent=fbOK?'● Live':''});
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=nr(v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[]);sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'appearance').on('value',x=>{const v=x.val();if(v&&typeof v==='object'){AP=Object.assign({},APDEF,v);sv('appearance',AP);if(!$('md').querySelector('#apSave')){applyAP();applyView()}}},e=>console.warn(e));
+  fbDb.ref(FBROOT+'announce').on('value',x=>{const v=x.val();if(v&&typeof v==='object'){ann=Object.assign({},ANDEF,v,{on:v.on!==false&&v.on!==0&&v.on!=='false'});sv('announce2',ann);renderTick();if(!isAdmin||document.activeElement===document.body)fillAnn()}},e=>console.warn(e));
   fbDb.ref(FBROOT+'decContacts').on('value',x=>{const v=x.val();if(v&&v.l){const l=(Array.isArray(v.l)?v.l:Object.values(v.l)).filter(Boolean);if(l.length){decList=l;sv('decc',{l:decList});if(!decEditing&&$('ov').classList.contains('on')&&$('md').innerHTML.includes('DEC Members'))decView()}}},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
   fbDb.ref(FBROOT+'standbyPool').on('value',x=>{const v=x.val();pool=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbpool',pool)},e=>console.warn(e));
