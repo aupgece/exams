@@ -779,15 +779,42 @@ const PAL={
  purple:{n:'Royal',nv:'#2e1065',pb:'#6d28d9',ti:'#5b21b6',soft:'#ece4fb',bg:'#f3f0f9',nvD:'#1b0a3d',pbD:'#8b5cf6',tiD:'#c4b5fd',softD:'#2e1a5e'},
  sunset:{n:'Sunset',nv:'#4a1d0a',pb:'#c2410c',ti:'#9a3412',soft:'#fde8dc',bg:'#faf3ee',nvD:'#2a1005',pbD:'#ea580c',tiD:'#fdba74',softD:'#3b1a0a'},
  rose:{n:'Rose',nv:'#500724',pb:'#be185d',ti:'#9d174d',soft:'#fbe1ec',bg:'#faf0f4',nvD:'#2e0415',pbD:'#ec4899',tiD:'#f9a8d4',softD:'#3f0f26'},
- slate:{n:'Slate',nv:'#1e293b',pb:'#334155',ti:'#334155',soft:'#e2e8f0',bg:'#f1f5f9',nvD:'#0f172a',pbD:'#64748b',tiD:'#cbd5e1',softD:'#1e293b'}};
-const APDEF={pal:'teal',mode:'auto',dens:'normal',font:'m',round:'normal',width:'normal',btns:'grid',view:'c'};
+ slate:{n:'Slate',nv:'#1e293b',pb:'#334155',ti:'#334155',soft:'#e2e8f0',bg:'#f1f5f9',nvD:'#0f172a',pbD:'#64748b',tiD:'#cbd5e1',softD:'#1e293b'},
+ forest:{n:'Forest',nv:'#14301c',pb:'#15803d',ti:'#166534',soft:'#dcf3e3',bg:'#eff5f0',nvD:'#0a1c10',pbD:'#22c55e',tiD:'#86efac',softD:'#14301f'},
+ amber:{n:'Amber',nv:'#422006',pb:'#b45309',ti:'#92400e',soft:'#fcefd0',bg:'#faf5ea',nvD:'#271303',pbD:'#f59e0b',tiD:'#fcd34d',softD:'#3a2408'},
+ crimson:{n:'Crimson',nv:'#450a0a',pb:'#b91c1c',ti:'#991b1b',soft:'#fbe0df',bg:'#faf1f0',nvD:'#2a0606',pbD:'#ef4444',tiD:'#fca5a5',softD:'#3b1212'},
+ indigo:{n:'Indigo',nv:'#1e1b4b',pb:'#4338ca',ti:'#3730a3',soft:'#e0e1fb',bg:'#f0f0fa',nvD:'#100e2e',pbD:'#6366f1',tiD:'#a5b4fc',softD:'#27235a'},
+ cyan:{n:'Cyan',nv:'#083344',pb:'#0e7490',ti:'#155e75',soft:'#d4f1f7',bg:'#eef6f8',nvD:'#041f2a',pbD:'#06b6d4',tiD:'#67e8f9',softD:'#0e3a48'},
+ plum:{n:'Plum',nv:'#3b0a45',pb:'#a21caf',ti:'#86198f',soft:'#f6e0f8',bg:'#f8f0f9',nvD:'#220628',pbD:'#d946ef',tiD:'#f0abfc',softD:'#4a1454'},
+ graphite:{n:'Graphite',nv:'#18181b',pb:'#3f3f46',ti:'#3f3f46',soft:'#e4e4e7',bg:'#f4f4f5',nvD:'#09090b',pbD:'#71717a',tiD:'#d4d4d8',softD:'#27272a'},
+ mint:{n:'Mint',nv:'#134e4a',pb:'#0d9488',ti:'#0f766e',soft:'#d5f5ef',bg:'#eef8f6',nvD:'#082f2c',pbD:'#2dd4bf',tiD:'#99f6e4',softD:'#134541'}};
+const BGS={pal:'Match theme',white:'White',paper:'Paper',mist:'Mist grey',sand:'Sand',mint:'Soft mint',sky:'Sky',blush:'Blush',lav:'Lavender',grad:'Gradient',dots:'Dots',grid:'Grid lines'};
+const BGC={white:'#ffffff',paper:'#faf7f0',mist:'#eceff3',sand:'#f5ece0',mint:'#e8f5ec',sky:'#e8f1fb',blush:'#fbeef0',lav:'#f1edfb'};
+const DBG={def:['Theme default'],black:['Black','#000000','#0d0d0d','#161616','#2a2a2a'],char:['Charcoal','#16181d','#1e2128','#252932','#343944'],navy:['Navy','#0a1220','#111b2e','#18253d','#26385a'],brown:['Warm dark','#1a1512','#241d19','#2e2520','#43372f']};
+const APDEF={pal:'teal',mode:'auto',dens:'normal',font:'m',round:'normal',width:'normal',btns:'grid',view:'c',bg:'pal',dbg:'def',card:'border',head:'solid',cols:'auto'};
 let AP=(()=>{const a=ld('appearance');return Object.assign({},APDEF,Array.isArray(a)?{}:a)})(),apViewDone=false;
 function apCss(a){const P=PAL[a.pal]||PAL.teal;
  const dk=`--nv:${P.nvD};--pb:${P.pbD};--ti:${P.tiD};--soft:${P.softD}`;
  let c=`:root{--nv:${P.nv};--pb:${P.pb};--ti:${P.ti};--soft:${P.soft};--bg:${P.bg}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dk}}}
 :root[data-theme="dark"]{${dk}}`;
- c+=`html{font-size:${{s:'92%',m:'100%',l:'112%'}[a.font]||'100%'}}`;
+
+  const dB=DBG[a.dbg];
+  if(dB&&dB.length>1){const dv=`--bg:${dB[1]};--card:${dB[2]};--in:${dB[3]};--bd:${dB[4]}`;
+    c+=`@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dv}}}:root[data-theme="dark"]{${dv}}`}
+  if(BGC[a.bg])c+=`:root{--bg:${BGC[a.bg]}}`;
+  if(a.bg==='grad')c+=`body{background:linear-gradient(165deg,var(--soft) 0%,var(--bg) 55%) fixed}`;
+  if(a.bg==='dots')c+=`body{background-image:radial-gradient(var(--bd) 1.3px,transparent 1.4px);background-size:20px 20px}`;
+  if(a.bg==='grid')c+=`body{background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);background-size:28px 28px}`;
+  if(a.head==='gradient')c+=`.bar{background:linear-gradient(135deg,var(--nv),var(--pb))}`;
+  if(a.head==='primary')c+=`.bar{background:var(--pb)}`;
+  if(a.head==='flat')c+=`.bar{padding-bottom:12px}.bar .sub{display:none}`;
+  const CS='.box,.dy,.filters,.xc';
+  if(a.card==='shadow')c+=`${CS}{box-shadow:0 6px 22px rgba(0,0,0,.14)!important}`;
+  if(a.card==='flat')c+=`${CS}{border-color:transparent!important;box-shadow:none!important}`;
+  if(a.card==='outline')c+=`${CS}{border:2px solid var(--pb)!important;box-shadow:none!important}`;
+  if(a.cols&&a.cols!=='auto')c+=`@media (min-width:720px){.grid{grid-template-columns:repeat(${a.cols},minmax(0,1fr))!important}}`;
+  c+=`html{font-size:${{s:'92%',m:'100%',l:'112%'}[a.font]||'100%'}}`;
  const W={narrow:'820px',normal:'1040px',wide:'1320px'}[a.width]||'1040px';c+=`.wrap,main{max-width:${W}}`;
  const R={sharp:'3px',normal:'',round:'22px'}[a.round];if(R)c+=`.box,.dy,.sc,.filters,.xc,.md,.bar .btns button,.dc{border-radius:${R}!important}`;
  if(a.dens==='compact')c+=`.db{padding:6px 10px}.sc{padding:8px}.box{padding:11px}.dt{padding:6px 4px}.filters{padding:10px;gap:8px}`;
@@ -803,7 +830,12 @@ function themeAdmin(){
  const grp=(k,t,opts)=>`<div style="margin:10px 0 4px;font-weight:700;font-size:.88rem">${t}</div><div class="btns" data-g="${k}">${opts.map(([v,l])=>`<button class="${D[k]===v?'b2':'x'}" data-k="${k}" data-v="${v}" style="min-height:38px;padding:6px 12px;font-size:.85rem">${l}</button>`).join('')}</div>`;
  const draw=()=>{open(`<h2>🎨 Theme &amp; layout</h2><p style="color:var(--mu);font-size:.88rem;margin:0">Tap an option to preview it live. Press <b>Save for everyone</b> to apply it for all staff.</p>`+
   grp('pal','Colour theme',Object.entries(PAL).map(([k,v])=>[k,v.n]))+
-  grp('mode','Default mode',[['auto','Auto'],['light','Light'],['dark','Dark']])+
+  grp('bg','Background (light mode)',Object.entries(BGS))+
+   grp('dbg','Background (dark mode)',Object.entries(DBG).map(([k,v])=>[k,v[0]]))+
+   grp('head','Header style',[['solid','Solid'],['gradient','Gradient'],['primary','Bright'],['flat','Slim']])+
+   grp('card','Card style',[['border','Bordered'],['shadow','Shadow'],['flat','Flat'],['outline','Outlined']])+
+   grp('cols','Staff cards per row',[['auto','Auto'],['1','1'],['2','2'],['3','3']])+
+   grp('mode','Default mode',[['auto','Auto'],['light','Light'],['dark','Dark']])+
   grp('dens','Spacing',[['compact','Compact'],['normal','Normal'],['roomy','Roomy']])+
   grp('font','Text size',[['s','Small'],['m','Medium'],['l','Large']])+
   grp('round','Corners',[['sharp','Sharp'],['normal','Normal'],['round','Round']])+
