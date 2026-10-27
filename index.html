@@ -336,6 +336,7 @@ input,select,textarea{font-size:16px}
     <input type="file" id="sbrFile" accept=".xlsx,.xls,.csv" style="margin-top:6px"><div class="btns" style="margin-top:6px"><button class="x" id="sbrClear">Clear standby roster</button></div><p id="sbrMsg"></p></div>
         <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Admin WhatsApp number</b> <small>(swap approval requests go here)</small>
     <div class="btns" style="margin-top:6px"><input id="admPh" type="tel" placeholder="923001234567" style="flex:1;min-width:160px;min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx)"><button class="b2" id="admSave">Save number</button></div><p id="admMsg"></p></div>
+    <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Scrolling dates &amp; items</b> <small>(each item scrolls in the ticker for everyone; add, edit or delete any)</small><div id="tiList" style="display:grid;gap:8px;margin-top:6px;max-width:520px"></div><div class="btns" style="margin-top:8px"><button class="x" id="tiAdd" type="button">+ Add item</button><button class="b2" id="tiSave" type="button">Save for everyone</button></div><p id="tiMsg" style="margin:6px 0 0"></p></div>
     <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Scrolling announcement</b> <small>(runs across the top of the page for everyone)</small>
     <div style="display:grid;gap:6px;margin-top:6px;max-width:520px">
     <select id="anTpl" style="min-height:42px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);padding:0 8px"></select>
@@ -926,21 +927,31 @@ function anText(a){a=a||ann;const f=anD(a.from),t=anD(a.to);
   const title=String(a.title||'').trim(),extra=String(a.extra||'').trim(),hasTok=/\{(start|end|dates|days)\}/.test(title+' '+extra);
   const r=hasTok?'':(f&&t?`(${f} \u2013 ${t})`:f?`(from ${f})`:t?`(until ${t})`:'');
   return tok([title,r].filter(Boolean).join(' ')+(extra?'  \u2022  '+extra:''))}
-const IMPDATES=[
-['2026-10-31','2026-11-08','31 Oct \u2013 8 Nov','Midterm Exam Fall-2026'],
-['2026-11-17','2026-11-17','17 Nov','Last date to post internal results'],
-['2026-11-18','2026-11-18','18 Nov','ECE: deposit marked answer scripts to Exams Dept']];
+const TKDEF=[
+{tag:'31 Oct \u2013 8 Nov',text:'Midterm Exam Fall-2026',until:'2026-11-08'},
+{tag:'17 Nov',text:'Last date to post internal results',until:'2026-11-17'},
+{tag:'18 Nov',text:'ECE: deposit marked answer scripts to Exams Dept',until:'2026-11-18'}];
+let tki=(()=>{const o=ld('tickItems');return Array.isArray(o.l)?o.l:TKDEF})();
 function renderTick(){const bx=$('tick'),tk=$('tk');
-  const td=new Date().toLocaleDateString('en-CA'),ds=IMPDATES.filter(x=>x[1]>=td);
+  const td=new Date().toLocaleDateString('en-CA'),ds=tki.filter(x=>x&&String(x.text||'').trim()&&(!x.until||x.until>=td));
   const showAnn=ann.on&&String(ann.title||'').trim();
   if(!showAnn&&!ds.length){bx.hidden=true;tk.innerHTML='';return}
   const aHtml=showAnn?'<span class="ti">'+(String(ann.label||'').trim()?'<span class="lb">\ud83d\udce2 '+esc(String(ann.label).trim())+'</span>':'')+esc(anText())+'</span>':'';
-  const dHtml=ds.map(x=>'<span class="ti"><span class="lb">\ud83d\udcc5 '+esc(x[2])+'</span>'+esc(x[3])+'</span>').join('');
+  const dHtml=ds.map(x=>'<span class="ti">'+(String(x.tag||'').trim()?'<span class="lb">\ud83d\udcc5 '+esc(String(x.tag).trim())+'</span>':'')+esc(String(x.text).trim())+'</span>').join('');
   const one='<span class="ts">'+aHtml+dHtml+'</span>';
   bx.hidden=false;tk.innerHTML=one;tk.style.setProperty('--tkd','30s');
   const w=tk.firstElementChild.getBoundingClientRect().width||300,vw=Math.max(bx.clientWidth,window.innerWidth||0);
   const k=Math.max(1,Math.ceil(vw/w));tk.innerHTML=one.repeat(k*2);
   const px={slow:45,normal:75,fast:120}[ann.speed]||75;tk.style.setProperty('--tkd',Math.max(8,Math.round(w*k/px))+'s')}
+const tiRow=x=>`<div class="tir" style="display:grid;gap:6px;padding:8px;border:1px solid var(--bd);border-radius:8px"><input class="tg" maxlength="40" placeholder="Date / tag (e.g. 17 Nov) \u2013 optional" value="${esc(x.tag||'')}" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);width:100%;box-sizing:border-box"><input class="tx" maxlength="200" placeholder="Text, e.g. Last date to post internal results" value="${esc(x.text||'')}" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);width:100%;box-sizing:border-box"><div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1;min-width:150px;font-size:.85rem">Hide after (optional)<input class="un" type="date" value="${esc(x.until||'')}" style="min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--in);color:var(--tx);width:100%;box-sizing:border-box"></label><button class="x tid" type="button">Delete</button></div></div>`;
+function fillTi(){const L=$('tiList');if(!L)return;L.innerHTML=tki.map(tiRow).join('')}
+function tiMsg(t,e){const m=$('tiMsg');m.style.color=e?'var(--dg)':'var(--ti)';m.textContent=t}
+$('tiAdd').onclick=()=>{$('tiList').insertAdjacentHTML('beforeend',tiRow({}));const r=$('tiList').querySelectorAll('.tir');r[r.length-1].querySelector('.tx').focus()};
+$('tiList').addEventListener('click',e=>{const b=e.target.closest('.tid');if(b)b.closest('.tir').remove()});
+$('tiSave').onclick=()=>{if(!isAdmin)return;
+  tki=[...$('tiList').querySelectorAll('.tir')].map(r=>({tag:r.querySelector('.tg').value.trim(),text:r.querySelector('.tx').value.trim(),until:r.querySelector('.un').value})).filter(x=>x.text);
+  const o={l:tki,t:Date.now()};sv('tickItems',o);cloud('tickItems',o);renderTick();fillTi();tiMsg('\u2705 Saved for everyone.')};
+fillTi();
 const annForm=()=>({on:$('anOn').checked,label:$('anLabel').value.trim(),title:$('anTitle').value.trim(),from:$('anFrom').value,to:$('anTo').value,extra:$('anExtra').value.trim(),speed:$('anSpeed').value});
 function prevAnn(){const a=annForm();$('anPrev').textContent=(a.label?'\ud83d\udce2 '+a.label+'  ':'')+(anText(a)||'(nothing to show)')}
 function fillAnn(){if(!$('anTitle'))return;$('anLabel').value=ann.label==null?'Announcement':ann.label;$('anTitle').value=ann.title||'';$('anFrom').value=ann.from||'';$('anTo').value=ann.to||'';$('anExtra').value=ann.extra||'';$('anSpeed').value=ann.speed||'normal';$('anOn').checked=!!ann.on;prevAnn()}
@@ -1148,6 +1159,7 @@ try{if(window.firebase){
   fbDb.ref(FBROOT+'roster').on('value',x=>{const v=x.val();data=nr(v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[]);sv('duty2',data);fillFilters();render()},e=>console.warn(e));
   fbDb.ref(FBROOT+'appearance').on('value',x=>{const v=x.val();if(v&&typeof v==='object'){AP=Object.assign({},APDEF,v);sv('appearance',AP);if(!$('md').querySelector('#apSave')){applyAP();applyView()}}},e=>console.warn(e));
   fbDb.ref(FBROOT+'announce').on('value',x=>{const v=x.val();if(v&&typeof v==='object'){ann=Object.assign({},ANDEF,v,{on:v.on!==false&&v.on!==0&&v.on!=='false'});sv('announce2',ann);renderTick();if(!isAdmin||document.activeElement===document.body)fillAnn()}},e=>console.warn(e));
+  fbDb.ref(FBROOT+'tickItems').on('value',x=>{const v=x.val();if(v&&typeof v==='object'){tki=(Array.isArray(v.l)?v.l:Object.values(v.l||{})).filter(Boolean);sv('tickItems',{l:tki,t:v.t||0});renderTick();if(!isAdmin||document.activeElement===document.body)fillTi()}},e=>console.warn(e));
   fbDb.ref(FBROOT+'decContacts').on('value',x=>{const v=x.val();if(v&&v.l){const l=(Array.isArray(v.l)?v.l:Object.values(v.l)).filter(Boolean);if(l.length){decList=l;sv('decc',{l:decList});if(!decEditing&&$('ov').classList.contains('on')&&$('md').innerHTML.includes('DEC Members'))decView()}}},e=>console.warn(e));
   fbDb.ref(FBROOT+'adminPhone').on('value',x=>{const v=x.val();if(v){adminPh=String(v);try{localStorage.setItem('adminPh',adminPh)}catch(e){};if($('admPh'))$('admPh').value=adminPh}},e=>console.warn(e));
   fbDb.ref(FBROOT+'standbyPool').on('value',x=>{const v=x.val();pool=v?(Array.isArray(v)?v:Object.values(v)).filter(Boolean):[];sv('sbpool',pool)},e=>console.warn(e));
