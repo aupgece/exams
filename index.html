@@ -324,7 +324,7 @@ input,select,textarea{font-size:16px}
     </div>
   </div>
   <div id="list"></div>
-  <div class="fl"><button class="link" id="bTheme">Theme: Auto</button></div>
+  <div class="fl"><button class="link" id="bTheme" hidden style="display:none">Theme: Auto</button></div>
   <section id="adminPanel" hidden=""><div style="display:flex;justify-content:space-between;align-items:center"><b>Admin: upload duty data</b><button class="link" id="lock">Lock</button></div>
     <p>Upload a CSV or the Excel duty roster (.xlsx). CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
     <input type="file" id="file" accept=".csv,text/csv,.xlsx,.xls">
@@ -795,7 +795,7 @@ $('prt').onclick=printAll;
 $('exp').onclick=()=>{const cur=withGiven(getRows());if(!cur.length)return;const H=['name','date','start','end','exam','venue','role'],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   dl('duty-roster.csv',[H.concat('swap_status').join(',')].concat(cur.map(r=>H.map(k=>q(r[k])).concat(q(swTxt(r))).join(','))).join('\r\n'),'text/csv')};
 document.addEventListener('click',e=>{const b=e.target.closest('.cp');if(b&&navigator.clipboard)navigator.clipboard.writeText(b.dataset.m).then(()=>{b.textContent='Copied'})});
-let tm='auto',tmUser=null;try{tmUser=localStorage.getItem('theme');tm=tmUser||'auto'}catch(e){}
+let tm='auto',tmUser=null;try{localStorage.removeItem('theme')}catch(e){}
 function setTheme(m,save){tm=m;if(m==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',m);$('bTheme').textContent='Theme: '+m[0].toUpperCase()+m.slice(1);if(save){try{localStorage.setItem('theme',m);tmUser=m}catch(e){}}}
 $('bTheme').onclick=()=>setTheme({auto:'light',light:'dark',dark:'auto'}[tm],true);setTheme(tm);
 
