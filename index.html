@@ -907,16 +907,20 @@ function beePrint(onlyDone){
   const pg=document.createElement('style');pg.id='beePg';pg.textContent='@media print{@page{size:landscape;margin:10mm}}';document.head.appendChild(pg);document.body.classList.add('bee');
   const clean=()=>{const e=$('beePrt');if(e)e.remove();const g=$('beePg');if(g)g.remove();document.body.classList.remove('bee');window.removeEventListener('afterprint',clean)};
   window.addEventListener('afterprint',clean);window.print();return true}
+let beeQ='';
+function beeDelete(k){const f=beeGroup().find(x=>x.k===k);if(!f)return;
+  if(!confirm('Delete '+f.name+' and all '+f.d.length+' subject/slot(s)? This cannot be undone.'))return;
+  BEEL=BEEL.filter(r=>String(r[6]||'').trim().toLowerCase()!==k);beeSave();scriptsNotice()}
 function scriptsNotice(){
   if(!isAdmin)return;
   const fms=beeGroup(),waLink=n=>'https://wa.me/'+n+'?text='+encodeURIComponent(scText);
   const rec=fms.filter(f=>f.done&&f.n),nonum=fms.filter(f=>f.done&&!f.n).map(f=>f.name);
-  const card=f=>`<div style="border:1px solid var(--bd);border-radius:10px;padding:8px 10px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:8px;margin:0"><input type="checkbox" class="scK" data-k="${esc(f.k)}" style="width:20px;height:20px;margin:0"${f.n?'':' disabled'}><b>${esc(f.name)}</b></label><span style="font-size:.85rem;color:var(--mu)">${f.n?esc(f.c):'No cell number'}</span></div>
+  const card=f=>`<div class="scC" data-s="${esc((f.name+' '+(f.c||'')+' '+f.d.map(x=>x.sub+' '+x.cls).join(' ')).toLowerCase())}" style="border:1px solid var(--bd);border-radius:10px;padding:8px 10px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:8px;margin:0"><input type="checkbox" class="scK" data-k="${esc(f.k)}" style="width:20px;height:20px;margin:0"${f.n?'':' disabled'}><b>${esc(f.name)}</b></label><span style="font-size:.85rem;color:var(--mu)">${f.n?esc(f.c):'No cell number'}</span></div>
 ${f.d.map(x=>`<div style="font-size:.85rem;margin-top:3px">${x.done?'\u2705':'\u23f3'} ${esc(fmt(x.date))} &middot; ${esc(x.time)} &middot; ${esc(x.sub)} <span style="color:var(--mu)">(${esc(x.cls)})</span></div>`).join('')}
-<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">${f.done&&f.n?`<a class="b wa scW" data-n="${f.n}" target="_blank" rel="noopener" style="flex:1;text-align:center" href="${waLink(f.n)}">Send WhatsApp</a>`:`<span style="flex:1;font-size:.8rem;color:var(--mu);align-self:center">${f.done?'Cannot send: no cell number':'Exam not done yet'}</span>`}<button class="x scE" type="button" data-k="${esc(f.k)}">Edit</button></div></div>`;
+<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">${f.done&&f.n?`<a class="b wa scW" data-n="${f.n}" target="_blank" rel="noopener" style="flex:1;text-align:center" href="${waLink(f.n)}">Send WhatsApp</a>`:`<span style="flex:1;font-size:.8rem;color:var(--mu);align-self:center">${f.done?'Cannot send: no cell number':'Exam not done yet'}</span>`}<button class="x scE" type="button" data-k="${esc(f.k)}">Edit</button><button class="x scD" type="button" data-k="${esc(f.k)}" style="color:var(--dg)">Delete</button></div></div>`;
   open(`<h2>📲 Send script notice</h2><p style="margin:0 0 8px"><b>${fms.length}</b> FMs &middot; <b>${rec.length}</b> with finished slots and a cell number</p>
 <div class="btns" style="margin-bottom:8px"><button class="x" id="scAddFm" type="button">+ Add FM</button><button class="x" id="scPrA" type="button">🖨 Print all</button><button class="x" id="scPrD" type="button">🖨 Print finished</button></div>
-<div style="max-height:44vh;overflow:auto">${fms.map(card).join('')}</div>
+<input id="scQ" type="search" autocomplete="off" placeholder="Search FM, subject, class or cell no." aria-label="Search FMs" style="width:100%;box-sizing:border-box;margin:0 0 8px;min-height:42px"><div style="max-height:44vh;overflow:auto">${fms.map(card).join('')}<p id="scNo" hidden style="color:var(--mu);text-align:center;margin:10px 0">No matching FM.</p></div>
 ${nonum.length?`<p style="font-size:.85rem;color:var(--dg);margin:8px 0 0">No cell number for: ${esc(nonum.join(', '))}</p>`:''}
 <label style="display:block;margin:10px 0;font-size:.85rem;color:var(--mu)">Message (editable)<textarea id="scMsg" rows="3" style="width:100%;box-sizing:border-box;margin:4px 0 0">${esc(scText)}</textarea><span style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><span id="scSaved" style="color:var(--ti)"></span></span></label>
 <button class="b wa" id="scSend" type="button" style="width:100%;min-height:46px"${rec.length?'':' disabled'}>Send WhatsApp to all (finished slots)</button><button class="b wa" id="scSel" type="button" style="width:100%;min-height:46px;margin-top:8px" disabled>Send WhatsApp to selected (0)</button><div id="scOut" style="margin-top:8px;font-size:.9rem"></div>`);
@@ -937,16 +941,19 @@ ${nonum.length?`<p style="font-size:.85rem;color:var(--dg);margin:8px 0 0">No ce
   const pr=d=>{if(!beePrint(d)){const o=$('scOut');o.style.color='var(--dg)';o.textContent='Nothing to print yet.'}};
   $('scPrA').onclick=()=>pr(false);$('scPrD').onclick=()=>pr(true);
   $('scAddFm').onclick=()=>beeEdit(null);
-  $('md').querySelectorAll('.scE').forEach(b=>b.onclick=()=>beeEdit(b.dataset.k))}
+  $('md').querySelectorAll('.scE').forEach(b=>b.onclick=()=>beeEdit(b.dataset.k));
+  $('md').querySelectorAll('.scD').forEach(b=>b.onclick=()=>beeDelete(b.dataset.k));
+  const flt=()=>{const q=$('scQ').value.trim().toLowerCase();beeQ=$('scQ').value;let n=0;$('md').querySelectorAll('.scC').forEach(c=>{const ok=!q||c.dataset.s.includes(q);c.style.display=ok?'':'none';if(ok)n++});$('scNo').hidden=!!n};
+  $('scQ').value=beeQ;$('scQ').oninput=flt;flt()}
 function beeEdit(key){
   const f=key?beeGroup().find(x=>x.k===key):null,FS='style="margin:0;min-height:42px;width:100%;box-sizing:border-box"';
   const dutyH=x=>`<div class="edr" data-sem="${esc(x.sem||'')}" data-code="${esc(x.code||'')}" style="display:grid;gap:6px;padding:8px;border:1px solid var(--bd);border-radius:8px;margin-bottom:8px"><div style="display:flex;gap:6px"><input class="eDt" type="date" ${FS} value="${esc(x.date||'')}"><input class="eTm" ${FS} placeholder="0900-1100" maxlength="11" value="${esc(x.time||'')}"></div><input class="eSb" ${FS} placeholder="Subject" value="${esc(x.sub||'')}"><div style="display:flex;gap:6px"><input class="eCl" ${FS} placeholder="Class" value="${esc(x.cls||'')}"><button class="x edd" type="button">Delete</button></div></div>`;
   open(`<h2>${f?'Edit FM':'Add FM'}</h2><label style="font-size:.85rem;color:var(--mu)">Name<input id="eNm" ${FS} value="${esc(f?f.name:'')}"></label><label style="font-size:.85rem;color:var(--mu)">Cell no.<input id="eCn" type="tel" inputmode="tel" ${FS} placeholder="0300 1234567" value="${esc(f?f.c:'')}"></label>
 <p style="margin:10px 0 6px"><b>Subjects &amp; slots</b></p><div id="eDs" style="max-height:36vh;overflow:auto">${(f?f.d:[{}]).map(dutyH).join('')}</div>
-<div class="btns" style="margin:6px 0"><button class="x" id="eAdd" type="button">+ Add subject / slot</button></div><div class="btns"><button class="b2" id="eSave" type="button">Save</button><button class="x" id="eCancel" type="button">Cancel</button></div><p id="eMsg" style="margin:6px 0 0;color:var(--dg)"></p>`);
+<div class="btns" style="margin:6px 0"><button class="x" id="eAdd" type="button">+ Add subject / slot</button></div><div class="btns"><button class="b2" id="eSave" type="button">Save</button><button class="x" id="eCancel" type="button">Cancel</button>${f?'<button class="x" id="eDel" type="button" style="color:var(--dg)">Delete FM</button>':''}</div><p id="eMsg" style="margin:6px 0 0;color:var(--dg)"></p>`);
   $('eAdd').onclick=()=>$('eDs').insertAdjacentHTML('beforeend',dutyH({}));
   $('eDs').addEventListener('click',e=>{const b=e.target.closest('.edd');if(b)b.closest('.edr').remove()});
-  $('eCancel').onclick=scriptsNotice;
+  $('eCancel').onclick=scriptsNotice;if($('eDel'))$('eDel').onclick=()=>beeDelete(f.k);
   $('eSave').onclick=()=>{
     const nm=$('eNm').value.trim(),cn=$('eCn').value.trim(),m=$('eMsg');
     const ds=[...$('eDs').querySelectorAll('.edr')].map(r=>[r.querySelector('.eDt').value,r.querySelector('.eTm').value.trim(),r.querySelector('.eCl').value.trim(),r.dataset.sem,r.dataset.code,r.querySelector('.eSb').value.trim(),nm,cn]).filter(r=>r[5]||r[0]||r[1]);
