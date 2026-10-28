@@ -896,15 +896,16 @@ const beeGroup=()=>{const now=new Date(),by=new Map();
   const fms=[...by.values()].sort((a,b)=>a.name.localeCompare(b.name));
   fms.forEach(f=>{f.d.sort((a,b)=>(a.t||0)-(b.t||0)||String(a.date).localeCompare(String(b.date)));f.done=f.d.filter(x=>x.done).length});
   return fms};
-(()=>{const st=document.createElement('style');st.textContent='#prt{display:none}@media print{@page{size:landscape;margin:10mm}body>*:not(#prt){display:none!important}#prt{display:block!important;font-family:Arial,sans-serif;color:#000;background:#fff}#prt table{width:100%;border-collapse:collapse;font-size:10pt}#prt th,#prt td{border:1px solid #444;padding:4px 6px;text-align:left}#prt th{background:#d9e1f2}#prt tr{page-break-inside:avoid}#prt thead{display:table-header-group}}';document.head.appendChild(st)})();
+(()=>{const st=document.createElement('style');st.textContent='#beePrt{display:none}@media print{body.bee>*:not(#beePrt){display:none!important}body.bee #beePrt{display:block!important;font-family:Arial,sans-serif;color:#000;background:#fff}#beePrt table{width:100%;border-collapse:collapse;font-size:10pt}#beePrt th,#beePrt td{border:1px solid #444;padding:4px 6px;text-align:left}#beePrt th{background:#d9e1f2}#beePrt tr{page-break-inside:avoid}#beePrt thead{display:table-header-group}}';document.head.appendChild(st)})();
 function beePrint(onlyDone){
   const dd=x=>{const d=pd(x);return d?d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):x};
   const rows=[];beeGroup().forEach(f=>f.d.forEach(x=>{if(!onlyDone||x.done)rows.push([f.name,f.c||'',x.sub,x.cls,dd(x.date),x.time,x.done?'Done':'Pending'])}));
   if(!rows.length)return false;
-  let d=$('prt');if(d)d.remove();d=document.createElement('div');d.id='prt';
+  let d=$('beePrt');if(d)d.remove();d=document.createElement('div');d.id='beePrt';
   d.innerHTML='<h2 style="margin:0 0 4px">Air University - Answer Book Receiving (FALL-2026)</h2><div style="margin:0 0 8px;font-size:10pt">FM list'+(onlyDone?' (finished slots only)':'')+' &middot; printed '+esc(new Date().toLocaleString('en-GB'))+'</div><table><thead><tr><th>#</th><th>FM</th><th>Cell No.</th><th>Subject</th><th>Class</th><th>Date</th><th>Time slot</th><th>Status</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr><td>'+(i+1)+'</td>'+r.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
   document.body.appendChild(d);
-  const clean=()=>{const e=$('prt');if(e)e.remove();window.removeEventListener('afterprint',clean)};
+  const pg=document.createElement('style');pg.id='beePg';pg.textContent='@media print{@page{size:landscape;margin:10mm}}';document.head.appendChild(pg);document.body.classList.add('bee');
+  const clean=()=>{const e=$('beePrt');if(e)e.remove();const g=$('beePg');if(g)g.remove();document.body.classList.remove('bee');window.removeEventListener('afterprint',clean)};
   window.addEventListener('afterprint',clean);window.print();return true}
 function scriptsNotice(){
   if(!isAdmin)return;
