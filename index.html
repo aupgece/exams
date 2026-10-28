@@ -329,7 +329,7 @@ input,select,textarea{font-size:16px}
     <p>Upload a CSV or the Excel duty roster (.xlsx). CSV header: <code>id,name,phone,date,start,end,exam,venue,role</code> (phone like 923001234567)</p>
     <input type="file" id="file" accept=".csv,text/csv,.xlsx,.xls">
     <textarea id="csv" class="csv" style="width:100%;margin-top:8px;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px" placeholder="…or paste CSV here"></textarea>
-    <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button></div>
+    <div class="btns" style="margin-top:8px"><button class="b2" id="load">Load data</button><button class="x" id="sample">Load sample</button><button class="x" id="clear">Clear all</button><button class="x" id="restoreRos">♻️ Restore last roster</button></div>
     <p id="msg"></p>
     <div class="btns" style="margin-top:4px"><button class="b2" id="bRosAdm">✏️ Edit roster</button><button class="b2" id="bThemeAdm">🎨 Theme &amp; layout</button><button class="b2" id="bScr">📲 Send script notice</button><button class="b2" id="bSbAdm">🆘 DEC requests</button><button class="b2" id="bSbrEd">🛡️ Edit standby roster</button></div>
     <div style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px"><b>Standby roster (by date &amp; slot)</b> <small>(upload the Standby Roster Excel; shown on duty cards and under "Standby Roster"; replaces the previous standby roster)</small>
@@ -475,7 +475,7 @@ function render(){
   const L=$('list');cur=[];groups=[];$('cnt').textContent='';
   if(!data.length){L.innerHTML='<div class="box empty"><div style="font-size:2.4rem">👥</div><h3>No data uploaded yet</h3><div>Ask the administrator to upload the duty roster</div></div>';return}
   const q=qv().trim(),d=$('d').value,t=$('t').value,ro=$('r').value;
-  if(q.length<2&&!(d||t||ro||showAll)){L.innerHTML=`<div class="box empty"><div style="font-size:2.4rem">🔍</div><h3>Search your name to see your duties</h3><div>Type at least 2 letters of your name, or pick a Date, Time slot or Role above.</div></div>`;return}
+  if(q.length<2&&!(d||t||ro||showAll)){L.innerHTML=`<div class="box empty"><div style="font-size:2.4rem">🔍</div><h3>Search your name to see your duties</h3><div>Type at least 2 letters of your name, or pick a Date, Time slot or Role above.</div><button class="x" id="showAllBtn" type="button" style="margin-top:12px">Show all invigilators / standby</button></div>`;{const sb=$('showAllBtn');if(sb)sb.onclick=()=>{$('q').value='All Invigilators/Standby';showAll=true;render()}}return}
   const rows=getRows();cur=rows;const allG=groupRows(rows),MAXFM=q.length<2?Infinity:8;groups=allG.slice(0,MAXFM);const by={size:groups.length};
   $('cnt').textContent=allG.length>MAXFM?`Showing ${MAXFM} of ${allG.length} matching staff, type more letters to narrow`:`${allG.length} staff, ${rows.length} duties`;
   if(!by.size){const ql=q.toLowerCase(),hs=q?HAND.filter(x=>x.from.toLowerCase().includes(ql)):[];
@@ -760,8 +760,9 @@ function dutyForm(i,ret,pre){
     const row={id:k,name,phone,date:dt,start:t1,end:t2,exam:g('rfE'),venue:g('rfV'),role:g('rfR')};
     if(i>=0)data[i]=row;else data.push(row);
     saveRoster();ret?rosterAdmin(...ret):close()}}
+function rosBak(){if(!data||!data.length)return;try{const o=JSON.parse(JSON.stringify({t:Date.now(),l:data,s:swaps}));sv('rosterBak',o);cloud('rosterBackup',o)}catch(e){}}
 function setData(d){data=nr(d);sv('duty2',d);fillFilters();render()}
-$('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
+$('load').onclick=()=>{try{const d=parse($('csv').value);if(!d.length||!d[0].name)throw 0;rosBak();setData(d);cloud('roster',d);$('msg').textContent=`Loaded ${d.length} duties`+(fbOK?' and shared with all staff.':' (saved on this device).')}catch(e){$('msg').textContent='Could not read CSV — check the header row.'}};
 // Excel roster (room-wise blocks per day/slot) -> CSV rows: one duty per invigilator
 function xlsxToCsv(buf){
   const wb=XLSX.read(buf,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]];
@@ -784,8 +785,20 @@ function xlsxToCsv(buf){
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   if(/\.xlsx?$/i.test(f.name)){r.onload=()=>{try{$('csv').value=xlsxToCsv(new Uint8Array(r.result));$('load').click()}catch(err){$('msg').textContent='Could not read Excel file.'}};r.readAsArrayBuffer(f)}
   else{r.onload=()=>{$('csv').value=r.result;$('load').click()};r.readAsText(f)}};
-$('sample').onclick=()=>{const d=parse(SAMPLE);setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
-$('clear').onclick=()=>uiConfirm('Clear the roster and all posted swaps for everyone?',()=>{swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'},'Clear all');
+$('sample').onclick=()=>{const d=parse(SAMPLE);rosBak();setData(d);cloud('roster',d);$('msg').textContent='Sample data loaded.'};
+$('clear').onclick=()=>uiConfirm('Clear the roster and all posted swaps for everyone?',()=>{rosBak();swaps=[];sv('swaps2',[]);setData([]);cloud('roster',null);cloud('swaps',null);$('msg').textContent='Cleared.'},'Clear all');
+$('restoreRos').onclick=async()=>{
+  let b=null;
+  try{if(fbDb){const x=await fbDb.ref(FBROOT+'rosterBackup').once('value');const v=x.val();if(v&&v.l)b=v}}catch(e){}
+  if(!b){const o=ld('rosterBak');if(o&&o.l)b=o}
+  if(!b){uiAlert('No roster backup found yet. A backup is saved automatically just before the roster is cleared or replaced.',null,'Nothing to restore');return}
+  const l=(Array.isArray(b.l)?b.l:Object.values(b.l)).filter(Boolean),sw=Object.values(b.s||{}).filter(Boolean).sort((a,c)=>c.id-a.id);
+  if(!l.length){uiAlert('The backup is empty.',null,'Nothing to restore');return}
+  uiConfirm('Restore the roster backup from '+new Date(b.t||0).toLocaleString()+' ('+l.length+' duties, '+sw.length+' swaps)? This replaces the current roster and swaps for everyone.',()=>{
+    rosBak();setData(l);cloud('roster',l);
+    swaps=sw;sv('swaps2',swaps);cloud('swaps',null);sw.forEach(x=>cloud('swaps/'+x.id,x));
+    if(typeof rebuild==='function')rebuild();render();
+    $('msg').textContent='Restored '+l.length+' duties'+(fbOK?' and shared with all staff.':' (saved on this device).')})};
 $('q').addEventListener('input',()=>{showAll=/^all (fms|invigilators)/.test($('q').value.trim().toLowerCase())});
 ['q','d','t','r','s'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
 $('vC').onclick=()=>{view='c';$('vC').classList.add('on');$('vT').classList.remove('on');render()};
